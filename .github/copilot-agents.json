@@ -1,0 +1,144 @@
+{
+    "$schema": "https://aka.ms/copilot/agent-schema",
+    "version": "1.0",
+    "agents": [
+        {
+            "name": "feature-scaffolder",
+            "displayName": "Feature Scaffolder",
+            "description": "Scaffold a complete new feature module including ViewModel, View (Windows + Android), Service, Repository, Model, and DI registration. Enforces MTM naming conventions throughout.",
+            "instructions": "file:.github/instructions/maui-architecture.instructions.md",
+            "conversationStarters": [
+                "Scaffold a new Reports feature module",
+                "Create the Waitlist Entry screen with ViewModel and service",
+                "Add a new feature module for user profiles"
+            ],
+            "additionalInstructions": [
+                "file:.github/copilot-instructions.md"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "create_file",
+                    "read_file",
+                    "list_dir",
+                    "file_search",
+                    "grep_search",
+                    "semantic_search",
+                    "replace_string_in_file",
+                    "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "architecture-auditor",
+            "displayName": "Architecture Auditor",
+            "description": "Validates the solution against MTM dependency rules, naming conventions, and MVVM patterns. Flags violations with file and line references.",
+            "instructions": "file:.github/instructions/maui-architecture.instructions.md",
+            "conversationStarters": [
+                "Audit the solution for architecture violations",
+                "Check that my new feature follows the dependency rules",
+                "Validate naming conventions across all projects"
+            ],
+            "additionalInstructions": [
+                "file:.github/copilot-instructions.md"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "read_file",
+                    "list_dir",
+                    "file_search",
+                    "grep_search",
+                    "semantic_search",
+                    "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "test-scaffolder",
+            "displayName": "Test Scaffolder",
+            "description": "Generates xUnit unit test stubs for ViewModels and Services using Moq. Enforces MTM test naming conventions.",
+            "instructions": "file:.github/instructions/testing.instructions.md",
+            "conversationStarters": [
+                "Generate unit tests for ViewModel_Waitlist_Entry",
+                "Scaffold test stubs for Service_WaitlistEntry",
+                "Create tests for the approve entry command"
+            ],
+            "additionalInstructions": [
+                "file:.github/copilot-instructions.md"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "create_file",
+                    "read_file",
+                    "list_dir",
+                    "file_search",
+                    "grep_search",
+                    "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "di-registrar",
+            "displayName": "DI Registrar",
+            "description": "Registers newly created classes in AddSharedServices() with correct lifetime (Singleton for repos/services, Transient for pages/ViewModels).",
+            "instructions": "file:.github/copilot-instructions.md",
+            "conversationStarters": [
+                "Register Service_WaitlistEntry and its repository in DI",
+                "Add ViewModel_Dashboard_Summary to AddSharedServices",
+                "Wire up the new reporting feature in the DI container"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "read_file",
+                    "replace_string_in_file",
+                    "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "xaml-platform-splitter",
+            "displayName": "XAML Platform Splitter",
+            "description": "Splits a single XAML page into Windows (desktop, multi-column) and Android (mobile, single-column) layout variants sharing one ViewModel.",
+            "instructions": "file:.github/instructions/maui-architecture.instructions.md",
+            "conversationStarters": [
+                "Split View_Waitlist_Entry into Windows and Android layouts",
+                "Create a desktop version of the dashboard page",
+                "Add a mobile-optimized layout for the reports screen"
+            ],
+            "additionalInstructions": [
+                "file:.github/copilot-instructions.md"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "create_file",
+                    "read_file",
+                    "list_dir",
+                    "replace_string_in_file",
+                    "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "assumption-documenter",
+            "displayName": "Assumption Documenter",
+            "description": "Creates a structured assumption file in .github/assumptions/ before proceeding with ambiguous implementation work.",
+            "instructions": "file:.github/copilot-instructions.md",
+            "conversationStarters": [
+                "Document my assumptions before scaffolding the reports module",
+                "Create an assumption file for the database schema I'm about to design",
+                "I'm not sure about the navigation flow — document assumptions first"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "create_file",
+                    "read_file"
+                ]
+            }
+        }
+    ]
+}

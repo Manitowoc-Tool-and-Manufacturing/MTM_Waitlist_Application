@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path=".github/copilot-agents.json" />
+    <File Path=".github/copilot-instructions.md" />
+  </Folder>
+  <Folder Name="/.github/instructions/">
+    <File Path=".github/instructions/maui-architecture.instructions.md" />
+    <File Path=".github/instructions/testing.instructions.md" />
+  </Folder>
+  <Folder Name="/.github/prompts/">
+    <File Path=".github/prompts/code-review.prompt.md" />
+    <File Path=".github/prompts/commit-message.prompt.md" />
+    <File Path=".github/prompts/new-feature.prompt.md" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj" />
+    <Project Path="MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitlist_Application.Data.csproj" />
+    <Project Path="MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj" />
+  </Folder>
+  <Folder Name="/Features/">
+    <Project Path="MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Dashboard/MTM_Waitlist_Application.Feature.Dashboard.csproj" />
+    <Project Path="MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Mobile/MTM_Waitlist_Application.Feature.Mobile.csproj" />
+    <Project Path="MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist/MTM_Waitlist_Application.Feature.Waitlist.csproj" />
+  </Folder>
+  <Folder Name="/Hosts/">
+    <Project Path="MTM_Waitlist_Application/MTM_Waitlist_Application.Droid/MTM_Waitlist_Application.Droid.csproj">
+      <Deploy Solution="Debug|*" />
+    </Project>
+    <Project Path="MTM_Waitlist_Application/MTM_Waitlist_Application.WinUI/MTM_Waitlist_Application.WinUI.csproj">
+      <Platform Project="x86" />
+    </Project>
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="MTM_Waitlist_Application/MTM_Waitlist_Application/MTM_Waitlist_Application.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="AGENTS.md" />
+    <File Path="MAUI-SETUP.md" />
+    <File Path="UI-DESIGN-DIFFERENCES.md" />
+  </Folder>
+</Solution>
