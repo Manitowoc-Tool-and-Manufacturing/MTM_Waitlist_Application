@@ -35,7 +35,9 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="AGENTS.md" />
+    <File Path="CLIENT_DATABASE_ARCHITECTURE.md" />
     <File Path="MAUI-SETUP.md" />
+    <File Path="REMOTE_CLIENT_API_ACCESS.md" />
     <File Path="UI-DESIGN-DIFFERENCES.md" />
   </Folder>
 </Solution>
