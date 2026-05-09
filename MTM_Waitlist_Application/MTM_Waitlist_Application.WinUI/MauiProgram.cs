@@ -14,13 +14,14 @@
         /// </summary>
         /// <returns>A fully configured <see cref="MauiApp"/> instance.</returns>
         public static MauiApp CreateMauiApp()
-            => MauiApp.CreateBuilder()
-                   // ── Windows-specific configuration only ───────────────
-                   // Add anything here that is exclusive to Windows:
-                   // e.g. Windows notification services, WinUI theme config,
-                   //      desktop file system permissions, tray icon setup
-                   // ─────────────────────────────────────────────────────
-                   .UseSharedMauiApp()   // ← all shared DI, fonts, logging
-                   .Build();
+        {
+            var builder = MauiApp.CreateBuilder();
+            // ── Windows-specific configuration only ─────────────────────
+            // Add anything here that is exclusive to Windows:
+            // e.g. Windows notification services, WinUI theme config,
+            //      desktop file system permissions, tray icon setup
+            // ─────────────────────────────────────────────────
+            return builder.UseSharedMauiApp();  // ← builds the app, loads config, wires DI
+        }
     }
 }

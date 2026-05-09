@@ -23,12 +23,10 @@
     </Shell.FlyoutHeader>
 
     <!-- ── Navigation items ────────────────────────────────────────────────────── -->
-    <FlyoutItem Title="Dashboard">
-        <ShellContent
-            Title="Dashboard"
-            ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"
-            Route="Dashboard" />
-    </FlyoutItem>
+    <ShellContent
+        Title="Dashboard"
+        ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"
+        Route="Dashboard" />
 
     <!--
         Add further FlyoutItems here as feature pages are built.

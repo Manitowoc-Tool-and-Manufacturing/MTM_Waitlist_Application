@@ -22,12 +22,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.60" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
+  </ItemGroup>
+
+  <!-- Embed appsettings files so IConfiguration can load them from the assembly manifest.
+       Without this explicit ItemGroup the build excludes them and AddJsonStream throws. -->
+  <ItemGroup>
+    <EmbeddedResource Include="appsettings.json" />
+    <EmbeddedResource Include="appsettings.Development.json" Condition="'$(Configuration)'=='Debug'" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Core\MTM_Waitlist_Application.Data\MTM_Waitlist_Application.Data.csproj" />
+    <ProjectReference Include="..\Core\MTM_Waitlist_Application.Services\MTM_Waitlist_Application.Services.csproj" />
     <ProjectReference Include="..\Features\MTM_Waitlist_Application.Feature.Dashboard\MTM_Waitlist_Application.Feature.Dashboard.csproj" />
   </ItemGroup>
-
 </Project>

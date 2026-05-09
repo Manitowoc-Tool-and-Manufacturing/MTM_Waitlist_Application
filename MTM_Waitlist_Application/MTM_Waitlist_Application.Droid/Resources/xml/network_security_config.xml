@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network security configuration for the MTM Waitlist Android app.
+
+    The REST API and MySQL database run on the internal work-network server
+    (172.16.1.104) over plain HTTP — HTTPS is not required because the API
+    is never exposed to the public internet.
+
+    Cleartext HTTP is permitted only for the work LAN server and Android emulator
+    host loopback used during local API development.
+    All other traffic is required to use HTTPS.
+
+    Debug builds trust user-installed certificates for developer HTTPS testing.
+
+    Do NOT use android:usesCleartextTraffic="true" on the <application> tag —
+    that permits cleartext for every host in both Debug and Release and would
+    create an unnecessary security regression.
+-->
+<network-security-config>
+  <!-- ── Hosts always permitted on plain HTTP (work LAN server) ─────── -->
+  <domain-config cleartextTrafficPermitted="true">
+    <!-- Primary: internal work-network API + MySQL server -->
+    <domain includeSubdomains="false">172.16.1.104</domain>
+  </domain-config>
+
+  <!-- ── Android emulator fallback to host machine localhost ─────────── -->
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="false">10.0.2.2</domain>
+  </domain-config>
+
+  <!-- ── Debug-only: trust developer-installed certificates ───────────── -->
+  <debug-overrides>
+    <trust-anchors>
+      <certificates src="system" />
+      <certificates src="user" />
+    </trust-anchors>
+  </debug-overrides>
+
+  <!-- ── Default: all other traffic must use HTTPS ─────────────────── -->
+  <base-config cleartextTrafficPermitted="false">
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </base-config>
+</network-security-config>
