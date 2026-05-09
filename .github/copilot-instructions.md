@@ -130,19 +130,72 @@ MTM_Waitlist_Application.slnx
 
 ## File Placement Rules
 
+All `.cs` and `.xaml` files **must** be placed in a segregated domain subfolder within their type folder. Files placed directly in a type root (e.g., `Models/Model_X.cs` with no subfolder) are a violation.
+
+**Pattern:** `<TypeFolder>/<DomainSubfolder>/FileName.cs`
+
+The domain subfolder groups files by the feature or concern they belong to — not by the project they live in.
+
+### Core (`MTM_Waitlist_Application.Core/`)
+
+| What | Path pattern |
+|------|--------------|
+| Model / entity | `Models/<Domain>/Model_<Entity>.cs` |
+| Repository interface | `Interfaces/<Domain>/IRepository_<Entity>.cs` |
+| Service interface | `Interfaces/<Domain>/IService_<Purpose>.cs` |
+| Constants | `Constants/<Domain>/Constants_<Category>.cs` |
+| Enums | `Enums/<Domain>/Enum_<Category>.cs` |
+
+**Canonical domain subfolder examples:**
+
+| File | Full path |
+|------|-----------|
+| `Model_WaitlistEntry` | `Models/Waitlist/Model_WaitlistEntry.cs` |
+| `Model_AuthToken` | `Models/Auth/Model_AuthToken.cs` |
+| `Model_Dao_Result` | `Models/Shared/Model_Dao_Result.cs` |
+| `IApiClient` | `Interfaces/Api/IApiClient.cs` |
+| `IService_Auth` | `Interfaces/Auth/IService_Auth.cs` |
+| `IRepository_WaitlistEntry` | `Interfaces/Waitlist/IRepository_WaitlistEntry.cs` |
+| `IService_WaitlistEntry` | `Interfaces/Waitlist/IService_WaitlistEntry.cs` |
+| `ISyncService` | `Interfaces/Sync/ISyncService.cs` |
+| `Constants_Api` | `Constants/Api/Constants_Api.cs` |
+
+### Data (`MTM_Waitlist_Application.Data/`)
+
+| What | Path pattern |
+|------|--------------|
+| API HTTP client | `Http/HttpApiClient.cs` |
+| Local DB context | `Local/LocalDbContext.cs` |
+| Repository implementation | `Repositories/<Domain>/Repository_<Entity>.cs` |
+
+**Examples:** `Repositories/Waitlist/Repository_WaitlistEntry.cs` · `Repositories/Waitlist/Repository_WaitlistEntryLocal.cs`
+
+### Services (`MTM_Waitlist_Application.Services/`)
+
+| What | Path pattern |
+|------|--------------|
+| Service implementation | `<Domain>/Service_<Purpose>.cs` |
+
+**Examples:** `Auth/Service_Auth.cs` · `Waitlist/Service_WaitlistEntry.cs` · `Sync/SyncService.cs`
+
+### Features (`MTM_Waitlist_Application.Feature.<Name>/`)
+
+| What | Path pattern |
+|------|--------------|
+| XAML page (Windows) | `Views/<Screen>/View_<Feature>_<Screen>.Windows.xaml` |
+| XAML page (Android) | `Views/<Screen>/View_<Feature>_<Screen>.Android.xaml` |
+| Code-behind | `Views/<Screen>/View_<Feature>_<Screen>.xaml.cs` |
+| ViewModel | `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs` |
+
+The `<Screen>` subfolder name matches the `<Screen>` segment of the class name (`View_<Feature>_<Screen>`).
+
+**Examples (Feature.Waitlist):** `Views/Entry/View_Waitlist_Entry.Windows.xaml` · `ViewModels/Entry/ViewModel_Waitlist_Entry.cs`
+
+### Shared / Mobile / Resources
+
 | What | Where |
 |------|-------|
-| Model / entity | `MTM_Waitlist_Application.Core/Models/` |
-| Repository interface | `MTM_Waitlist_Application.Core/Interfaces/` |
-| Service interface | `MTM_Waitlist_Application.Core/Interfaces/` |
-| Constants | `MTM_Waitlist_Application.Core/Constants/` |
-| Enums | `MTM_Waitlist_Application.Core/Enums/` |
-| Repository implementation | `MTM_Waitlist_Application.Data/Repositories/` |
-| EF Core DbContext | `MTM_Waitlist_Application.Data/` |
-| Service implementation | `MTM_Waitlist_Application.Services/` |
-| Feature XAML page | `MTM_Waitlist_Application.Feature.<Name>/Views/` |
-| Feature ViewModel | `MTM_Waitlist_Application.Feature.<Name>/ViewModels/` |
-| Mobile-only pages | `MTM_Waitlist_Application.Feature.Mobile/Views/` |
+| Mobile-only pages | `MTM_Waitlist_Application.Feature.Mobile/Views/<Screen>/` |
 | Global styles / themes | `MTM_Waitlist_Application/Resources/Styles/` |
 | Shared images / fonts | `MTM_Waitlist_Application/Resources/` |
 
@@ -463,8 +516,8 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 
 ## Additional Resources
 
-- Setup guide: `MAUI-SETUP.md`
-- UI design differences: `UI-DESIGN-DIFFERENCES.md`
+- Setup guide: `docs\ApplicationSetup\MAUI-SETUP.md`
+- UI design differences: `docs\ApplicationSetup\UI-DESIGN-DIFFERENCES.md`
 - Agent definitions: `AGENTS.md`
 - Assumption files: `.github/assumptions/`
 - Instruction files: `.github/instructions/`

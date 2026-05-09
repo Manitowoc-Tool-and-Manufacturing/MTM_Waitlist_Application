@@ -35,9 +35,15 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="AGENTS.md" />
-    <File Path="CLIENT_DATABASE_ARCHITECTURE.md" />
-    <File Path="MAUI-SETUP.md" />
-    <File Path="REMOTE_CLIENT_API_ACCESS.md" />
-    <File Path="UI-DESIGN-DIFFERENCES.md" />
+  </Folder>
+  <Folder Name="/Solution Items/docs/" />
+  <Folder Name="/Solution Items/docs/ApplicationSetup/">
+    <File Path="docs/ApplicationSetup/MAUI-SETUP.md" />
+    <File Path="docs/ApplicationSetup/UI-DESIGN-DIFFERENCES.md" />
+  </Folder>
+  <Folder Name="/Solution Items/docs/RemoteDatabaseAccess/">
+    <File Path="docs/RemoteDatabaseAccess/CLIENT_DATABASE_ARCHITECTURE.md" />
+    <File Path="docs/RemoteDatabaseAccess/IMPLEMENTATION-PLAN.md" />
+    <File Path="docs/RemoteDatabaseAccess/PLAN-SUMMARY.md" />
   </Folder>
 </Solution>

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using MTM_Waitlist_Application.Feature.Dashboard.ViewModels.Main;
+using MTM_Waitlist_Application.Feature.Dashboard.Views.Main;
 
 namespace MTM_Waitlist_Application
 {
@@ -57,32 +59,33 @@ namespace MTM_Waitlist_Application
         public static IServiceCollection AddSharedServices(this IServiceCollection services)
         {
             // ── Repositories (Data layer) ──────────────────────────────
-            // Uncomment as concrete repository classes are created in
-            // MTM_Waitlist_Application.Data
-            // services.AddSingleton<IWaitlistRepository, WaitlistRepository>();
+            // Registered here as concrete repository classes are created in
+            // MTM_Waitlist_Application.Data (see Implementation Plan Phase 2)
+            // services.AddSingleton<IRepository_WaitlistEntry, Repository_WaitlistEntry>();
+            // services.AddSingleton<IRepository_WaitlistEntryLocal, Repository_WaitlistEntryLocal>();
 
             // ── Services (Business logic layer) ───────────────────────
-            // Uncomment as service classes are created in
-            // MTM_Waitlist_Application.Services
-            // services.AddSingleton<IWaitlistService, WaitlistService>();
-
-            // ── Feature: Waitlist ──────────────────────────────────────
-            // Uncomment as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Waitlist
-            // services.AddTransient<WaitlistPage>();
-            // services.AddTransient<WaitlistViewModel>();
+            // Registered here as service classes are created in
+            // MTM_Waitlist_Application.Services (see Implementation Plan Phase 3)
+            // services.AddSingleton<IService_Auth, Service_Auth>();
+            // services.AddSingleton<IService_WaitlistEntry, Service_WaitlistEntry>();
+            // services.AddSingleton<ISyncService, SyncService>();
 
             // ── Feature: Dashboard ─────────────────────────────────────
-            // Uncomment as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Dashboard
-            // services.AddTransient<DashboardPage>();
-            // services.AddTransient<DashboardViewModel>();
+            services.AddTransient<ViewModel_Dashboard_Main>();
+            services.AddTransient<View_Dashboard_Main>();
+
+            // ── Feature: Waitlist ──────────────────────────────────────
+            // Registered here as pages and ViewModels are created in
+            // MTM_Waitlist_Application.Feature.Waitlist
+            // services.AddTransient<ViewModel_Waitlist_Entry>();
+            // services.AddTransient<View_Waitlist_Entry>();
 
             // ── Feature: Mobile ────────────────────────────────────────
-            // Uncomment as pages and ViewModels are created in
+            // Registered here as pages and ViewModels are created in
             // MTM_Waitlist_Application.Feature.Mobile
-            // services.AddTransient<MobileHomePage>();
-            // services.AddTransient<MobileHomeViewModel>();
+            // services.AddTransient<ViewModel_Mobile_Home>();
+            // services.AddTransient<View_Mobile_Home>();
 
             return services;
         }

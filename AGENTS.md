@@ -13,14 +13,18 @@ by describing the task — Copilot will apply the relevant agent behavior.
 
 **What it produces:**
 - `MTM_Waitlist_Application.Feature.<Name>/` project (MAUI Class Library)
-- `Views/View_<Feature>_<Screen>.xaml` + `.Windows.xaml` + `.Android.xaml`
-- `ViewModels/ViewModel_<Feature>_<Screen>.cs`
-- `MTM_Waitlist_Application.Core/Models/Model_<Entity>.cs`
-- `MTM_Waitlist_Application.Core/Interfaces/IService_<Feature>.cs`
-- `MTM_Waitlist_Application.Core/Interfaces/IRepository_<Entity>.cs`
-- `MTM_Waitlist_Application.Services/Service_<Feature>.cs`
-- `MTM_Waitlist_Application.Data/Repositories/Repository_<Entity>.cs`
+- `Views/<Screen>/View_<Feature>_<Screen>.Windows.xaml` + `.Android.xaml` + `.xaml.cs`
+- `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs`
+- `MTM_Waitlist_Application.Core/Models/<Domain>/Model_<Entity>.cs`
+- `MTM_Waitlist_Application.Core/Interfaces/<Domain>/IService_<Feature>.cs`
+- `MTM_Waitlist_Application.Core/Interfaces/<Domain>/IRepository_<Entity>.cs`
+- `MTM_Waitlist_Application.Services/<Domain>/Service_<Feature>.cs`
+- `MTM_Waitlist_Application.Data/Repositories/<Domain>/Repository_<Entity>.cs`
 - Registration stubs in `AddSharedServices()`
+
+**Folder rule enforced:**
+All files go into a domain subfolder — never directly into the type root.
+Pattern: `<TypeFolder>/<DomainSubfolder>/FileName.cs`
 
 **Naming enforced:**
 - `ViewModel_<Feature>_<Screen>` · `View_<Feature>_<Screen>`
@@ -52,6 +56,8 @@ by describing the task — Copilot will apply the relevant agent behavior.
 - All new registrations present in `AddSharedServices()`
 - `WMC1006` suppressed in WinUI `.csproj`
 - Naming conventions match the `ViewModel_`, `Service_`, `Repository_`, `Model_` patterns
+- All `.cs` and `.xaml` files are in a domain subfolder — no files placed directly in a type root (e.g., `Models/Model_X.cs` without a subfolder is a violation)
+- Domain subfolder matches the file's feature or concern (e.g., `Waitlist`, `Auth`, `Sync`, `Api`, `Shared`)
 
 **Conversation starters:**
 - "Audit the solution for architecture violations"

@@ -673,7 +673,7 @@ Set startup project → MTM_Waitlist_Application.Droid → Android Emulator → 
 
 ## 📐 UI Design Differences
 
-See **`UI-DESIGN-DIFFERENCES.md`** for a full breakdown of how Windows and
+See **`docs\ApplicationSetup\UI-DESIGN-DIFFERENCES.md`** for a full breakdown of how Windows and
 Android UI coding differs in MAUI.
 
 ---

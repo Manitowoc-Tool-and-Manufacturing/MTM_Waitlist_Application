@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MTM_Waitlist_Application.Feature.Dashboard.Views.Main.View_Dashboard_Main"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:MTM_Waitlist_Application.Feature.Dashboard.ViewModels.Main"
+    Title="Dashboard"
+    x:DataType="vm:ViewModel_Dashboard_Main">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <!--  ── Summary card ─────────────────────────────────────────  -->
+            <Border Padding="16" StrokeShape="RoundRectangle 8">
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="16"
+                    RowDefinitions="Auto,Auto"
+                    RowSpacing="14">
+
+                    <VerticalStackLayout
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Spacing="2">
+                        <Label
+                            FontSize="11"
+                            Text="Total Entries"
+                            TextColor="{AppThemeBinding Light=#555555,
+                                                        Dark=#AAAAAA}" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            Text="—" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Spacing="2">
+                        <Label
+                            FontSize="11"
+                            Text="Waiting"
+                            TextColor="{AppThemeBinding Light=#555555,
+                                                        Dark=#AAAAAA}" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            Text="—" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Spacing="2">
+                        <Label
+                            FontSize="11"
+                            Text="In Progress"
+                            TextColor="{AppThemeBinding Light=#555555,
+                                                        Dark=#AAAAAA}" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            Text="—" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Spacing="2">
+                        <Label
+                            FontSize="11"
+                            Text="Completed Today"
+                            TextColor="{AppThemeBinding Light=#555555,
+                                                        Dark=#AAAAAA}" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            Text="—" />
+                    </VerticalStackLayout>
+
+                </Grid>
+            </Border>
+
+            <!--  ── Activity indicator ───────────────────────────────────  -->
+            <ActivityIndicator
+                Margin="0,8,0,0"
+                HorizontalOptions="Center"
+                IsRunning="{Binding IsBusy, Mode=OneWay}"
+                IsVisible="{Binding IsBusy, Mode=OneWay}" />
+
+            <!--  ── Placeholder message ──────────────────────────────────  -->
+            <Label
+                Margin="8,24,8,0"
+                FontSize="13"
+                HorizontalTextAlignment="Center"
+                Text="Waitlist entries will appear here once the API is connected."
+                TextColor="{AppThemeBinding Light=#888888,
+                                            Dark=#777777}" />
+
+            <!--  ── Status ───────────────────────────────────────────────  -->
+            <Label
+                Margin="0,4,0,0"
+                FontSize="11"
+                HorizontalTextAlignment="Center"
+                Text="{Binding StatusMessage, Mode=OneWay}"
+                TextColor="{AppThemeBinding Light=#AAAAAA,
+                                            Dark=#666666}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

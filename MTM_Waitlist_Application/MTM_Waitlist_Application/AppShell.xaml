@@ -3,13 +3,42 @@
     x:Class="MTM_Waitlist_Application.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MTM_Waitlist_Application"
-    Shell.FlyoutBehavior="Disabled"
-    Title="MTM_Waitlist_Application">
+    xmlns:dashboard="clr-namespace:MTM_Waitlist_Application.Feature.Dashboard.Views.Main;assembly=MTM_Waitlist_Application.Feature.Dashboard"
+    Title="MTM Waitlist"
+    FlyoutBehavior="{OnPlatform WinUI=Locked, Android=Flyout}">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <!-- ── Flyout header (shown on Android hamburger panel and Windows sidebar) ── -->
+    <Shell.FlyoutHeader>
+        <Grid
+            HeightRequest="80"
+            Padding="16,0"
+            BackgroundColor="{AppThemeBinding Light=#1565C0, Dark=#0D47A1}">
+            <Label
+                Text="MTM Waitlist"
+                TextColor="White"
+                FontSize="18"
+                FontAttributes="Bold"
+                VerticalOptions="Center" />
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- ── Navigation items ────────────────────────────────────────────────────── -->
+    <FlyoutItem Title="Dashboard">
+        <ShellContent
+            Title="Dashboard"
+            ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"
+            Route="Dashboard" />
+    </FlyoutItem>
+
+    <!--
+        Add further FlyoutItems here as feature pages are built.
+        Example:
+        <FlyoutItem Title="Waitlist">
+            <ShellContent
+                Title="Waitlist"
+                ContentTemplate="{DataTemplate waitlist:View_Waitlist_Entry}"
+                Route="WaitlistEntry" />
+        </FlyoutItem>
+    -->
 
 </Shell>

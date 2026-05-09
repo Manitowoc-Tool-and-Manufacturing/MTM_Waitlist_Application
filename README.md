@@ -120,10 +120,10 @@ Open the solution in Visual Studio 2026 and:
 
 The following documents are especially relevant to the work completed so far:
 
-- [MAUI-SETUP.md](./MAUI-SETUP.md)  
+- [docs\ApplicationSetup\MAUI-SETUP.md](./docs\ApplicationSetup\MAUI-SETUP.md)  
   Step-by-step setup guide, architecture rules, dependency structure, startup configuration, and project organization.
 
-- [UI-DESIGN-DIFFERENCES.md](./UI-DESIGN-DIFFERENCES.md)  
+- [docs\ApplicationSetup\UI-DESIGN-DIFFERENCES.md](./docs\ApplicationSetup\UI-DESIGN-DIFFERENCES.md)  
   Explains how Windows and Android UI design differ and how those differences should be handled in code.
 
 - [AGENTS.md](./AGENTS.md)  
