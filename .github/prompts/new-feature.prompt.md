@@ -17,30 +17,35 @@ Before starting, confirm:
 ## Files to Create
 
 ### Core project
-- `Models/Model_<Entity>.cs`
-- `Interfaces/IService_<Feature>.cs`
-- `Interfaces/IRepository_<Entity>.cs`
+- `Models/<Domain>/Model_<Entity>.cs`
+- `Interfaces/<Domain>/IService_<Feature>.cs`
+- `Interfaces/<Domain>/IRepository_<Entity>.cs`
+- `Interfaces/<Domain>/IRepository_<Entity>Local.cs`
 
 ### Services project
-- `Service_<Feature>.cs`
+- `<Domain>/Service_<Feature>.cs`
 
 ### Data project
-- `Repositories/Repository_<Entity>.cs`
+- `Repositories/<Domain>/Repository_<Entity>.cs` (online via IApiClient)
+- `Repositories/<Domain>/Repository_<Entity>Local.cs` (offline via LocalDbContext)
 
 ### Feature project (`Feature.<Name>`)
-- `Views/View_<Feature>_<Screen>.Windows.xaml` + `.Windows.xaml.cs`
-- `Views/View_<Feature>_<Screen>.Android.xaml` + `.Android.xaml.cs`
-- `Views/View_<Feature>_<Screen>.xaml.cs` (shared code-behind)
-- `ViewModels/ViewModel_<Feature>_<Screen>.cs`
+- `Views/<Screen>/View_<Feature>_<Screen>.Windows.xaml`
+- `Views/<Screen>/View_<Feature>_<Screen>.Android.xaml`
+- `Views/<Screen>/View_<Feature>_<Screen>.xaml.cs` (**one shared code-behind only** — no separate Windows/Android .xaml.cs files)
+- `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs`
+- Update `MTM_Waitlist_Application.Feature.<Name>.csproj` with CommunityToolkit.Mvvm, MVVMTK0045 suppression, and platform XAML ItemGroups
 
 ### Shared project
 - Add registrations to `AddSharedServices()` in `MauiProgramExtensions.cs`
+- Add `ShellContent` entry to `AppShell.xaml`
 
 ## Naming Convention Checklist
-- [ ] ViewModel: `ViewModel_<Feature>_<Screen>`
-- [ ] View: `View_<Feature>_<Screen>`
+- [ ] ViewModel: `ViewModel_<Feature>_<Screen>` (in `ViewModels/<Screen>/`)
+- [ ] View: `View_<Feature>_<Screen>` (in `Views/<Screen>/`)
 - [ ] Service: `Service_<Feature>` / `IService_<Feature>`
-- [ ] Repository: `Repository_<Entity>` / `IRepository_<Entity>`
+- [ ] Repository online: `Repository_<Entity>` / `IRepository_<Entity>`
+- [ ] Repository local: `Repository_<Entity>Local` / `IRepository_<Entity>Local`
 - [ ] Model: `Model_<Entity>`
 - [ ] All async methods end with `Async`
 - [ ] All classes have `/// <summary>` XML doc comments
@@ -48,7 +53,13 @@ Before starting, confirm:
 ## Architecture Checklist
 - [ ] ViewModel inherits `ObservableObject` and is `partial`
 - [ ] ViewModel uses `[ObservableProperty]` and `[RelayCommand]`
-- [ ] Service interface in Core, implementation in Services
-- [ ] Repository returns `Model_Dao_Result` — never throws
-- [ ] Feature project references Services + Core only
+- [ ] Service is connectivity-aware (routes online/local via `IConnectivity.NetworkAccess`)
+- [ ] Online repository delegates to `IApiClient` only
+- [ ] Local repository delegates to `LocalDbContext` (sqlite-net-pcl) only
+- [ ] Both repositories return `Model_Dao_Result` — never throw
+- [ ] Feature project references Services + Core only (NOT Data)
+- [ ] Feature `.csproj` has `CommunityToolkit.Mvvm 8.4.2` package reference
+- [ ] Feature `.csproj` has `MVVMTK0045` suppressed
+- [ ] Feature `.csproj` has platform XAML ItemGroups (see `platform-xaml.instructions.md`)
 - [ ] Registrations added to `AddSharedServices()` with correct lifetimes
+- [ ] `ShellContent` entry added to `AppShell.xaml`

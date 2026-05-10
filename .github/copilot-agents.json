@@ -13,7 +13,9 @@
                 "Add a new feature module for user profiles"
             ],
             "additionalInstructions": [
-                "file:.github/copilot-instructions.md"
+                "file:.github/copilot-instructions.md",
+                "file:.github/instructions/platform-xaml.instructions.md",
+                "file:.github/instructions/codebase-state.instructions.md"
             ],
             "model": "gpt-4o",
             "tools": {
@@ -40,7 +42,8 @@
                 "Validate naming conventions across all projects"
             ],
             "additionalInstructions": [
-                "file:.github/copilot-instructions.md"
+                "file:.github/copilot-instructions.md",
+                "file:.github/instructions/codebase-state.instructions.md"
             ],
             "model": "gpt-4o",
             "tools": {
@@ -109,7 +112,8 @@
                 "Add a mobile-optimized layout for the reports screen"
             ],
             "additionalInstructions": [
-                "file:.github/copilot-instructions.md"
+                "file:.github/copilot-instructions.md",
+                "file:.github/instructions/platform-xaml.instructions.md"
             ],
             "model": "gpt-4o",
             "tools": {
@@ -119,6 +123,33 @@
                     "list_dir",
                     "replace_string_in_file",
                     "get_errors"
+                ]
+            }
+        },
+        {
+            "name": "db-schema-designer",
+            "displayName": "DB Schema Designer",
+            "description": "Creates and modifies MySQL database objects (tables, procedures, triggers, indexes) following MTM PascalCase naming conventions. Keeps MySQL schema in sync with C# Model and Entity classes. Always updates database/README.md when files are added or changed.",
+            "instructions": "file:.github/instructions/database.instructions.md",
+            "conversationStarters": [
+                "Add a Departments lookup table to the database",
+                "Write a stored procedure to get entries by department",
+                "Create a migration for adding a Notes column to WaitlistEntries",
+                "Add an index on WaitlistEntries.Department"
+            ],
+            "additionalInstructions": [
+                "file:.github/copilot-instructions.md",
+                "file:.github/instructions/codebase-state.instructions.md"
+            ],
+            "model": "gpt-4o",
+            "tools": {
+                "enabled": [
+                    "create_file",
+                    "read_file",
+                    "list_dir",
+                    "file_search",
+                    "grep_search",
+                    "replace_string_in_file"
                 ]
             }
         },

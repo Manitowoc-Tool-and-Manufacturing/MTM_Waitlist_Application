@@ -3,8 +3,14 @@
     <File Path=".github/copilot-agents.json" />
     <File Path=".github/copilot-instructions.md" />
   </Folder>
+  <Folder Name="/.github/assumptions/">
+    <File Path=".github/assumptions/05102026-1000AM-Assumptions.md" />
+  </Folder>
   <Folder Name="/.github/instructions/">
+    <File Path=".github/instructions/codebase-state.instructions.md" />
+    <File Path=".github/instructions/database.instructions.md" />
     <File Path=".github/instructions/maui-architecture.instructions.md" />
+    <File Path=".github/instructions/platform-xaml.instructions.md" />
     <File Path=".github/instructions/testing.instructions.md" />
   </Folder>
   <Folder Name="/.github/prompts/">
@@ -46,5 +52,43 @@
     <File Path="docs/RemoteDatabaseAccess/CLIENT_DATABASE_ARCHITECTURE.md" />
     <File Path="docs/RemoteDatabaseAccess/IMPLEMENTATION-PLAN.md" />
     <File Path="docs/RemoteDatabaseAccess/PLAN-SUMMARY.md" />
+  </Folder>
+  <Folder Name="/database/">
+    <File Path="database/README.md" />
+    <File Path="database/migrations/V001__Initial_Schema.sql" />
+  </Folder>
+  <Folder Name="/database/schema/">
+    <File Path="database/schema/00_Database.sql" />
+    <File Path="database/schema/tables/Auth/Users.sql" />
+    <File Path="database/schema/tables/Auth/RefreshTokens.sql" />
+    <File Path="database/schema/tables/Waitlist/WaitlistEntries.sql" />
+  </Folder>
+  <Folder Name="/database/procedures/">
+    <File Path="database/procedures/Auth/usp_Auth_ValidateCredentials.sql" />
+    <File Path="database/procedures/Auth/usp_Auth_RecordLogin.sql" />
+    <File Path="database/procedures/Auth/usp_Auth_SaveRefreshToken.sql" />
+    <File Path="database/procedures/Auth/usp_Auth_GetRefreshToken.sql" />
+    <File Path="database/procedures/Auth/usp_Auth_RevokeRefreshToken.sql" />
+    <File Path="database/procedures/Auth/usp_Auth_RevokeAllUserTokens.sql" />
+    <File Path="database/procedures/Waitlist/usp_Waitlist_GetAll.sql" />
+    <File Path="database/procedures/Waitlist/usp_Waitlist_GetById.sql" />
+    <File Path="database/procedures/Waitlist/usp_Waitlist_Insert.sql" />
+    <File Path="database/procedures/Waitlist/usp_Waitlist_Update.sql" />
+    <File Path="database/procedures/Waitlist/usp_Waitlist_Delete.sql" />
+  </Folder>
+  <Folder Name="/database/triggers/">
+    <File Path="database/triggers/Auth/trg_Users_BeforeInsert.sql" />
+    <File Path="database/triggers/Auth/trg_Users_BeforeUpdate.sql" />
+    <File Path="database/triggers/Waitlist/trg_WaitlistEntries_BeforeInsert.sql" />
+    <File Path="database/triggers/Waitlist/trg_WaitlistEntries_BeforeUpdate.sql" />
+  </Folder>
+  <Folder Name="/database/indexes/">
+    <File Path="database/indexes/Auth/Users_Indexes.sql" />
+    <File Path="database/indexes/Auth/RefreshTokens_Indexes.sql" />
+    <File Path="database/indexes/Waitlist/WaitlistEntries_Indexes.sql" />
+  </Folder>
+  <Folder Name="/database/seed/">
+    <File Path="database/seed/01_Seed_Users.sql" />
+    <File Path="database/seed/02_Seed_WaitlistEntries.sql" />
   </Folder>
 </Solution>

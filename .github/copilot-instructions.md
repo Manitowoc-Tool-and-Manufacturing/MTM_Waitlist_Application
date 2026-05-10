@@ -63,13 +63,25 @@ create an assumption file for the user to review before continuing.
 
 ## Technology Stack
 
-- **Framework:** .NET MAUI
+- **Framework:** .NET MAUI 10
 - **Language:** C# 13
 - **Platform:** .NET 10
 - **Architecture:** MVVM with CommunityToolkit.Mvvm
-- **Solution format:** `.slnx` (VS 2026)
+- **Solution format:** `.slnx` (VS 2026 — NOT `.sln`)
 - **Targets:** Windows (WinUI) primary · Android companion
 - **DI Container:** Microsoft.Extensions.DependencyInjection
+- **Local storage:** sqlite-net-pcl 1.9.172 + SQLitePCLRaw.bundle_green 2.1.11 (NOT EF Core)
+
+### NuGet Packages Per Project (verified)
+
+| Project | Key Packages |
+|---------|-------------|
+| Core | _(none — plain `net10.0` SDK)_ |
+| Data | `Microsoft.Maui.Controls 10.0.60`, `Microsoft.Extensions.Http 10.0.7`, `sqlite-net-pcl 1.9.172`, `SQLitePCLRaw.bundle_green 2.1.11` |
+| Services | `Microsoft.Maui.Controls 10.0.60` (for `IConnectivity`) |
+| Feature.* (new) | `Microsoft.Maui.Controls 10.0.60`, `CommunityToolkit.Mvvm 8.4.2` |
+| Shared | `Microsoft.Maui.Controls 10.0.60`, `Microsoft.Extensions.Logging.Debug 10.0.7`, `Microsoft.Extensions.Configuration.Json 10.0.7` |
+| WinUI / Droid | `Microsoft.Maui.Controls 10.0.60`, `Microsoft.Extensions.Logging.Debug 10.0.7` |
 
 ---
 
@@ -86,7 +98,7 @@ MTM_Waitlist_Application.slnx
 ├── Core/
 │   ├── MTM_Waitlist_Application.Core      ← models, interfaces, constants — zero dependencies
 │   ├── MTM_Waitlist_Application.Services  ← business logic — references Core only
-│   └── MTM_Waitlist_Application.Data      ← repositories, EF Core — references Core only
+│   └── MTM_Waitlist_Application.Data      ← repositories, sqlite-net-pcl — references Core only
 └── Features/
     ├── MTM_Waitlist_Application.Feature.Waitlist    ← XAML + ViewModels
     ├── MTM_Waitlist_Application.Feature.Dashboard   ← XAML + ViewModels
@@ -271,43 +283,81 @@ public partial class ViewModel_Bad : ObservableObject
 
 ### Service Pattern
 
-```csharp
-// ✅ CORRECT
-namespace MTM_Waitlist_Application.Services;
+Services use **two repositories** per entity: one online (API) and one local (SQLite).
+Routing between them is based on `IConnectivity.NetworkAccess`. This is the actual
+pattern in `Service_WaitlistEntry`.
 
-/// <summary>
-/// Business logic service for waitlist entry operations.
-/// Abstracts repository access from ViewModels.
-/// </summary>
+```csharp
+// ✅ CORRECT — connectivity-aware dual-repository service
+namespace MTM_Waitlist_Application.Services.Waitlist;
+
 public sealed class Service_WaitlistEntry : IService_WaitlistEntry
 {
-    private readonly IRepository_WaitlistEntry _repository;
+    private readonly IConnectivity _connectivity;
+    private readonly IRepository_WaitlistEntry _onlineRepository;
+    private readonly IRepository_WaitlistEntryLocal _localRepository;
 
-    public Service_WaitlistEntry(IRepository_WaitlistEntry repository)
+    public Service_WaitlistEntry(
+        IConnectivity connectivity,
+        IRepository_WaitlistEntry onlineRepository,
+        IRepository_WaitlistEntryLocal localRepository)
     {
-        _repository = repository;
+        _connectivity = connectivity;
+        _onlineRepository = onlineRepository;
+        _localRepository = localRepository;
     }
 
-    public async Task<Model_Dao_Result<List<Model_WaitlistEntry>>> GetAllEntriesAsync()
-        => await _repository.GetAllWaitlistEntriesAsync();
+    private bool IsOnline => _connectivity.NetworkAccess == NetworkAccess.Internet;
+
+    public async Task<Model_Dao_Result<List<Model_WaitlistEntry>>> GetAllEntriesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (IsOnline)
+        {
+            var onlineResult = await _onlineRepository.GetAllWaitlistEntriesAsync(cancellationToken);
+            if (onlineResult.IsSuccess) { return onlineResult; }
+            // Mid-request network failure — fall through to local cache silently.
+        }
+        return await _localRepository.GetAllWaitlistEntriesAsync();
+    }
 }
 ```
 
 ### Repository Pattern
 
-```csharp
-// ✅ CORRECT — instance-based, returns result, never throws
-namespace MTM_Waitlist_Application.Data.Repositories;
+There are **two repository types** per entity:
+- **Online** (`Repository_<Entity>`) — delegates to `IApiClient` (REST API)
+- **Local** (`Repository_<Entity>Local`) — uses `LocalDbContext` (sqlite-net-pcl, NOT EF Core)
 
-/// <summary>
-/// Repository for waitlist entry data access.
-/// All methods return Model_Dao_Result — never throw exceptions.
-/// </summary>
+```csharp
+// ✅ CORRECT — online repository via IApiClient
+namespace MTM_Waitlist_Application.Data.Repositories.Waitlist;
+
 public sealed class Repository_WaitlistEntry : IRepository_WaitlistEntry
 {
-    private readonly AppDbContext _context;
+    private readonly IApiClient _apiClient;
 
-    public Repository_WaitlistEntry(AppDbContext context)
+    public Repository_WaitlistEntry(IApiClient apiClient)
+    {
+        _apiClient = apiClient;
+    }
+
+    public async Task<Model_Dao_Result<List<Model_WaitlistEntry>>> GetAllWaitlistEntriesAsync(
+        CancellationToken cancellationToken = default)
+        => await _apiClient.GetAsync<List<Model_WaitlistEntry>>(
+            Constants_Api.WaitlistEntryEndpoint, cancellationToken);
+}
+```
+
+```csharp
+// ✅ CORRECT — local repository via sqlite-net-pcl (LocalDbContext)
+namespace MTM_Waitlist_Application.Data.Repositories.Waitlist;
+
+public sealed class Repository_WaitlistEntryLocal : IRepository_WaitlistEntryLocal
+{
+    private readonly LocalDbContext _context;
+
+    public Repository_WaitlistEntryLocal(LocalDbContext context)
     {
         _context = context;
     }
@@ -316,17 +366,23 @@ public sealed class Repository_WaitlistEntry : IRepository_WaitlistEntry
     {
         try
         {
-            var entries = await _context.WaitlistEntries.ToListAsync();
-            return Model_Dao_Result<List<Model_WaitlistEntry>>.Success(entries);
+            await _context.InitializeAsync();
+            var entities = await _context.Connection
+                .Table<Entity_WaitlistEntry>().ToListAsync();
+            return Model_Dao_Result<List<Model_WaitlistEntry>>.Success(
+                entities.Select(MapToModel).ToList());
         }
         catch (Exception ex)
         {
             return Model_Dao_Result<List<Model_WaitlistEntry>>.Failure(
-                $"Failed to retrieve waitlist entries: {ex.Message}");
+                $"Failed to retrieve local waitlist entries: {ex.Message}");
         }
     }
 }
 ```
+
+> ⚠️ **No EF Core in this project.** Local storage uses `sqlite-net-pcl` with
+> `SQLiteAsyncConnection`, `[Table]`, `[PrimaryKey]`, and `[AutoIncrement]` attributes.
 
 ### XAML Binding Pattern
 
@@ -357,9 +413,13 @@ public sealed class Repository_WaitlistEntry : IRepository_WaitlistEntry
 
 ### DI Registration (MauiProgramExtensions.cs)
 
+`AddSharedServices()` is an **internal** extension method on `IServiceCollection`.
+It is called exclusively by `UseSharedMauiApp()`, which is the **only public entry point**
+called by both host `MauiProgram.cs` files. Never call `AddSharedServices()` from host projects.
+
 ```csharp
-// ✅ CORRECT — all registrations here, nowhere else
-public static IServiceCollection AddSharedServices(this IServiceCollection services)
+// ✅ CORRECT — all registrations inside AddSharedServices(), called by UseSharedMauiApp()
+internal static IServiceCollection AddSharedServices(this IServiceCollection services)
 {
     // Repositories — Singleton (stateless, reusable)
     services.AddSingleton<IRepository_WaitlistEntry, Repository_WaitlistEntry>();
@@ -383,7 +443,7 @@ public static IServiceCollection AddSharedServices(this IServiceCollection servi
 
 ### Windows Layout Rules
 - Multi-column `Grid` layouts — use available screen space
-- Sidebar `FlyoutItem` navigation in `AppShell.xaml`
+- Flyout navigation in `AppShell.xaml` with `FlyoutBehavior` locked on WinUI
 - Data-dense `CollectionView` with multiple columns
 - `MenuFlyout` for right-click context menus
 - Side-by-side `Label` + input control forms
@@ -391,11 +451,21 @@ public static IServiceCollection AddSharedServices(this IServiceCollection servi
 
 ### Android Layout Rules
 - Single-column `StackLayout` — one task per screen
-- Bottom `TabBar` navigation in `AppShell.xaml`
+- Flyout navigation in `AppShell.xaml` with `FlyoutBehavior` as Flyout on Android
 - Card-based single-column `CollectionView`
 - `SwipeView` for item actions
 - Stacked `Label` above input control forms
 - Minimum tap target: **48px height always**
+
+### AppShell Navigation Pattern (verified)
+```xml
+<Shell FlyoutBehavior="{OnPlatform WinUI=Locked, Android=Flyout}">
+    <ShellContent
+        Title="Dashboard"
+        ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"
+        Route="Dashboard" />
+</Shell>
+```
 
 ### Separate XAML Per Platform
 ```
@@ -490,6 +560,9 @@ When debugging, verify:
 - [ ] New pages and ViewModels are registered as `Transient`
 - [ ] New repositories and services are registered as `Singleton`
 - [ ] `WMC1006` suppressed in WinUI `.csproj` via `$(NoWarn);WMC1006`
+- [ ] `MVVMTK0045` suppressed in any Feature `.csproj` using CommunityToolkit.Mvvm via `$(NoWarn);MVVMTK0045`
+- [ ] New Feature `.csproj` includes `CommunityToolkit.Mvvm 8.4.2` package reference
+- [ ] New Feature `.csproj` has correct MSBuild ItemGroups for platform-specific XAML splitting (see `platform-xaml.instructions.md`)
 
 ---
 
@@ -514,6 +587,14 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 
 ---
 
+## Current Feature Implementation State
+
+| Feature | Status | Files Present |
+|---------|--------|---------------|
+| Feature.Dashboard | ✅ Complete | ViewModel_Dashboard_Main, View_Dashboard_Main (Windows + Android + code-behind) |
+| Feature.Waitlist | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
+| Feature.Mobile | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
+
 ## Additional Resources
 
 - Setup guide: `docs\ApplicationSetup\MAUI-SETUP.md`
@@ -521,4 +602,10 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 - Agent definitions: `AGENTS.md`
 - Assumption files: `.github/assumptions/`
 - Instruction files: `.github/instructions/`
+  - `maui-architecture.instructions.md` — layer rules, naming, DI lifetimes
+  - `platform-xaml.instructions.md` — exact .csproj MSBuild pattern for XAML splitting
+  - `codebase-state.instructions.md` — what is actually built vs. stubbed
+  - `database.instructions.md` — MySQL naming conventions, folder structure, procedure/trigger patterns
+  - `testing.instructions.md` — xUnit / Moq / FluentAssertions patterns
 - Prompt files: `.github/prompts/`
+- Database files: `database/` — MySQL schema, procedures, triggers, indexes, seed, migrations

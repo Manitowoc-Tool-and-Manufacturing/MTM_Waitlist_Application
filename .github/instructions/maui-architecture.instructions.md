@@ -12,8 +12,11 @@ applyTo: "**/*.{cs,xaml,csproj}"
 | Shared | `MTM_Waitlist_Application` | DI hub, navigation, global styles |
 | Feature | `Feature.*` | XAML pages + ViewModels |
 | Services | `.Services` | Business logic, orchestration |
-| Data | `.Data` | Repository implementations, EF Core |
+| Data | `.Data` | Repository implementations, sqlite-net-pcl (SQLiteAsyncConnection) — NOT EF Core |
 | Core | `.Core` | Models, interfaces, enums, constants |
+
+> ⚠️ **No EF Core.** Local storage uses `sqlite-net-pcl 1.9.172` with `SQLiteAsyncConnection`.
+> Entities use `[Table]`, `[PrimaryKey]`, `[AutoIncrement]` attributes from SQLite namespace.
 
 ## Naming Quick Reference
 
@@ -107,3 +110,23 @@ Examples: `Auth/Service_Auth.cs` · `Waitlist/Service_WaitlistEntry.cs` · `Sync
 | ViewModel | `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs` |
 
 The `<Screen>` subfolder name matches the `<Screen>` segment of the class name.
+
+> **One code-behind only.** Both `.Windows.xaml` and `.Android.xaml` share a single
+> `View_<Feature>_<Screen>.xaml.cs` — there is no separate `.Windows.xaml.cs` or `.Android.xaml.cs`.
+
+## New Feature Project Requirements
+
+Every new `MTM_Waitlist_Application.Feature.<Name>.csproj` that includes ViewModels must:
+1. Add `<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />`
+2. Suppress MVVMTK0045: `<NoWarn>$(NoWarn);MVVMTK0045</NoWarn>`
+3. Add MSBuild ItemGroups for platform-specific XAML splitting — see `platform-xaml.instructions.md`
+
+```xml
+<!-- Required in every Feature .csproj with ViewModels -->
+<PropertyGroup>
+  <NoWarn>$(NoWarn);MVVMTK0045</NoWarn>
+</PropertyGroup>
+<ItemGroup>
+  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+</ItemGroup>
+```
