@@ -202,13 +202,13 @@ The Mobile feature project exists for Android-focused screens. Pages and ViewMod
 
 The following documents support current and future development:
 
-- [docs/ApplicationSetup/MAUI-SETUP.md](./docs/ApplicationSetup/MAUI-SETUP.md)  
+- [Documents/ApplicationSetup/MAUI-SETUP.md](./Documents/ApplicationSetup/MAUI-SETUP.md)  
   Setup guide, architecture rules, dependency structure, startup configuration, and project organization.
 
-- [docs/ApplicationSetup/UI-DESIGN-DIFFERENCES.md](./docs/ApplicationSetup/UI-DESIGN-DIFFERENCES.md)  
+- [Documents/ApplicationSetup/UI-DESIGN-DIFFERENCES.md](./Documents/ApplicationSetup/UI-DESIGN-DIFFERENCES.md)  
   Windows and Android UI design guidance.
 
-- [docs/AndroidStartupWorkflowEdgeCases.md](./docs/AndroidStartupWorkflowEdgeCases.md)  
+- [Documents/AndroidStartupWorkflowEdgeCases.md](./Documents/AndroidStartupWorkflowEdgeCases.md)  
   Android startup workflow and edge-case notes.
 
 - [AGENTS.md](./AGENTS.md)  

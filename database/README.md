@@ -22,7 +22,7 @@ mysql -h 172.16.1.104 -u <admin_user> -p mtm_waitlist < seed/02_Seed_WaitlistEnt
 ## Folder Structure
 
 ```
-database/
+Database/
 ├── README.md
 ├── schema/
 │   ├── 00_Database.sql

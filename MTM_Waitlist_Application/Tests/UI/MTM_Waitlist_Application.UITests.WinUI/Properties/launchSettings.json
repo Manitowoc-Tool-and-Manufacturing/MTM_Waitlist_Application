@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MTM_Waitlist_Application.UITests.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MTM_Waitlist_Application.UITests.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

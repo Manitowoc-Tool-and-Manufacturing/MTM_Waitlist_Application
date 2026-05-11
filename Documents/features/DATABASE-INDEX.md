@@ -57,18 +57,18 @@ The admin app hosts the REST API inside the same process using ASP.NET `WebAppli
 
 ### `SchemaVersions` Table (Migration Tracking)
 
-A new `SchemaVersions` table tracks which migration files have been applied. Migration files in `database/migrations/` are numbered and additive (`V002`, `V003`, ...). The monolithic `V001__Initial_Schema.sql` is frozen as a bootstrap-only file. All future schema changes go in new numbered migration files.
+A new `SchemaVersions` table tracks which migration files have been applied. Migration files in `Database/migrations/` are numbered and additive (`V002`, `V003`, ...). The monolithic `V001__Initial_Schema.sql` is frozen as a bootstrap-only file. All future schema changes go in new numbered migration files.
 
 ### SQL File Roles After DATABASE-06
 
 | File type | Purpose | Runs when |
 |---|---|---|
-| `database/migrations/V*.sql` | Incremental schema changes (ALTER TABLE, new tables) | Once — tracked by `SchemaVersions` |
-| `database/procedures/**/*.sql` | Stored procedure definitions | Every migration run (idempotent) |
-| `database/triggers/**/*.sql` | Trigger definitions | Every migration run (idempotent) |
-| `database/indexes/**/*.sql` | Index definitions | Every migration run (idempotent) |
-| `database/schema/tables/**/*.sql` | Reference/documentation only | Never — manual reference only |
-| `database/seed/**/*.sql` | Development seed data | Manual only |
+| `Database/migrations/V*.sql` | Incremental schema changes (ALTER TABLE, new tables) | Once — tracked by `SchemaVersions` |
+| `Database/procedures/**/*.sql` | Stored procedure definitions | Every migration run (idempotent) |
+| `Database/triggers/**/*.sql` | Trigger definitions | Every migration run (idempotent) |
+| `Database/indexes/**/*.sql` | Index definitions | Every migration run (idempotent) |
+| `Database/schema/tables/**/*.sql` | Reference/documentation only | Never — manual reference only |
+| `Database/seed/**/*.sql` | Development seed data | Manual only |
 
 ### Kill Switch Protocol
 
@@ -82,15 +82,15 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 
 | File | Purpose |
 |---|---|
-| `database/migrations/V002__Add_SchemaVersions_Table.sql` | Adds tracking table to existing installs |
-| `database/schema/tables/System/SchemaVersions.sql` | Schema reference for the tracking table |
-| `database/schema/admin/Admin_Users.sql` | MySQL user creation script (two users) for IT to run once |
+| `Database/migrations/V002__Add_SchemaVersions_Table.sql` | Adds tracking table to existing installs |
+| `Database/schema/tables/System/SchemaVersions.sql` | Schema reference for the tracking table |
+| `Database/schema/admin/Admin_Users.sql` | MySQL user creation script (two users) for IT to run once |
 
 ### Updated SQL
 
 | File | Change |
 |---|---|
-| `database/indexes/**/*_Indexes.sql` | Wrap all `CREATE INDEX` in the MySQL 5.7 idempotency procedure pattern |
+| `Database/indexes/**/*_Indexes.sql` | Wrap all `CREATE INDEX` in the MySQL 5.7 idempotency procedure pattern |
 
 ---
 

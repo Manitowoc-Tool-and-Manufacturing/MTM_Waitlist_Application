@@ -117,13 +117,13 @@ The current API has only CRUD on `/api/waitlist`. Analytics require additional e
 ## New Stored Procedures Needed
 
 ```
-database/procedures/Analytics/
+Database/procedures/Analytics/
   usp_Analytics_GetSummary.sql
   usp_Analytics_GetByHandler.sql
   usp_Analytics_GetByRequestType.sql
   usp_Analytics_GetByWorkcenter.sql
 
-database/procedures/Zones/
+Database/procedures/Zones/
   usp_Zone_GetAll.sql
   usp_Zone_GetHandlerAssignments.sql
   usp_Zone_UpsertHandlerAssignment.sql

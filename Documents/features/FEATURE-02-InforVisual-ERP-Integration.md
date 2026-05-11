@@ -98,7 +98,7 @@ Per-site inventory.
 
 ## Queries Needed
 
-These are new queries not present in the Receiving Application. Files go in `database/infor_visual/queries/`.
+These are new queries not present in the Receiving Application. Files go in `Database/infor_visual/queries/`.
 
 ### `WL_01_GetWorkOrderHeader.sql`
 
@@ -292,10 +292,10 @@ The `WaitlistEntries.WorkcenterName` column stores the `SHOP_RESOURCE.ID` value 
 
 | File | Project |
 |---|---|
-| `database/infor_visual/queries/WL_01_GetWorkOrderHeader.sql` | (repo root docs) |
-| `database/infor_visual/queries/WL_02_GetWorkOrderSequences.sql` | (repo root docs) |
-| `database/infor_visual/queries/WL_03_GetActiveWorkOrdersForResource.sql` | (repo root docs) |
-| `database/infor_visual/queries/WL_04_GetAllWorkcenters.sql` | (repo root docs) |
+| `Database/infor_visual/queries/WL_01_GetWorkOrderHeader.sql` | (repo root docs) |
+| `Database/infor_visual/queries/WL_02_GetWorkOrderSequences.sql` | (repo root docs) |
+| `Database/infor_visual/queries/WL_03_GetActiveWorkOrdersForResource.sql` | (repo root docs) |
+| `Database/infor_visual/queries/WL_04_GetAllWorkcenters.sql` | (repo root docs) |
 | `Core/Models/InforVisual/Model_VisualWorkOrder.cs` | Core |
 | `Core/Models/InforVisual/Model_VisualWorkOrderSequence.cs` | Core |
 | `Core/Models/InforVisual/Model_VisualWorkcenter.cs` | Core |

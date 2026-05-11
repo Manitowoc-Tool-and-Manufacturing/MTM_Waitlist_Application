@@ -595,6 +595,21 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 | Feature.Waitlist | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
 | Feature.Mobile | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
 
+## Current Test Project State
+
+| Project | TFM | Status |
+|---------|-----|--------|
+| `Core.Tests` | `net10.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Data.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Services.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — WinUI MSTest template placeholders |
+| `UITests.Droid` | `net10.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+
+Test folder structure rule: mirror the source project path, then add a category subfolder at the leaf.
+See `testing.instructions.md` for the full path mapping table and category definitions.
+
 ## Additional Resources
 
 - Setup guide: `docs\ApplicationSetup\MAUI-SETUP.md`
@@ -608,4 +623,4 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
   - `database.instructions.md` — MySQL naming conventions, folder structure, procedure/trigger patterns
   - `testing.instructions.md` — xUnit / Moq / FluentAssertions patterns
 - Prompt files: `.github/prompts/`
-- Database files: `database/` — MySQL schema, procedures, triggers, indexes, seed, migrations
+- Database files: `Database/` — MySQL schema, procedures, triggers, indexes, seed, migrations

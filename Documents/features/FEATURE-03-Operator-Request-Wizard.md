@@ -183,7 +183,7 @@ Core/Models/Waitlist/
 
 ## Database: New Stored Procedure
 
-`usp_Waitlist_CreateEntry` already planned in `database/procedures/Waitlist/`. For the multi-entry dunnage case, the service calls this procedure once per checked item in a loop. No batch insert procedure needed — keep it simple.
+`usp_Waitlist_CreateEntry` already planned in `Database/procedures/Waitlist/`. For the multi-entry dunnage case, the service calls this procedure once per checked item in a loop. No batch insert procedure needed — keep it simple.
 
 ---
 

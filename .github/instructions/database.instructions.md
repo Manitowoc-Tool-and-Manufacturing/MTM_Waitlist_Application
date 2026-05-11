@@ -1,6 +1,6 @@
 ---
 description: "MySQL database conventions, naming rules, folder structure, and procedure/trigger patterns for the MTM Waitlist Application."
-applyTo: "database/**/*.sql"
+applyTo: "Database/**/*.sql"
 ---
 
 # Database Instructions — MTM Waitlist Application
@@ -9,8 +9,8 @@ The MTM Waitlist backend uses a **MySQL 8.0+** database named `MTM_Waitlist` hos
 on the internal work-network server (`172.16.1.104`). All client access goes through
 the REST API — client apps never connect to MySQL directly.
 
-> **README rule:** `database/README.md` is the human-readable companion to this file.
-> **Every time a SQL file is added, removed, or renamed, update `database/README.md`** —
+> **README rule:** `Database/README.md` is the human-readable companion to this file.
+> **Every time a SQL file is added, removed, or renamed, update `Database/README.md`** —
 > specifically the Folder Structure, File Reference, and Execution Order sections.
 > This README is the first place developers look when working with the database.
 
@@ -19,7 +19,7 @@ the REST API — client apps never connect to MySQL directly.
 ## Folder Structure and Execution Order
 
 ```
-database/
+Database/
 ├── schema/
 │   ├── 00_Database.sql                                  Step 1 — CREATE DATABASE
 │   └── tables/
@@ -184,13 +184,13 @@ USE `MTM_Waitlist`;
 
 ## Adding a New Table
 
-1. Create `database/schema/tables/<Domain>/<TableName>.sql`
-2. Create `database/indexes/<Domain>/<TableName>_Indexes.sql`
-3. Create `database/triggers/<Domain>/trg_<TableName>_BeforeInsert.sql`
-4. Create `database/triggers/<Domain>/trg_<TableName>_BeforeUpdate.sql`
-5. Create `database/procedures/<Domain>/usp_<Domain>_*.sql` for each CRUD operation
-6. Add a new `database/migrations/V00N__<Description>.sql` containing only the new objects
-7. **Update `database/README.md`** — add the new files to the Folder Structure, File Reference, and Execution Order sections
+1. Create `Database/schema/tables/<Domain>/<TableName>.sql`
+2. Create `Database/indexes/<Domain>/<TableName>_Indexes.sql`
+3. Create `Database/triggers/<Domain>/trg_<TableName>_BeforeInsert.sql`
+4. Create `Database/triggers/<Domain>/trg_<TableName>_BeforeUpdate.sql`
+5. Create `Database/procedures/<Domain>/usp_<Domain>_*.sql` for each CRUD operation
+6. Add a new `Database/migrations/V00N__<Description>.sql` containing only the new objects
+7. **Update `Database/README.md`** — add the new files to the Folder Structure, File Reference, and Execution Order sections
 8. `migrations/V001__Initial_Schema.sql` is **not modified** — migrations are append-only
 9. Update `Entity_*` and `Model_*` C# classes to match any new/changed columns
 
@@ -213,14 +213,14 @@ The `migrations/` folder uses Flyway naming: `V###__Description.sql`
 
 ```bash
 # Full initial deploy (no seed data)
-mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < database/migrations/V001__Initial_Schema.sql
+mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < Database/migrations/V001__Initial_Schema.sql
 
 # Seed dev data (development only)
-mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < database/seed/01_Seed_Users.sql
-mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < database/seed/02_Seed_WaitlistEntries.sql
+mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < Database/seed/01_Seed_Users.sql
+mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < Database/seed/02_Seed_WaitlistEntries.sql
 
 # Apply a new migration
-mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < database/migrations/V002__<Description>.sql
+mysql -h 172.16.1.104 -u <admin_user> -p MTM_Waitlist < Database/migrations/V002__<Description>.sql
 ```
 
 ---

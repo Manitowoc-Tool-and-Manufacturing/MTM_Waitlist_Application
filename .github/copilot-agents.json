@@ -129,7 +129,7 @@
         {
             "name": "db-schema-designer",
             "displayName": "DB Schema Designer",
-            "description": "Creates and modifies MySQL database objects (tables, procedures, triggers, indexes) following MTM PascalCase naming conventions. Keeps MySQL schema in sync with C# Model and Entity classes. Always updates database/README.md when files are added or changed.",
+            "description": "Creates and modifies MySQL database objects (tables, procedures, triggers, indexes) following MTM PascalCase naming conventions. Keeps MySQL schema in sync with C# Model and Entity classes. Always updates Database/README.md when files are added or changed.",
             "instructions": "file:.github/instructions/database.instructions.md",
             "conversationStarters": [
                 "Add a Departments lookup table to the database",

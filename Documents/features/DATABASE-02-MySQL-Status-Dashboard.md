@@ -212,7 +212,7 @@ The "Kill Connection" button in the Active Connections grid calls `KILL <thread_
 
 ## New MySQL Users Required
 
-The admin app requires two dedicated MySQL users. Add to `database/schema/admin/Admin_Users.sql`:
+The admin app requires two dedicated MySQL users. Add to `Database/schema/admin/Admin_Users.sql`:
 
 ```sql
 -- Creates the two MySQL users for the Server Admin application.

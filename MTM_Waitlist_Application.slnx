@@ -41,54 +41,121 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="AGENTS.md" />
+    <File Path="Chat.md" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Solution Items/docs/" />
-  <Folder Name="/Solution Items/docs/ApplicationSetup/">
-    <File Path="docs/ApplicationSetup/MAUI-SETUP.md" />
-    <File Path="docs/ApplicationSetup/UI-DESIGN-DIFFERENCES.md" />
+  <Folder Name="/Solution Items/Documents/">
+    <File Path="Documents/AndroidStartupWorkflowEdgeCases.md" />
   </Folder>
-  <Folder Name="/Solution Items/docs/RemoteDatabaseAccess/">
-    <File Path="docs/RemoteDatabaseAccess/CLIENT_DATABASE_ARCHITECTURE.md" />
-    <File Path="docs/RemoteDatabaseAccess/IMPLEMENTATION-PLAN.md" />
-    <File Path="docs/RemoteDatabaseAccess/PLAN-SUMMARY.md" />
+  <Folder Name="/Solution Items/Documents/ApplicationSetup/">
+    <File Path="Documents/ApplicationSetup/MAUI-SETUP.md" />
+    <File Path="Documents/ApplicationSetup/UI-DESIGN-DIFFERENCES.md" />
   </Folder>
-  <Folder Name="/database/">
-    <File Path="database/README.md" />
-    <File Path="database/migrations/V001__Initial_Schema.sql" />
+  <Folder Name="/Solution Items/Documents/features/">
+    <File Path="Documents/features/DATABASE-INDEX.md" />
+    <File Path="Documents/features/DATABASE-01-API-Server-Admin-Architecture.md" />
+    <File Path="Documents/features/DATABASE-02-MySQL-Status-Dashboard.md" />
+    <File Path="Documents/features/DATABASE-03-Settings-Management.md" />
+    <File Path="Documents/features/DATABASE-04-Backup-and-Restore.md" />
+    <File Path="Documents/features/DATABASE-05-Client-Kill-Switch.md" />
+    <File Path="Documents/features/DATABASE-06-Intelligent-Migration-System.md" />
+    <File Path="Documents/features/FEATURE-INDEX.md" />
+    <File Path="Documents/features/FEATURE-01-Authentication-Login.md" />
+    <File Path="Documents/features/FEATURE-02-InforVisual-ERP-Integration.md" />
+    <File Path="Documents/features/FEATURE-03-Operator-Request-Wizard.md" />
+    <File Path="Documents/features/FEATURE-04-Live-Queue-View.md" />
+    <File Path="Documents/features/FEATURE-05-Material-Handler-Zone-Task-Management.md" />
+    <File Path="Documents/features/FEATURE-06-Lead-Analytics-Dashboard.md" />
+    <File Path="Documents/features/FEATURE-07-Setup-Technician-Module.md" />
+    <File Path="Documents/features/FEATURE-08-Quality-Control-Queue.md" />
   </Folder>
-  <Folder Name="/database/schema/">
-    <File Path="database/schema/00_Database.sql" />
-    <File Path="database/schema/tables/Auth/Users.sql" />
-    <File Path="database/schema/tables/Auth/RefreshTokens.sql" />
-    <File Path="database/schema/tables/Waitlist/WaitlistEntries.sql" />
+  <Folder Name="/Solution Items/Documents/RemoteDatabaseAccess/">
+    <File Path="Documents/RemoteDatabaseAccess/CLIENT_DATABASE_ARCHITECTURE.md" />
+    <File Path="Documents/RemoteDatabaseAccess/IMPLEMENTATION-PLAN.md" />
+    <File Path="Documents/RemoteDatabaseAccess/PLAN-SUMMARY.md" />
   </Folder>
-  <Folder Name="/database/procedures/">
-    <File Path="database/procedures/Auth/usp_Auth_ValidateCredentials.sql" />
-    <File Path="database/procedures/Auth/usp_Auth_RecordLogin.sql" />
-    <File Path="database/procedures/Auth/usp_Auth_SaveRefreshToken.sql" />
-    <File Path="database/procedures/Auth/usp_Auth_GetRefreshToken.sql" />
-    <File Path="database/procedures/Auth/usp_Auth_RevokeRefreshToken.sql" />
-    <File Path="database/procedures/Auth/usp_Auth_RevokeAllUserTokens.sql" />
-    <File Path="database/procedures/Waitlist/usp_Waitlist_GetAll.sql" />
-    <File Path="database/procedures/Waitlist/usp_Waitlist_GetById.sql" />
-    <File Path="database/procedures/Waitlist/usp_Waitlist_Insert.sql" />
-    <File Path="database/procedures/Waitlist/usp_Waitlist_Update.sql" />
-    <File Path="database/procedures/Waitlist/usp_Waitlist_Delete.sql" />
+  <Folder Name="/Database/">
+    <File Path="Database/README.md" />
+    <File Path="Database/migrations/V001__Initial_Schema.sql" />
   </Folder>
-  <Folder Name="/database/triggers/">
-    <File Path="database/triggers/Auth/trg_Users_BeforeInsert.sql" />
-    <File Path="database/triggers/Auth/trg_Users_BeforeUpdate.sql" />
-    <File Path="database/triggers/Waitlist/trg_WaitlistEntries_BeforeInsert.sql" />
-    <File Path="database/triggers/Waitlist/trg_WaitlistEntries_BeforeUpdate.sql" />
+  <Folder Name="/Database/schema/">
+    <File Path="Database/schema/00_Database.sql" />
+    <File Path="Database/schema/tables/Auth/RefreshTokens.sql" />
+    <File Path="Database/schema/tables/Auth/SharedWorkstations.sql" />
+    <File Path="Database/schema/tables/Auth/Users.sql" />
+    <File Path="Database/schema/tables/Waitlist/WaitlistEntries.sql" />
   </Folder>
-  <Folder Name="/database/indexes/">
-    <File Path="database/indexes/Auth/Users_Indexes.sql" />
-    <File Path="database/indexes/Auth/RefreshTokens_Indexes.sql" />
-    <File Path="database/indexes/Waitlist/WaitlistEntries_Indexes.sql" />
+  <Folder Name="/Database/procedures/">
+    <File Path="Database/procedures/Auth/usp_Auth_CheckSharedWorkstation.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_GetRefreshToken.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_GetUserByWindowsUsername.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_RecordLogin.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_RevokeAllUserTokens.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_RevokeRefreshToken.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_SaveRefreshToken.sql" />
+    <File Path="Database/procedures/Auth/usp_Auth_ValidateCredentials.sql" />
+    <File Path="Database/procedures/Waitlist/usp_Waitlist_Delete.sql" />
+    <File Path="Database/procedures/Waitlist/usp_Waitlist_GetAll.sql" />
+    <File Path="Database/procedures/Waitlist/usp_Waitlist_GetById.sql" />
+    <File Path="Database/procedures/Waitlist/usp_Waitlist_Insert.sql" />
+    <File Path="Database/procedures/Waitlist/usp_Waitlist_Update.sql" />
   </Folder>
-  <Folder Name="/database/seed/">
-    <File Path="database/seed/01_Seed_Users.sql" />
-    <File Path="database/seed/02_Seed_WaitlistEntries.sql" />
+  <Folder Name="/Database/triggers/">
+    <File Path="Database/triggers/Auth/trg_SharedWorkstations_BeforeInsert.sql" />
+    <File Path="Database/triggers/Auth/trg_SharedWorkstations_BeforeUpdate.sql" />
+    <File Path="Database/triggers/Auth/trg_Users_BeforeInsert.sql" />
+    <File Path="Database/triggers/Auth/trg_Users_BeforeUpdate.sql" />
+    <File Path="Database/triggers/Waitlist/trg_WaitlistEntries_BeforeInsert.sql" />
+    <File Path="Database/triggers/Waitlist/trg_WaitlistEntries_BeforeUpdate.sql" />
+  </Folder>
+  <Folder Name="/Database/indexes/">
+    <File Path="Database/indexes/Auth/RefreshTokens_Indexes.sql" />
+    <File Path="Database/indexes/Auth/SharedWorkstations_Indexes.sql" />
+    <File Path="Database/indexes/Auth/Users_Indexes.sql" />
+    <File Path="Database/indexes/Waitlist/WaitlistEntries_Indexes.sql" />
+  </Folder>
+  <Folder Name="/Database/seed/">
+    <File Path="Database/seed/01_Seed_Users.sql" />
+    <File Path="Database/seed/02_Seed_WaitlistEntries.sql" />
+  </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/UI/">
+    <Project
+      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/MTM_Waitlist_Application.UITests.Droid.csproj"
+      Id="0110ebe5-0b53-425f-bcb3-2b0741fbc5ec"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/MTM_Waitlist_Application.UITests.WinUI.csproj"
+      Id="56fa9ccb-a575-4d69-a24f-f1255e80b59e"
+    >
+      <Platform Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Tests/Unit/">
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Core.Tests/MTM_Waitlist_Application.Core.Tests.csproj"
+      Id="d33b61ec-1e35-4da0-bf7a-2f4b82a38541"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Data.Tests/MTM_Waitlist_Application.Data.Tests.csproj"
+      Id="8da18949-9293-441c-a931-90d4bbb01f0a"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/MTM_Waitlist_Application.Feature.Dashboard.Tests.csproj"
+      Id="9a9c3bc9-84ba-4579-8051-dbe72d7d1f2c"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Waitlist.Tests/MTM_Waitlist_Application.Feature.Waitlist.Tests.csproj"
+      Id="b80e5920-b204-4537-8123-bf40e40bc7ea"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Shared.Tests/MTM_Waitlist_Application.Shared.Tests.csproj"
+      Id="2bfb5ee2-894d-4fd8-a21e-ff3f505d1b4c"
+    />
+    <Project
+      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Services.Tests/MTM_Waitlist_Application.Services.Tests.csproj"
+      Id="9a9d55fb-cb0c-4fe4-8517-aeac48de03ff"
+    />
   </Folder>
 </Solution>

@@ -59,7 +59,7 @@ Feature.Mobile:    (commented out — no classes yet)
 
 ### Database Status
 - MySQL 5.7 at `172.16.1.104` — database name: `mtm_waitlist` (lowercase)
-- Schema fully defined in `database/migrations/V001__Initial_Schema.sql`
+- Schema fully defined in `Database/migrations/V001__Initial_Schema.sql`
 - Tables: `Users`, `SharedWorkstations`, `RefreshTokens`, `WaitlistEntries`
 - Auth procedure set includes: `usp_Auth_CheckSharedWorkstation`, `usp_Auth_GetUserByWindowsUsername`, `usp_Auth_ValidateCredentials`, and 5 more
 - **NOT YET APPLIED TO SERVER** — awaiting admin credentials and connectivity confirmation
@@ -88,6 +88,27 @@ Feature.Mobile:    (commented out — no classes yet)
 | `Core/Constants/Api/` | `MTM_Waitlist_Application.Core.Constants.Api` |
 | `Core/Enums/Waitlist/` | `MTM_Waitlist_Application.Core.Enums.Waitlist` |
 | `Core/Enums/Auth/` | `MTM_Waitlist_Application.Core.Enums.Auth` |
+| `Tests/Unit/MTM_Waitlist_Application.Core.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Core.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/MTM_Waitlist_Application.Data.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Data.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/MTM_Waitlist_Application.Services.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Services.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Dashboard.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/MTM_Waitlist_Application.Feature.Waitlist.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Waitlist.<Folder>.<Subfolder>.<Category>` |
+
+## Test Project State (as of May 11, 2026)
+
+| Project | TFM | References | Status |
+|---------|-----|-----------|--------|
+| `Core.Tests` | `net10.0` | `Core` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | None | 🚧 Scaffold only — WinUI MSTest template placeholders |
+| `UITests.Droid` | `net10.0` | None | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+
+Physical disk location: `MTM_Waitlist_Application/Tests/Unit/` and `MTM_Waitlist_Application/Tests/UI/`
+Solution folder location: `/Tests/Unit/` and `/Tests/UI/`
+See `testing.instructions.md` for folder structure rules and category definitions.
 
 ## Mock Data / Debug Seeding
 - `MockDataSeeder` in `Data/Mock/MockDataSeeder.cs` (only compiled in `#if DEBUG`)

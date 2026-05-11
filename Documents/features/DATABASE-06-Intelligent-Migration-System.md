@@ -21,7 +21,7 @@ The current approach produces a single `V001__Initial_Schema.sql` that creates t
 The intelligent migration system replaces this with:
 
 1. A `SchemaVersions` tracking table in MySQL.
-2. Numbered migration files in `database/migrations/` that capture **only the changes** (ALTER TABLE, new columns, new tables) — never the full schema.
+2. Numbered migration files in `Database/migrations/` that capture **only the changes** (ALTER TABLE, new columns, new tables) — never the full schema.
 3. A migration runner in the admin app that applies only the unapplied migrations, in order.
 4. A separate, always-re-run pass for procedures, triggers, and indexes (idempotent).
 
@@ -36,7 +36,7 @@ This means a developer adding a new column:
 
 ## `SchemaVersions` Table
 
-Add to `database/schema/tables/System/SchemaVersions.sql`:
+Add to `Database/schema/tables/System/SchemaVersions.sql`:
 
 ```sql
 -- =============================================================
@@ -106,7 +106,7 @@ V005__Add_PressAssignments_Table.sql ← CREATE TABLE PressAssignments
 | Index | `indexes/<Domain>/<Table>_Indexes.sql` | Always re-run (DROP INDEX IF EXISTS + CREATE) |
 | Seed data | `seed/<N>_Seed_<Table>.sql` | Manual only — never auto-applied in production |
 
-**Critical rule:** Individual table definition files in `database/schema/tables/` are **no longer run by the migration runner**. They are the reference/documentation for what the table *should* look like, updated by the developer to reflect the current schema. Only migration files change the live database.
+**Critical rule:** Individual table definition files in `Database/schema/tables/` are **no longer run by the migration runner**. They are the reference/documentation for what the table *should* look like, updated by the developer to reflect the current schema. Only migration files change the live database.
 
 ---
 
@@ -210,7 +210,7 @@ public async Task<MigrationResult> ApplyPendingMigrationsAsync(IProgress<Migrati
     }
 
     // Step 2 — Load all migration files from disk, sorted by version
-    var allMigrations = LoadMigrationFiles();  // scans database/migrations/*.sql, sorted by V number
+    var allMigrations = LoadMigrationFiles();  // scans Database/migrations/*.sql, sorted by V number
 
     // Step 3 — Load applied versions from SchemaVersions table
     var appliedVersions = await GetAppliedVersionsAsync();
@@ -269,9 +269,9 @@ After all pending migrations are applied, the runner executes all procedure/trig
 
 ```
 Order:
-1. database/procedures/**/*.sql    (alphabetical within each domain, domain order: Auth → Waitlist → ...)
-2. database/triggers/**/*.sql      (alphabetical)
-3. database/indexes/**/*.sql       (alphabetical)
+1. Database/procedures/**/*.sql    (alphabetical within each domain, domain order: Auth → Waitlist → ...)
+2. Database/triggers/**/*.sql      (alphabetical)
+3. Database/indexes/**/*.sql       (alphabetical)
 ```
 
 These files already use `DROP PROCEDURE IF EXISTS` / `DROP TRIGGER IF EXISTS` / `DROP INDEX IF EXISTS`, making them safe to run on every migration pass.
@@ -315,23 +315,23 @@ This ensures that even without a new migration file, simply redeploying the admi
 
 ### Adding a new feature table (e.g., Zones from FEATURE-05)
 
-1. **Write the migration:** Create `database/migrations/V004__Add_Zones_Table.sql` with `CREATE TABLE IF NOT EXISTS` statements.
-2. **Update the schema reference file:** Create `database/schema/tables/Waitlist/Zones.sql` with the canonical `CREATE TABLE` definition. This is the "what it looks like now" reference — it is NOT run by the migration runner.
+1. **Write the migration:** Create `Database/migrations/V004__Add_Zones_Table.sql` with `CREATE TABLE IF NOT EXISTS` statements.
+2. **Update the schema reference file:** Create `Database/schema/tables/Waitlist/Zones.sql` with the canonical `CREATE TABLE` definition. This is the "what it looks like now" reference — it is NOT run by the migration runner.
 3. **Run in dev:** Press "Apply Migrations" in the admin app (or restart with auto-apply on).
 4. **Verify:** The V004 row appears in `SchemaVersions`. The new table exists.
 5. **Check in:** Commit both the migration file and the schema reference file together.
 
 ### Modifying an existing stored procedure
 
-1. **Edit the procedure file:** `database/procedures/Waitlist/usp_Waitlist_GetAll.sql` — update the SQL.
+1. **Edit the procedure file:** `Database/procedures/Waitlist/usp_Waitlist_GetAll.sql` — update the SQL.
 2. **No migration file needed** — procedure files are always re-run.
 3. **Restart the admin app** (auto-apply mode) or click "Run Idempotent Objects Only".
 4. **Check in:** Commit the updated procedure file.
 
 ### Adding a new column to an existing table
 
-1. **Write the migration:** Create `database/migrations/V005__Add_SomeColumn_To_WaitlistEntries.sql` with an idempotent `ALTER TABLE` statement (using the `information_schema` guard from the example above).
-2. **Update the schema reference file:** Add the column definition to `database/schema/tables/Waitlist/WaitlistEntries.sql` to keep the reference current.
+1. **Write the migration:** Create `Database/migrations/V005__Add_SomeColumn_To_WaitlistEntries.sql` with an idempotent `ALTER TABLE` statement (using the `information_schema` guard from the example above).
+2. **Update the schema reference file:** Add the column definition to `Database/schema/tables/Waitlist/WaitlistEntries.sql` to keep the reference current.
 3. **Run in dev, verify, check in.**
 
 ---
@@ -347,7 +347,7 @@ The following changes are needed to existing database files to support this syst
 | All procedure files | Verify each starts with `DROP PROCEDURE IF EXISTS` — already done. |
 | All trigger files | Verify each starts with `DROP TRIGGER IF EXISTS` — already done. |
 | All index files | Convert any `CREATE INDEX` to `CREATE INDEX IF NOT EXISTS` (MySQL 5.7 does not support `IF NOT EXISTS` on indexes — use a stored procedure workaround or check `information_schema` first). |
-| New file: `database/schema/tables/System/SchemaVersions.sql` | Add the tracking table definition. |
+| New file: `Database/schema/tables/System/SchemaVersions.sql` | Add the tracking table definition. |
 
 ### Index Idempotency Workaround (MySQL 5.7)
 

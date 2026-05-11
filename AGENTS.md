@@ -75,23 +75,61 @@ Pattern: `<TypeFolder>/<DomainSubfolder>/FileName.cs`
 
 ## 🧪 test-scaffolder
 
-**Purpose:** Generate unit test stubs for a ViewModel or Service.
+**Purpose:** Generate unit test stubs for a ViewModel, Service, Repository, or Model.
 
-**When to use:** After implementing a ViewModel or Service, before submitting.
+**When to use:** After implementing any testable class, before submitting.
+
+**Test projects and their target frameworks:**
+
+| Project | TFM | Tests |
+|---|---|---|
+| `Core.Tests` | `net10.0` | Models, enums, constants |
+| `Data.Tests` | `net10.0-windows10.0.19041.0` | Repositories, HttpApiClient, LocalDbContext, MockDataSeeder |
+| `Services.Tests` | `net10.0-windows10.0.19041.0` | Services (dual-repo + connectivity routing) |
+| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | Dashboard ViewModels |
+| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | Waitlist ViewModels |
+| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | WinUI app UI automation via Appium |
+| `UITests.Droid` | `net10.0` | Android app UI automation via Appium |
+
+**Folder structure enforced:**
+Test file paths mirror the source project path, then add a **category subfolder** at the leaf:
+```
+Tests/Unit/<TestProject>/<SourceFolder>/<SourceSubfolder>/<Category>/<TestClassName>.cs
+```
+
+Valid category folders: `Success`, `Failure`, `Validation`, `Commands`, `Properties`, `Connectivity`, `AuthSeeds`, `WaitlistSeeds`
+
+**Examples:**
+```
+// Source: Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs
+Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs
+Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs
+
+// Source: Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs
+Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs
+Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs
+Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs
+
+// Source: Features/.../ViewModels/Main/ViewModel_Dashboard_Main.cs
+Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs
+Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs
+```
 
 **What it produces:**
-- `ViewModel_<Feature>_<Screen>Tests.cs` — tests for commands and observable properties
-- `Service_<Feature>Tests.cs` — tests for business logic methods
-- xUnit test class structure with `[Fact]` and `[Theory]` patterns
-- Mock setup for injected interfaces using `Moq`
+- One test file per source file per category — never mix categories in one file
+- xUnit v3 test class with `[Fact]` and `[Theory]` patterns
+- Mock setup for all injected interfaces using `Moq`
+- Namespace matching the test file's folder path exactly
+- Test data prefixed with `"TEST-"`
 
 **Test naming enforced:**
 `MethodName_Should<Result>_When<Condition>`
 
 **Conversation starters:**
-- "Generate unit tests for ViewModel_Waitlist_Entry"
-- "Scaffold test stubs for Service_WaitlistEntry"
-- "Create tests for the approve entry command"
+- "Scaffold tests for Service_WaitlistEntry"
+- "Generate unit tests for ViewModel_Dashboard_Main commands"
+- "Create failure-path tests for Repository_WaitlistEntryLocal"
+- "Add connectivity tests for SyncService"
 
 ---
 
@@ -169,12 +207,12 @@ that match the C# codebase naming conventions and schema rules.
 index, creating a migration script, or reviewing the database schema for consistency.
 
 **What it produces:**
-- `database/schema/tables/<Domain>/<TableName>.sql` — CREATE TABLE with all constraints
-- `database/indexes/<Domain>/<TableName>_Indexes.sql` — indexes for FK and WHERE columns
-- `database/procedures/<Domain>/usp_<Domain>_<Action>.sql` — one file per procedure
-- `database/triggers/<Domain>/trg_<TableName>_<Timing><Event>.sql` — one file per trigger
-- `database/migrations/V00N__<Description>.sql` — standalone migration for new objects
-- **Updated `database/README.md`** — Folder Structure, File Reference, and Execution Order sections updated for every new file
+- `Database/schema/tables/<Domain>/<TableName>.sql` — CREATE TABLE with all constraints
+- `Database/indexes/<Domain>/<TableName>_Indexes.sql` — indexes for FK and WHERE columns
+- `Database/procedures/<Domain>/usp_<Domain>_<Action>.sql` — one file per procedure
+- `Database/triggers/<Domain>/trg_<TableName>_<Timing><Event>.sql` — one file per trigger
+- `Database/migrations/V00N__<Description>.sql` — standalone migration for new objects
+- **Updated `Database/README.md`** — Folder Structure, File Reference, and Execution Order sections updated for every new file
 - Updated `AGENTS.md` and `copilot-agents.json` entries when a new domain is added
 
 **Naming enforced (must match C# codebase PascalCase):**

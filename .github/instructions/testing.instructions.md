@@ -4,8 +4,93 @@ applyTo: "**/*.Tests.cs,**/*Tests/**"
 
 # Testing Instructions — MTM Waitlist Application
 
+## Test Projects
+
+| Solution Folder | Project | Target Framework | References |
+|---|---|---|---|
+| `/Tests/Unit/` | `MTM_Waitlist_Application.Core.Tests` | `net10.0` | `Core` |
+| `/Tests/Unit/` | `MTM_Waitlist_Application.Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` |
+| `/Tests/Unit/` | `MTM_Waitlist_Application.Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` |
+| `/Tests/Unit/` | `MTM_Waitlist_Application.Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` |
+| `/Tests/Unit/` | `MTM_Waitlist_Application.Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` |
+| `/Tests/UI/` | `MTM_Waitlist_Application.UITests.WinUI` | `net10.0-windows10.0.19041.0` | None (runtime Appium) |
+| `/Tests/UI/` | `MTM_Waitlist_Application.UITests.Droid` | `net10.0` | None (runtime Appium) |
+
+NuGet packages in every unit test project: `xunit.v3`, `xunit.runner.visualstudio`, `Moq`, `FluentAssertions`, `coverlet.collector`
+
+---
+
+## Folder Structure Rule
+
+Test file paths mirror the source project path exactly, then add a **category subfolder** at the leaf level.
+
+**Pattern:**
+```
+Tests/Unit/<TestProject>/<SourceFolder>/<SourceSubfolder>/<Category>/<TestFileName>.cs
+```
+
+**Category subfolder names** group tests within a leaf folder by concern:
+
+| Category | Use for |
+|---|---|
+| `AuthSeeds` | Seeding / mock data related to authentication |
+| `WaitlistSeeds` | Seeding / mock data related to waitlist entries |
+| `Success` | Happy-path tests |
+| `Failure` | Error / failure / offline path tests |
+| `Validation` | Input validation and boundary tests |
+| `Commands` | ViewModel `[RelayCommand]` method tests |
+| `Properties` | ViewModel `[ObservableProperty]` state tests |
+| `Connectivity` | Online vs. offline routing tests |
+
+Add new category names as needed — keep them concise and consistent.
+
+---
+
+## Source → Test Path Mapping
+
+### Core.Tests  (`net10.0`)
+| Source file | Test file path |
+|---|---|
+| `Core/MTM_Waitlist_Application.Core/Models/Auth/Model_AuthToken.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Auth/Success/Model_AuthTokenTests.cs` |
+| `Core/MTM_Waitlist_Application.Core/Models/Shared/Model_Dao_Result.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Shared/Success/Model_Dao_ResultTests.cs` |
+| `Core/MTM_Waitlist_Application.Core/Models/Waitlist/Model_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Waitlist/Validation/Model_WaitlistEntryTests.cs` |
+
+### Data.Tests  (`net10.0-windows10.0.19041.0`)
+| Source file | Test file path |
+|---|---|
+| `Core/MTM_Waitlist_Application.Data/Http/HttpApiClient.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Http/Success/HttpApiClientTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Http/HttpApiClient.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Http/Failure/HttpApiClientTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Local/LocalDbContext.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Local/Success/LocalDbContextTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryLocalTests.cs` |
+| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryLocalTests.cs` |
+
+### Services.Tests  (`net10.0-windows10.0.19041.0`)
+| Source file | Test file path |
+|---|---|
+| `Core/MTM_Waitlist_Application.Services/Auth/Service_Auth.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Auth/Success/Service_AuthTests.cs` |
+| `Core/MTM_Waitlist_Application.Services/Auth/Service_Auth.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Auth/Failure/Service_AuthTests.cs` |
+| `Core/MTM_Waitlist_Application.Services/Sync/SyncService.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Sync/Connectivity/SyncServiceTests.cs` |
+| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs` |
+| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs` |
+| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs` |
+
+### Feature.Dashboard.Tests  (`net10.0-windows10.0.19041.0`)
+| Source file | Test file path |
+|---|---|
+| `Features/MTM_Waitlist_Application.Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs` |
+| `Features/MTM_Waitlist_Application.Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs` |
+
+### Feature.Waitlist.Tests  (`net10.0-windows10.0.19041.0`)
+*(No source files yet — add entries as ViewModels and Views are created)*
+
+---
+
 ## Framework
-- **xUnit** for test runner
+- **xUnit v3** test runner
 - **Moq** for mocking interfaces
 - **FluentAssertions** for readable assertions
 
@@ -19,24 +104,26 @@ ApproveEntryAsync_ShouldCallService_WhenEntryIsSelected()
 GetAllEntriesAsync_ShouldReturnFailure_WhenDatabaseIsUnavailable()
 ```
 
+---
+
 ## ViewModel Test Pattern
 
 ```csharp
-namespace MTM_Waitlist_Application.Tests.Feature.Waitlist.ViewModels;
+namespace MTM_Waitlist_Application.Tests.Unit.Feature.Dashboard.ViewModels.Main.Commands;
 
 /// <summary>
-/// Unit tests for <see cref="ViewModel_Waitlist_Entry"/>.
+/// Tests for command methods on <see cref="ViewModel_Dashboard_Main"/>.
 /// Uses mocked IService_WaitlistEntry — no database required.
 /// </summary>
-public class ViewModel_Waitlist_EntryTests
+public class ViewModel_Dashboard_MainTests
 {
     private readonly Mock<IService_WaitlistEntry> _mockService;
-    private readonly ViewModel_Waitlist_Entry _viewModel;
+    private readonly ViewModel_Dashboard_Main _viewModel;
 
-    public ViewModel_Waitlist_EntryTests()
+    public ViewModel_Dashboard_MainTests()
     {
         _mockService = new Mock<IService_WaitlistEntry>();
-        _viewModel = new ViewModel_Waitlist_Entry(_mockService.Object);
+        _viewModel = new ViewModel_Dashboard_Main(_mockService.Object);
     }
 
     [Fact]
@@ -44,20 +131,65 @@ public class ViewModel_Waitlist_EntryTests
     {
         var expected = new List<Model_WaitlistEntry>
         {
-            new() { Name = "Test Entry" }
+            new() { OperatorName = "TEST-Operator" }
         };
 
         _mockService
-            .Setup(s => s.GetAllEntriesAsync())
+            .Setup(s => s.GetAllEntriesAsync(default))
             .ReturnsAsync(Model_Dao_Result<List<Model_WaitlistEntry>>.Success(expected));
 
         await _viewModel.LoadEntriesCommand.ExecuteAsync(null);
 
         _viewModel.Entries.Should().HaveCount(1);
-        _viewModel.Entries[0].Name.Should().Be("Test Entry");
+        _viewModel.Entries[0].OperatorName.Should().Be("TEST-Operator");
     }
 }
 ```
+
+---
+
+## Service Test Pattern (connectivity-aware dual-repository)
+
+```csharp
+namespace MTM_Waitlist_Application.Tests.Unit.Services.Waitlist.Connectivity;
+
+/// <summary>
+/// Tests for online/offline routing in <see cref="Service_WaitlistEntry"/>.
+/// </summary>
+public class Service_WaitlistEntryTests
+{
+    private readonly Mock<IConnectivity> _mockConnectivity;
+    private readonly Mock<IRepository_WaitlistEntry> _mockOnline;
+    private readonly Mock<IRepository_WaitlistEntryLocal> _mockLocal;
+    private readonly Service_WaitlistEntry _service;
+
+    public Service_WaitlistEntryTests()
+    {
+        _mockConnectivity = new Mock<IConnectivity>();
+        _mockOnline = new Mock<IRepository_WaitlistEntry>();
+        _mockLocal = new Mock<IRepository_WaitlistEntryLocal>();
+        _service = new Service_WaitlistEntry(
+            _mockConnectivity.Object, _mockOnline.Object, _mockLocal.Object);
+    }
+
+    [Fact]
+    public async Task GetAllEntriesAsync_ShouldUseLocalRepository_WhenOffline()
+    {
+        _mockConnectivity.Setup(c => c.NetworkAccess).Returns(NetworkAccess.None);
+        var localData = new List<Model_WaitlistEntry>();
+        _mockLocal
+            .Setup(r => r.GetAllWaitlistEntriesAsync())
+            .ReturnsAsync(Model_Dao_Result<List<Model_WaitlistEntry>>.Success(localData));
+
+        var result = await _service.GetAllEntriesAsync();
+
+        result.IsSuccess.Should().BeTrue();
+        _mockOnline.Verify(r => r.GetAllWaitlistEntriesAsync(default), Times.Never);
+    }
+}
+```
+
+---
 
 ## Rules
 - No Arrange/Act/Assert comments — code structure implies it
@@ -65,3 +197,6 @@ public class ViewModel_Waitlist_EntryTests
 - Test data prefixed with `"TEST-"` for easy identification
 - One assertion concept per test — keep tests focused
 - Use `IAsyncLifetime` for integration tests requiring setup/teardown
+- Namespace must match the test file's folder path exactly
+- One source file = one or more test files, split by category subfolder
+- Never mix category concerns in one test file

@@ -7,7 +7,7 @@
 
 ## Overview
 
-This index lists all planned features in priority and dependency order. Features are documented in individual files in `docs/features/`. Each file covers background, architecture decisions, database objects, XAML files to create, and open decisions requiring stakeholder input.
+This index lists all planned features in priority and dependency order. Features are documented in individual files in `Documents/features/`. Each file covers background, architecture decisions, database objects, XAML files to create, and open decisions requiring stakeholder input.
 
 ---
 
@@ -64,7 +64,7 @@ Infor Visual (`VISUAL\MTMFG`, SQL Server) is **read-only without exception**. Al
 
 ### MySQL Stored Procedures
 
-All MySQL writes go through stored procedures — no raw SQL INSERT/UPDATE/DELETE from application code. Procedure names follow `usp_<Domain>_<Action>` convention. See `database/procedures/` for all existing procedures.
+All MySQL writes go through stored procedures — no raw SQL INSERT/UPDATE/DELETE from application code. Procedure names follow `usp_<Domain>_<Action>` convention. See `Database/procedures/` for all existing procedures.
 
 ### v1 Scope Boundary
 

@@ -4,7 +4,7 @@
 **Date:** May 10, 2026
 **Task:** Create base MySQL database schema, stored procedures, triggers, and indexes
 **Status:** ✅ ALL ASSUMPTIONS CONFIRMED — May 10, 2026
-**Applied to:** All SQL files in `database/` and C# model/enum files in Core project
+**Applied to:** All SQL files in `Database/` and C# model/enum files in Core project
 
 ---
 

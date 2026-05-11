@@ -108,7 +108,7 @@ None required for this feature. Auth is entirely MySQL-backed.
 
 ## Database Objects Needed
 
-All exist in `database/procedures/Auth/`:
+All exist in `Database/procedures/Auth/`:
 - `usp_Auth_CheckSharedWorkstation` — accepts `MachineName`
 - `usp_Auth_GetUserByWindowsUsername` — accepts `WindowsUsername`
 - `usp_Auth_ValidateCredentials` — accepts `Username` + bcrypt hash
