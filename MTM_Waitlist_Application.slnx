@@ -120,42 +120,28 @@
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/UI/">
-    <Project
-      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/MTM_Waitlist_Application.UITests.Droid.csproj"
-      Id="0110ebe5-0b53-425f-bcb3-2b0741fbc5ec"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/MTM_Waitlist_Application.UITests.WinUI.csproj"
-      Id="56fa9ccb-a575-4d69-a24f-f1255e80b59e"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/MTM_Waitlist_Application.UITests.Droid.csproj" Id="0110ebe5-0b53-425f-bcb3-2b0741fbc5ec" />
+    <Project Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/MTM_Waitlist_Application.UITests.WinUI.csproj" Id="56fa9ccb-a575-4d69-a24f-f1255e80b59e">
       <Platform Project="x64" />
       <Deploy />
     </Project>
   </Folder>
   <Folder Name="/Tests/Unit/">
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Core.Tests/MTM_Waitlist_Application.Core.Tests.csproj"
-      Id="d33b61ec-1e35-4da0-bf7a-2f4b82a38541"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Data.Tests/MTM_Waitlist_Application.Data.Tests.csproj"
-      Id="8da18949-9293-441c-a931-90d4bbb01f0a"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/MTM_Waitlist_Application.Feature.Dashboard.Tests.csproj"
-      Id="9a9c3bc9-84ba-4579-8051-dbe72d7d1f2c"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Waitlist.Tests/MTM_Waitlist_Application.Feature.Waitlist.Tests.csproj"
-      Id="b80e5920-b204-4537-8123-bf40e40bc7ea"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Shared.Tests/MTM_Waitlist_Application.Shared.Tests.csproj"
-      Id="2bfb5ee2-894d-4fd8-a21e-ff3f505d1b4c"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Services.Tests/MTM_Waitlist_Application.Services.Tests.csproj"
-      Id="9a9d55fb-cb0c-4fe4-8517-aeac48de03ff"
-    />
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Core.Tests/MTM_Waitlist_Application.Core.Tests.csproj" Id="d33b61ec-1e35-4da0-bf7a-2f4b82a38541" />
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Data.Tests/MTM_Waitlist_Application.Data.Tests.csproj" Id="8da18949-9293-441c-a931-90d4bbb01f0a">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/MTM_Waitlist_Application.Feature.Dashboard.Tests.csproj" Id="9a9c3bc9-84ba-4579-8051-dbe72d7d1f2c">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Feature.Waitlist.Tests/MTM_Waitlist_Application.Feature.Waitlist.Tests.csproj" Id="b80e5920-b204-4537-8123-bf40e40bc7ea">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Services.Tests/MTM_Waitlist_Application.Services.Tests.csproj" Id="9a9d55fb-cb0c-4fe4-8517-aeac48de03ff">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/MTM_Waitlist_Application.Shared.Tests/MTM_Waitlist_Application.Shared.Tests.csproj" Id="2bfb5ee2-894d-4fd8-a21e-ff3f505d1b4c">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
 </Solution>

@@ -1,6 +1,6 @@
 # MTM Waitlist — Database Admin Application Index
 
-**Last Updated:** May 10, 2026  
+**Last Updated:** May 14, 2026  
 **Project:** `MTM_Waitlist_Server` (new — to be created)  
 
 ---
@@ -30,9 +30,9 @@ These instructions were checked against `DATABASE-01` through `DATABASE-06`, the
    - `Core`
    - `Modules`
    - `Tests`
-   - `Database`
-6. Open the `Database` folder.
-7. Create these folders inside `Database`:
+   - `database`
+6. Open the `database` folder.
+7. Create these folders inside `database`:
    - `migrations`
    - `procedures`
    - `triggers`
@@ -134,8 +134,6 @@ Create one WinUI-capable class library project for each admin module below. Plac
    - `MTM_Waitlist_Server.Module.Backup`
    - `MTM_Waitlist_Server.Module.KillSwitch`
    - `MTM_Waitlist_Server.Module.Migrations`
-
-   - C:\Users\johnk\source\repos\MTM_Waitlist_Application\MTM_Waitlist_Server\Modules
 
 These modules keep dashboard, settings, backup, kill-switch, and migration work separated while sharing the same server core contracts. They need WinUI support because the database documents place admin Views and ViewModels inside the module projects.
 
@@ -245,6 +243,7 @@ DATABASE-05  Client Kill Switch                                 ← Depends on A
 | [04](DATABASE-04-Backup-and-Restore.md) | Backup & Restore | `mysqldump` automation, scheduled nightly backup, restore wizard with client kill |
 | [05](DATABASE-05-Client-Kill-Switch.md) | Kill Switch | Remote shutdown of MAUI clients — individual or all, instant or countdown |
 | [06](DATABASE-06-Intelligent-Migration-System.md) | Migration System | Incremental migrations, `SchemaVersions` table, procedure/trigger always-rerun |
+| [07](DATABASE-07-First-Run-Setup.md) | First-Run Setup | Fresh-install detection probe, auth gate fallback, 3-step wizard, degraded mode |
 
 ---
 
@@ -287,6 +286,18 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 | `Database/schema/tables/System/SchemaVersions.sql` | Schema reference for the tracking table |
 | `Database/schema/admin/Admin_Users.sql` | MySQL user creation script (two users) for IT to run once |
 
+### C# (DATABASE-07)
+
+| File | Purpose |
+|---|---|
+| `Core/Models/FirstRun/FirstRunStatus.cs` | Enum: `Ready`, `MySqlUnreachable`, `SchemaMissing`, `NoAdminUser` |
+| `Core/Models/FirstRun/Model_FirstRunProbeResult.cs` | Probe result with status + optional error message |
+| `Core/Interfaces/FirstRun/IService_FirstRun.cs` | `ProbeAsync()`, `IsFirstRunRequired()`, `MarkCompleteAsync()` |
+| `Hosts/.../Services/Service_FirstRun.cs` | MySqlConnector-based implementation |
+| `Hosts/.../ViewModels/ViewModel_FirstRun.cs` | Step tracking, form fields, wizard commands |
+| `Hosts/.../Views/View_FirstRun.xaml` | 3-step wizard UI |
+| `Hosts/.../Views/View_FirstRun.xaml.cs` | Code-behind |
+
 ### Updated SQL
 
 | File | Change |
@@ -303,7 +314,13 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 | DATABASE-01 Q2 | API lifecycle management | App **starts with Windows** (Task Scheduler). Admin UI has **Start / Stop / Restart** controls for the embedded Kestrel listener |
 | DATABASE-01 Q3 | New project or extend deployment tooling? | **New standalone project** — `MTM_Waitlist_Server.Admin` |
 | DATABASE-01 Q4 | In-process or external API hosting? | **In-process** — one exe, shared DI container |
-| DATABASE-01 Q5 | Access control for admin app? | **Windows Authentication** — checks current Windows user's group membership on launch |
+| DATABASE-01 Q5 | Access control for admin app? | **Windows Authentication** — checks current Windows user's group membership on launch. Falls back to Windows group during first-run (DATABASE-07) |
+| DATABASE-07 Q1 | How is a fresh install detected? | **Three-step probe:** MySQL reachable → schema exists → active Admin/Developer user exists |
+| DATABASE-07 Q2 | Auth gate on first run? | **Falls back to `BUILTIN\Administrators`** Windows group when DB probe fails |
+| DATABASE-07 Q3 | First-run UI | **Inline 3-step wizard** inside the admin shell — Connect, Bootstrap, Create User |
+| DATABASE-07 Q4 | Wizard steps skippable? | **No** — each step gates the next; nav is locked until wizard completes |
+| DATABASE-07 Q5 | MySQL unreachable at launch? | **Settings opens automatically** with a banner; rest of nav disabled |
+| DATABASE-07 Q7 | First-run state persisted? | **`FirstRunComplete` flag** in `server-settings.json` — set after Step 3 succeeds |
 | DATABASE-02 Q1 | Which MySQL user for admin/dashboard ops? | **`waitlist_admin_dbupdater`** (elevated). REST API uses **`waitlist_admin_dbappuser`** (SELECT/EXECUTE only) |
 | DATABASE-02 Q2 | Table stat granularity? | Dynamic query of `information_schema.TABLES` filtered to `mtm_waitlist` |
 | DATABASE-02 Q3 | Auto-refresh or button? | **Auto-refresh every 30 seconds** using `SHOW GLOBAL STATUS`; `information_schema` always filtered by `TABLE_SCHEMA` |

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MTM_Waitlist_Server.Admin (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MTM_Waitlist_Server.Admin (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

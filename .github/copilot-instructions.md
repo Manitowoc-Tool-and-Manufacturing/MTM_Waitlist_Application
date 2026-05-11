@@ -624,3 +624,9 @@ See `testing.instructions.md` for the full path mapping table and category defin
   - `testing.instructions.md` — xUnit / Moq / FluentAssertions patterns
 - Prompt files: `.github/prompts/`
 - Database files: `Database/` — MySQL schema, procedures, triggers, indexes, seed, migrations
+
+## Server-Specific Instructions
+
+- Maintain `MTM_Waitlist_Server` as a separate standalone solution rather than including it in the main MAUI solution.
+- Migrate/copy relevant DATABASE documentation into the server solution.
+- Add a Copilot initialization prompt for server-specific instructions, agents, and documentation

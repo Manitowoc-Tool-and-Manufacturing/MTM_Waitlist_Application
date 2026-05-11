@@ -1,0 +1,227 @@
+<Page
+    x:Class="MTM_Waitlist_Server.Module.Settings.Views.View_Settings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Margin="16" RowDefinitions="Auto,*" RowSpacing="16">
+
+        <!-- Top toolbar -->
+        <Grid Grid.Row="0">
+            <TextBlock Text="SETTINGS" Style="{ThemeResource SubtitleTextBlockStyle}"
+                       VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                           VerticalAlignment="Center"
+                           Style="{ThemeResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Button Content="Reload" MinHeight="36"
+                        Command="{x:Bind ViewModel.ReloadCommand, Mode=OneWay}" />
+                <Button Content="Save" MinHeight="36" Style="{ThemeResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.SaveCommand, Mode=OneWay}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Scrollable settings body -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="24">
+
+                <!-- DATABASE -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="DATABASE CONNECTION (MySQL -- mtm_waitlist)"
+                               Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <Grid ColumnDefinitions="180,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Host" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Database.Host, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="65535"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Database.Port, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Database Name" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Database.DatabaseName, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="App Username" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="3" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Database.AppUsername, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="App Password" VerticalAlignment="Center" />
+                        <PasswordBox Grid.Row="4" Grid.Column="1"
+                                     Password="{x:Bind ViewModel.Database.AppPassword, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Updater Username" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="5" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Database.UpdaterUsername, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Updater Password" VerticalAlignment="Center" />
+                        <PasswordBox Grid.Row="6" Grid.Column="1"
+                                     Password="{x:Bind ViewModel.Database.UpdaterPassword, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Connection Timeout (s)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="7" Grid.Column="1" Minimum="1" Maximum="300"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Database.ConnectionTimeout, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Command Timeout (s)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="8" Grid.Column="1" Minimum="1" Maximum="600"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Database.CommandTimeout, Mode=TwoWay}" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Test Connection" MinHeight="36"
+                                Command="{x:Bind ViewModel.TestDbConnectionCommand, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.DbTestResult, Mode=OneWay}"
+                                   VerticalAlignment="Center"
+                                   Style="{ThemeResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- INFOR VISUAL -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="INFOR VISUAL SQL SERVER"
+                               Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <ToggleSwitch Header="Enable Visual integration"
+                                  IsOn="{x:Bind ViewModel.Visual.Enabled, Mode=TwoWay}" />
+                    <Grid ColumnDefinitions="180,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Host" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Visual.Host, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="65535"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Visual.Port, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Database Name" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Visual.DatabaseName, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Username" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="3" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Visual.Username, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Password" VerticalAlignment="Center" />
+                        <PasswordBox Grid.Row="4" Grid.Column="1"
+                                     Password="{x:Bind ViewModel.Visual.Password, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Connection Timeout (s)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="5" Grid.Column="1" Minimum="1" Maximum="300"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Visual.ConnectionTimeout, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Command Timeout (s)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="6" Grid.Column="1" Minimum="1" Maximum="600"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Visual.CommandTimeout, Mode=TwoWay}" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Test Connection" MinHeight="36"
+                                Command="{x:Bind ViewModel.TestVisualConnectionCommand, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.VisualTestResult, Mode=OneWay}"
+                                   VerticalAlignment="Center"
+                                   Style="{ThemeResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- API SERVER -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="API SERVER" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Listen Address" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Api.ListenAddress, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="JWT Expiry (min)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1440"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Api.JwtExpiryMinutes, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Refresh Token Expiry (days)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="2" Grid.Column="1" Minimum="1" Maximum="365"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Api.RefreshTokenExpiryDays, Mode=TwoWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- BACKUP -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="BACKUP" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <ToggleSwitch Header="Enable automatic backups"
+                                  IsOn="{x:Bind ViewModel.Backup.AutoBackupEnabled, Mode=TwoWay}" />
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Output Folder" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Backup.BackupFolder, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="mysqldump Path" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="1" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Backup.MysqlDumpPath, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Schedule (HH:mm)" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Backup.AutoBackupTime, Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Retention (days)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="3" Grid.Column="1" Minimum="1" Maximum="365"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Backup.RetentionDays, Mode=TwoWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- MIGRATIONS -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="MIGRATIONS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <ToggleSwitch Header="Auto-apply on startup (keep OFF in production)"
+                                  IsOn="{x:Bind ViewModel.Migrations.AutoApplyOnStartup, Mode=TwoWay}" />
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Migration Folder" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Migrations.MigrationFolder, Mode=TwoWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- ADMIN ACCESS -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="ADMIN ACCESS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Required Windows Group" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{x:Bind ViewModel.Admin.RequiredWindowsGroup, Mode=TwoWay}" />
+                    </Grid>
+                    <TextBlock Text="Members of this Windows group may open the admin app."
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <!-- NOTIFICATIONS -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="NOTIFICATIONS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Kill-switch Warning (s)" VerticalAlignment="Center" />
+                        <NumberBox Grid.Row="0" Grid.Column="1" Minimum="30" Maximum="3600"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.Notifications.KillSwitchDefaultWarningSeconds, Mode=TwoWay}" />
+                    </Grid>
+                    <TextBlock Text="Seconds clients are warned before a forced disconnect."
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
