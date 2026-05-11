@@ -1,225 +1,396 @@
-<Page
+﻿<Page
     x:Class="MTM_Waitlist_Server.Module.Settings.Views.View_Settings"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <Grid Margin="16" RowDefinitions="Auto,*" RowSpacing="16">
+    <Grid Margin="24,16,24,16" RowDefinitions="Auto,*" RowSpacing="16">
 
         <!-- Top toolbar -->
         <Grid Grid.Row="0">
-            <TextBlock Text="SETTINGS" Style="{ThemeResource SubtitleTextBlockStyle}"
-                       VerticalAlignment="Center" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <StackPanel Orientation="Vertical" Spacing="2">
+                <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="Configure database connections, API server, backup, and access control."
+                           Style="{ThemeResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Spacing="8">
                 <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                            VerticalAlignment="Center"
                            Style="{ThemeResource CaptionTextBlockStyle}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <Button Content="Reload" MinHeight="36"
                         Command="{x:Bind ViewModel.ReloadCommand, Mode=OneWay}" />
-                <Button Content="Save" MinHeight="36" Style="{ThemeResource AccentButtonStyle}"
+                <Button Content="Save All" MinHeight="36" Style="{ThemeResource AccentButtonStyle}"
                         Command="{x:Bind ViewModel.SaveCommand, Mode=OneWay}" />
             </StackPanel>
         </Grid>
 
         <!-- Scrollable settings body -->
         <ScrollViewer Grid.Row="1">
-            <StackPanel Spacing="24">
+            <StackPanel Spacing="4" MaxWidth="900" HorizontalAlignment="Left">
 
-                <!-- DATABASE -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="DATABASE CONNECTION (MySQL -- mtm_waitlist)"
-                               Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <Grid ColumnDefinitions="180,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Host" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Database.Host, Mode=TwoWay}" />
+                <!-- DATABASE CONNECTION -->
+                <ctk:SettingsExpander Header="Database Connection"
+                                      Description="MySQL connection settings for the mtm_waitlist schema"
+                                      IsExpanded="True">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE9CE;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Host"
+                                          Description="MySQL server hostname or IP address">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8CE;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Database.Host, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="65535"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Database.Port, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Port"
+                                          Description="MySQL port (default 3306)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEDA3;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <NumberBox MinWidth="140" Minimum="1" Maximum="65535"
+                                       SpinButtonPlacementMode="Inline"
+                                       Value="{x:Bind ViewModel.Database.Port, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Database Name" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="2" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Database.DatabaseName, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Database Name"
+                                          Description="Target schema name">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEA86;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Database.DatabaseName, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="App Username" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="3" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Database.AppUsername, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="App Username"
+                                          Description="Used by the REST API for read-only client requests">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE77B;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Database.AppUsername, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="App Password" VerticalAlignment="Center" />
-                        <PasswordBox Grid.Row="4" Grid.Column="1"
-                                     Password="{x:Bind ViewModel.Database.AppPassword, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="App Password"
+                                          Description="Password for the app (REST API) user">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8D7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <PasswordBox MinWidth="220" Password="{x:Bind ViewModel.Database.AppPassword, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Updater Username" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="5" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Database.UpdaterUsername, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Updater Username"
+                                          Description="Used by the admin app for dashboard, migrations, and backup">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE77B;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Database.UpdaterUsername, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Updater Password" VerticalAlignment="Center" />
-                        <PasswordBox Grid.Row="6" Grid.Column="1"
-                                     Password="{x:Bind ViewModel.Database.UpdaterPassword, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Updater Password"
+                                          Description="Password for the updater (admin) user">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8D7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <PasswordBox MinWidth="220" Password="{x:Bind ViewModel.Database.UpdaterPassword, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Connection Timeout (s)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="7" Grid.Column="1" Minimum="1" Maximum="300"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Database.ConnectionTimeout, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Connection Timeout"
+                                          Description="Seconds before a connection attempt is abandoned">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="300"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Database.ConnectionTimeout, Mode=TwoWay}" />
+                                <TextBlock Text="seconds" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Command Timeout (s)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="8" Grid.Column="1" Minimum="1" Maximum="600"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Database.CommandTimeout, Mode=TwoWay}" />
-                    </Grid>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Test Connection" MinHeight="36"
-                                Command="{x:Bind ViewModel.TestDbConnectionCommand, Mode=OneWay}" />
-                        <TextBlock Text="{x:Bind ViewModel.DbTestResult, Mode=OneWay}"
-                                   VerticalAlignment="Center"
-                                   Style="{ThemeResource CaptionTextBlockStyle}" />
-                    </StackPanel>
-                </StackPanel>
+                        <ctk:SettingsCard Header="Command Timeout"
+                                          Description="Seconds before a running SQL command is cancelled">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="600"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Database.CommandTimeout, Mode=TwoWay}" />
+                                <TextBlock Text="seconds" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
 
-                <!-- INFOR VISUAL -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="INFOR VISUAL SQL SERVER"
-                               Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <ToggleSwitch Header="Enable Visual integration"
-                                  IsOn="{x:Bind ViewModel.Visual.Enabled, Mode=TwoWay}" />
-                    <Grid ColumnDefinitions="180,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Host" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Visual.Host, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Test Connection"
+                                          Description="Verify the updater credentials can reach MySQL">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEBD2;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ViewModel.DbTestResult, Mode=OneWay}"
+                                           VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}" />
+                                <Button Content="Test" MinHeight="32"
+                                        Command="{x:Bind ViewModel.TestDbConnectionCommand, Mode=OneWay}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="65535"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Visual.Port, Mode=TwoWay}" />
+                <!-- INFOR VISUAL SQL SERVER -->
+                <ctk:SettingsExpander Header="Infor Visual SQL Server"
+                                      Description="Optional integration with the Infor Visual ERP database">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8F1;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.Visual.Enabled, Mode=TwoWay}"
+                                  OnContent="Enabled" OffContent="Disabled"
+                                  VerticalAlignment="Center" />
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Host"
+                                          Description="SQL Server hostname or IP address">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8CE;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Visual.Host, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Database Name" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="2" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Visual.DatabaseName, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Port"
+                                          Description="SQL Server port (default 1433)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEDA3;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <NumberBox MinWidth="140" Minimum="1" Maximum="65535"
+                                       SpinButtonPlacementMode="Inline"
+                                       Value="{x:Bind ViewModel.Visual.Port, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Username" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="3" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Visual.Username, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Database Name"
+                                          Description="Infor Visual database name">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEA86;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Visual.DatabaseName, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Password" VerticalAlignment="Center" />
-                        <PasswordBox Grid.Row="4" Grid.Column="1"
-                                     Password="{x:Bind ViewModel.Visual.Password, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Username"
+                                          Description="SQL Server login username">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE77B;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="220" Text="{x:Bind ViewModel.Visual.Username, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Connection Timeout (s)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="5" Grid.Column="1" Minimum="1" Maximum="300"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Visual.ConnectionTimeout, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Password"
+                                          Description="SQL Server login password">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8D7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <PasswordBox MinWidth="220" Password="{x:Bind ViewModel.Visual.Password, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Command Timeout (s)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="6" Grid.Column="1" Minimum="1" Maximum="600"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Visual.CommandTimeout, Mode=TwoWay}" />
-                    </Grid>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Test Connection" MinHeight="36"
-                                Command="{x:Bind ViewModel.TestVisualConnectionCommand, Mode=OneWay}" />
-                        <TextBlock Text="{x:Bind ViewModel.VisualTestResult, Mode=OneWay}"
-                                   VerticalAlignment="Center"
-                                   Style="{ThemeResource CaptionTextBlockStyle}" />
-                    </StackPanel>
-                </StackPanel>
+                        <ctk:SettingsCard Header="Connection Timeout"
+                                          Description="Seconds before a connection attempt is abandoned">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="300"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Visual.ConnectionTimeout, Mode=TwoWay}" />
+                                <TextBlock Text="seconds" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+
+                        <ctk:SettingsCard Header="Command Timeout"
+                                          Description="Seconds before a running SQL command is cancelled">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="600"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Visual.CommandTimeout, Mode=TwoWay}" />
+                                <TextBlock Text="seconds" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+
+                        <ctk:SettingsCard Header="Test Connection"
+                                          Description="Verify the credentials can reach SQL Server">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEBD2;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ViewModel.VisualTestResult, Mode=OneWay}"
+                                           VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}" />
+                                <Button Content="Test" MinHeight="32"
+                                        Command="{x:Bind ViewModel.TestVisualConnectionCommand, Mode=OneWay}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
                 <!-- API SERVER -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="API SERVER" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Listen Address" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Api.ListenAddress, Mode=TwoWay}" />
+                <ctk:SettingsExpander Header="API Server"
+                                      Description="Kestrel listen address and JWT token lifetimes">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE71B;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Listen Address"
+                                          Description="Kestrel binding URL (e.g. http://0.0.0.0:5000)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8CE;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="260" Text="{x:Bind ViewModel.Api.ListenAddress, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="JWT Expiry (min)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1440"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Api.JwtExpiryMinutes, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="JWT Expiry"
+                                          Description="How long an access token remains valid">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="1440"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Api.JwtExpiryMinutes, Mode=TwoWay}" />
+                                <TextBlock Text="minutes" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Refresh Token Expiry (days)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="2" Grid.Column="1" Minimum="1" Maximum="365"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Api.RefreshTokenExpiryDays, Mode=TwoWay}" />
-                    </Grid>
-                </StackPanel>
+                        <ctk:SettingsCard Header="Refresh Token Expiry"
+                                          Description="How long a refresh token remains valid before re-login is required">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="365"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Api.RefreshTokenExpiryDays, Mode=TwoWay}" />
+                                <TextBlock Text="days" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
                 <!-- BACKUP -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="BACKUP" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <ToggleSwitch Header="Enable automatic backups"
-                                  IsOn="{x:Bind ViewModel.Backup.AutoBackupEnabled, Mode=TwoWay}" />
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Output Folder" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Backup.BackupFolder, Mode=TwoWay}" />
+                <ctk:SettingsExpander Header="Backup"
+                                      Description="Automated nightly mysqldump backups and retention policy">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE74E;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.Backup.AutoBackupEnabled, Mode=TwoWay}"
+                                  OnContent="Auto-backup on" OffContent="Auto-backup off"
+                                  VerticalAlignment="Center" />
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Output Folder"
+                                          Description="Directory where backup files are written">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Backup.BackupFolder, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="mysqldump Path" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="1" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Backup.MysqlDumpPath, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="mysqldump Path"
+                                          Description="Full path to the mysqldump executable">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE756;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Backup.MysqlDumpPath, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Schedule (HH:mm)" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="2" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Backup.AutoBackupTime, Mode=TwoWay}" />
+                        <ctk:SettingsCard Header="Schedule"
+                                          Description="Time of day the automatic backup runs (24-hour HH:mm)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE787;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="100" Text="{x:Bind ViewModel.Backup.AutoBackupTime, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Retention (days)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="3" Grid.Column="1" Minimum="1" Maximum="365"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Backup.RetentionDays, Mode=TwoWay}" />
-                    </Grid>
-                </StackPanel>
+                        <ctk:SettingsCard Header="Retention Period"
+                                          Description="Backup files older than this are automatically deleted">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="1" Maximum="365"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Backup.RetentionDays, Mode=TwoWay}" />
+                                <TextBlock Text="days" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
                 <!-- MIGRATIONS -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="MIGRATIONS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <ToggleSwitch Header="Auto-apply on startup (keep OFF in production)"
-                                  IsOn="{x:Bind ViewModel.Migrations.AutoApplyOnStartup, Mode=TwoWay}" />
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Migration Folder" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Migrations.MigrationFolder, Mode=TwoWay}" />
-                    </Grid>
-                </StackPanel>
+                <ctk:SettingsExpander Header="Migrations"
+                                      Description="Incremental schema migration runner settings">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xECC5;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Auto-Apply on Startup"
+                                          Description="Automatically run pending migrations when the app starts. Keep OFF in production.">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEDAD;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.Migrations.AutoApplyOnStartup, Mode=TwoWay}"
+                                         OnContent="On" OffContent="Off" />
+                        </ctk:SettingsCard>
 
-                <!-- ADMIN ACCESS -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="ADMIN ACCESS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Required Windows Group" VerticalAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{x:Bind ViewModel.Admin.RequiredWindowsGroup, Mode=TwoWay}" />
-                    </Grid>
-                    <TextBlock Text="Members of this Windows group may open the admin app."
-                               Style="{ThemeResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
+                        <ctk:SettingsCard Header="Migration Folder"
+                                          Description="Folder containing V*.sql migration files deployed alongside the exe">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Migrations.MigrationFolder, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
                 <!-- NOTIFICATIONS -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="NOTIFICATIONS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto"
-                          RowSpacing="8" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Kill-switch Warning (s)" VerticalAlignment="Center" />
-                        <NumberBox Grid.Row="0" Grid.Column="1" Minimum="30" Maximum="3600"
-                                   SpinButtonPlacementMode="Inline"
-                                   Value="{x:Bind ViewModel.Notifications.KillSwitchDefaultWarningSeconds, Mode=TwoWay}" />
-                    </Grid>
-                    <TextBlock Text="Seconds clients are warned before a forced disconnect."
-                               Style="{ThemeResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
+                <ctk:SettingsExpander Header="Notifications"
+                                      Description="Client disconnect warnings and kill-switch countdown behaviour">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Kill-Switch Warning"
+                                          Description="Seconds clients are warned before a forced disconnect is issued">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <NumberBox MinWidth="120" Minimum="30" Maximum="3600"
+                                           SpinButtonPlacementMode="Inline"
+                                           Value="{x:Bind ViewModel.Notifications.KillSwitchDefaultWarningSeconds, Mode=TwoWay}" />
+                                <TextBlock Text="seconds" VerticalAlignment="Center"
+                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
 
             </StackPanel>
         </ScrollViewer>
