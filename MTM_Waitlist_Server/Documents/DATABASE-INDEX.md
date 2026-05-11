@@ -1,7 +1,7 @@
 # MTM Waitlist — Database Admin Application Index
 
-**Last Updated:** May 14, 2026  
-**Project:** `MTM_Waitlist_Server` (new — to be created)  
+**Last Updated:** July 2026  
+**Project:** `MTM_Waitlist_Server` (implemented — `DATABASE-01` through `DATABASE-07` complete)
 
 ---
 
@@ -191,16 +191,15 @@ Do not move the MAUI projects into the server solution. The MAUI app connects to
 
 ### 12. Start Implementation in the Correct Order
 
-After the projects and folders exist, implement the documents in this order:
+All seven DATABASE documents are now implemented. Refer to individual docs for implementation details:
 
-1. `DATABASE-01-API-Server-Admin-Architecture.md`
-2. `DATABASE-06-Intelligent-Migration-System.md`
-3. `DATABASE-02-MySQL-Status-Dashboard.md`
-4. `DATABASE-03-Settings-Management.md`
-5. `DATABASE-04-Backup-and-Restore.md`
-6. `DATABASE-05-Client-Kill-Switch.md`
-
-Do not start dashboard, settings, backup, or kill-switch work until the architecture and migration system are in place.
+1. `DATABASE-01-API-Server-Admin-Architecture.md` ✅
+2. `DATABASE-06-Intelligent-Migration-System.md` ✅
+3. `DATABASE-02-MySQL-Status-Dashboard.md` ✅
+4. `DATABASE-03-Settings-Management.md` ✅
+5. `DATABASE-04-Backup-and-Restore.md` ✅
+6. `DATABASE-05-Client-Kill-Switch.md` ✅
+7. `DATABASE-07-First-Run-Setup.md` ✅
 
 ---
 
@@ -292,11 +291,28 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 |---|---|
 | `Core/Models/FirstRun/FirstRunStatus.cs` | Enum: `Ready`, `MySqlUnreachable`, `SchemaMissing`, `NoAdminUser` |
 | `Core/Models/FirstRun/Model_FirstRunProbeResult.cs` | Probe result with status + optional error message |
-| `Core/Interfaces/FirstRun/IService_FirstRun.cs` | `ProbeAsync()`, `IsFirstRunRequired()`, `MarkCompleteAsync()` |
+| `Core/Interfaces/FirstRun/IService_FirstRun.cs` | `ProbeAsync()`, `IsFirstRunRequiredAsync()`, `MarkCompleteAsync()` |
 | `Hosts/.../Services/Service_FirstRun.cs` | MySqlConnector-based implementation |
 | `Hosts/.../ViewModels/ViewModel_FirstRun.cs` | Step tracking, form fields, wizard commands |
 | `Hosts/.../Views/View_FirstRun.xaml` | 3-step wizard UI |
 | `Hosts/.../Views/View_FirstRun.xaml.cs` | Code-behind |
+
+### C# (Window Sizer)
+
+| File | Purpose |
+|---|---|
+| `Core/Interfaces/Window/IService_WindowSizer.cs` | `ApplyFirstRunSize()`, `ApplyNormalSize()`, `CenterOnMonitor()` |
+| `Hosts/.../Services/Service_WindowSizer.cs` | Resizes and centers the main window for first-run vs. normal launch |
+
+### C# (Dashboard — Active Connection Safety Guard)
+
+| File | Changed |
+|---|---|
+| `Core/Models/Dashboard/Model_ActiveConnection.cs` | Added `IsCritical`, `CanKill`, `KillTooltip`, `CriticalUsers` set, `DetectCritical()` |
+| `Core/Models/Dashboard/Model_ConnectionGroup.cs` | New — groups processlist rows by user for the expanded dashboard UI |
+| `Core/MTM_Waitlist_Server.Api/Services/Service_Dashboard.cs` | Sets `IsCritical` at query time; `KillConnectionAsync` re-verifies before issuing `KILL` |
+| `Modules/.../ViewModels/ViewModel_Dashboard.cs` | `KillConnectionCommand` returns early for critical connections; `GroupedConnections` observable |
+| `Modules/.../Views/View_Dashboard.xaml` | Kill button uses `IsEnabled={x:Bind CanKill}` and `ToolTipService.ToolTip={x:Bind KillTooltip}` |
 
 ### Updated SQL
 
@@ -314,7 +330,7 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 | DATABASE-01 Q2 | API lifecycle management | App **starts with Windows** (Task Scheduler). Admin UI has **Start / Stop / Restart** controls for the embedded Kestrel listener |
 | DATABASE-01 Q3 | New project or extend deployment tooling? | **New standalone project** — `MTM_Waitlist_Server.Admin` |
 | DATABASE-01 Q4 | In-process or external API hosting? | **In-process** — one exe, shared DI container |
-| DATABASE-01 Q5 | Access control for admin app? | **Windows Authentication** — checks current Windows user's group membership on launch. Falls back to Windows group during first-run (DATABASE-07) |
+| DATABASE-01 Q5 | Access control for admin app? | **MySQL Role-Based Auth** — `IService_AdminAuth` queries `mtm_waitlist.Users`; `Admin` and `Developer` roles are permitted. Falls back to Windows `BUILTIN\Administrators` group only during first-run when MySQL is unreachable (DATABASE-07) |
 | DATABASE-07 Q1 | How is a fresh install detected? | **Three-step probe:** MySQL reachable → schema exists → active Admin/Developer user exists |
 | DATABASE-07 Q2 | Auth gate on first run? | **Falls back to `BUILTIN\Administrators`** Windows group when DB probe fails |
 | DATABASE-07 Q3 | First-run UI | **Inline 3-step wizard** inside the admin shell — Connect, Bootstrap, Create User |

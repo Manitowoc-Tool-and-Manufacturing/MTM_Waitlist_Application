@@ -25,6 +25,7 @@ public partial class ViewModel_Dashboard : ObservableObject
     [ObservableProperty] private int _overdueRequestCount;
     [ObservableProperty] private ObservableCollection<Model_TableStat> _tableStats = [];
     [ObservableProperty] private ObservableCollection<Model_ActiveConnection> _activeConnections = [];
+    [ObservableProperty] private ObservableCollection<Model_ConnectionGroup> _groupedConnections = [];
     [ObservableProperty] private ObservableCollection<LogEntry> _recentActivity = [];
     [ObservableProperty] private bool _isRefreshing;
     [ObservableProperty] private DateTime _lastRefreshedAt;
@@ -62,6 +63,8 @@ public partial class ViewModel_Dashboard : ObservableObject
 
             var connections = await _dashboard.GetActiveConnectionsAsync(ct);
             ActiveConnections = new ObservableCollection<Model_ActiveConnection>(connections);
+            GroupedConnections = new ObservableCollection<Model_ConnectionGroup>(
+                Model_ConnectionGroup.FromConnections(connections));
 
             var (total, open, overdue) = await _dashboard.GetWaitlistCountsAsync(ct);
             TotalRequestsToday = total;
@@ -91,6 +94,13 @@ public partial class ViewModel_Dashboard : ObservableObject
     [RelayCommand]
     private async Task KillConnectionAsync(Model_ActiveConnection connection)
     {
+        // Belt-and-suspenders: the Kill button is already disabled for critical connections,
+        // but guard here too so no code path can kill a critical thread.
+        if (connection.IsCritical)
+        {
+            return;
+        }
+
         await _dashboard.KillConnectionAsync(connection.ThreadId);
         await RefreshAsync(CancellationToken.None);
     }

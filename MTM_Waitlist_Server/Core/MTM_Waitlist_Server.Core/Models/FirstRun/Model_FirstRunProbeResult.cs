@@ -15,8 +15,8 @@ public record Model_FirstRunProbeResult(FirstRunStatus Status, string? ErrorMess
         new(FirstRunStatus.MySqlUnreachable, error);
 
     /// <summary>Creates a result indicating the schema is missing.</summary>
-    public static Model_FirstRunProbeResult SchemaMissing() =>
-        new(FirstRunStatus.SchemaMissing);
+    public static Model_FirstRunProbeResult SchemaMissing(string? error = null) =>
+        new(FirstRunStatus.SchemaMissing, error);
 
     /// <summary>Creates a result indicating no admin user exists.</summary>
     public static Model_FirstRunProbeResult NoAdminUser() =>

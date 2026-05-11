@@ -91,6 +91,8 @@ SHOW FULL PROCESSLIST;
 
 Filter to show only non-`system user` processes. Display: Thread ID, User, Host (IP only — strip port), Command, Time in seconds, State (first 40 chars if Query/Locked).
 
+Rows are **grouped by `User`** in the dashboard UI. The user row shows a summary (user name + thread count) and expands to reveal individual thread rows. Kill buttons only appear on expanded thread rows.
+
 ### Recent Activity Log
 
 This is an **in-process ring buffer** — the ASP.NET middleware logs the last 200 request/response events to a `ConcurrentQueue<LogEntry>` in memory. The dashboard reads from this queue. It is NOT a database query.
@@ -176,10 +178,13 @@ Key observable properties:
 [ObservableProperty] int _overdueRequestCount
 [ObservableProperty] ObservableCollection<Model_TableStat> _tableStats
 [ObservableProperty] ObservableCollection<Model_ActiveConnection> _activeConnections
+[ObservableProperty] ObservableCollection<Model_ConnectionGroup> _groupedConnections  // for the UI grouped view
 [ObservableProperty] ObservableCollection<LogEntry> _recentActivity
 [ObservableProperty] bool _isRefreshing
 [ObservableProperty] DateTime _lastRefreshedAt
 ```
+
+The dashboard triggers `RefreshCommand` automatically when the page loads (via `View_Dashboard.xaml.cs` `Loaded` event), so the user sees live data immediately without pressing the Refresh button.
 
 Key commands:
 ```csharp
@@ -196,17 +201,31 @@ Key commands:
 ```
 Core/Models/Dashboard/
   Model_TableStat.cs         ← TableName, EstimatedRows, DataBytes, LastUpdated
-  Model_ActiveConnection.cs  ← ThreadId, User, Host, Command, TimeSeconds, State
+  Model_ActiveConnection.cs  ← ThreadId, User, Host, Command, TimeSeconds, State, IsCritical
+                                + CriticalUsers (static set), DetectCritical(), CanKill, KillTooltip
+  Model_ConnectionGroup.cs   ← User, Threads (List<Model_ActiveConnection>), ThreadCount
+                                + FromConnections() factory — groups and sorts by user
 ```
 
 ---
 
 ## `KillConnection` from Dashboard
 
-The "Kill Connection" button in the Active Connections grid calls `KILL <thread_id>` directly. This is a MySQL-level kill (terminates the query/connection) — not the same as the app-level client kill switch in DATABASE-05. Both are needed:
+The **Kill** button in each expanded thread row calls `KILL <thread_id>` directly on MySQL. This is a MySQL-level kill (terminates the query/connection) — not the same as the app-level client kill switch in DATABASE-05. Both are needed:
 
 - **MySQL KILL** (this feature): terminates a hung query or orphaned connection at the database level. Used by IT to clean up stale connections.
 - **App-level kill switch** (DATABASE-05): sends a graceful-shutdown command to the MAUI client application. The app warns the user and closes cleanly.
+
+### Critical Connection Protection
+
+Some MySQL connections belong to the admin app's own internal service accounts. Killing these connections crashes the app. The following safeguards are in place:
+
+1. **`Model_ActiveConnection.IsCritical`** — set to `true` at query time using `Model_ActiveConnection.DetectCritical(user, host)`.
+2. **Kill button disabled** — the XAML Kill button is bound to `CanKill` (inverse of `IsCritical`) with a tooltip explaining why it is disabled.
+3. **ViewModel guard** — `KillConnectionAsync` returns early if `connection.IsCritical` is `true`.
+4. **Service guard** — `Service_Dashboard.KillConnectionAsync` re-queries the processlist before issuing `KILL` and throws `InvalidOperationException` if the thread is critical, preventing bypass through any code path.
+
+Connections are considered critical if `User` is `waitlist_admin_dbupdater` or `waitlist_admin_dbappuser`, or if `Host` is `localhost`, `127.0.0.1`, or `::1`.
 
 ---
 

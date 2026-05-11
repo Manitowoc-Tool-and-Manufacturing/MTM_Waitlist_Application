@@ -1,44 +1,62 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MTM_Waitlist_Server.Admin.Services;
+using MTM_Waitlist_Server.Admin.Views;
+using MTM_Waitlist_Server.Core.Interfaces.Window;
+using MTM_Waitlist_Server.Core.Models.FirstRun;
 using MTM_Waitlist_Server.Module.Dashboard.Views;
 using MTM_Waitlist_Server.Module.Settings.Views;
 using System;
-
+using System.Linq;
 namespace MTM_Waitlist_Server.Admin;
 
 /// <summary>
-/// Navigation shell window. When <paramref name="accessDenied"/> is true the window shows
-/// an access-denied message and exits on close; otherwise it hosts the admin NavigationView.
+/// Navigation shell window. Supports four launch modes:
+/// normal, access-denied, first-run wizard, and degraded (DB unreachable post-setup).
 /// </summary>
 public sealed partial class MainWindow : Window
 {
     private readonly bool _accessDenied;
+    private readonly bool _degraded;
+    private readonly Model_FirstRunProbeResult? _probeResult;
+    private readonly IService_WindowSizer _windowSizer;
 
-    public MainWindow(bool accessDenied = false)
+    /// <summary>
+    /// Normal / access-denied constructor — backward-compatible with existing callers.
+    /// </summary>
+    public MainWindow(bool accessDenied = false, bool degraded = false,
+        FirstRunStatus? firstRunStatus = null,
+        Model_FirstRunProbeResult? probeResult = null)
     {
         InitializeComponent();
         _accessDenied = accessDenied;
+        _degraded     = degraded;
+        _probeResult  = probeResult;
         Title = "MTM Waitlist Server Admin";
 
-        // 1. Get the window handle (HWND)
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        // Construct the window sizer now that we have a valid HWND.
+        _windowSizer = new Service_WindowSizer(this);
 
-        // 2. Get the WindowId from the HWND
-        Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-
-        // 3. Get the AppWindow object
-        Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-
-        // 4. Resize the window (dimensions are in pixels)
-        appWindow.Resize(new Windows.Graphics.SizeInt32 { Width = 1200, Height = 600 });
-
-
+        // Always open centered on the monitor the window lands on.
+        // ApplyFirstRunSize / ApplyNormalSize each call CenterOnMonitor after resizing,
+        // so the plain CenterOnMonitor() here only runs for the access-denied path.
         if (accessDenied)
         {
+            _windowSizer.CenterOnMonitor();
             ShowAccessDenied();
+        }
+        else if (firstRunStatus.HasValue)
+        {
+            ShowFirstRunWizard(firstRunStatus.Value);
+        }
+        else if (degraded)
+        {
+            _windowSizer.ApplyNormalSize();
+            ShowDegradedMode();
         }
         else
         {
+            _windowSizer.ApplyNormalSize();
             // Navigate to Dashboard on startup.
             NavView.SelectedItem = NavView.MenuItems[0];
         }
@@ -53,7 +71,93 @@ public sealed partial class MainWindow : Window
             Margin = new Thickness(24),
             FontSize = 16
         };
-        NavView.IsEnabled = false;
+        LockNavPane();
+    }
+
+    /// <summary>
+    /// Locks the NavigationView and loads the first-run wizard so the user can
+    /// bootstrap the database before the normal admin shell is usable.
+    /// </summary>
+    private void ShowFirstRunWizard(FirstRunStatus status)
+    {
+        _windowSizer.ApplyFirstRunSize();
+        LockNavPane();
+
+        // Database does not exist yet — override the hardcoded green status bar values
+        // so the user doesn't see a false "Connected" indicator during first-run setup.
+        DbStatusDot.Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray);
+        TxtDbStatus.Text = "Database not configured";
+
+        var wizard = App.Services?.GetService(typeof(View_FirstRun)) as View_FirstRun
+            ?? throw new InvalidOperationException("View_FirstRun is not registered in DI.");
+
+        // Pass the probe result into the ViewModel so the error message is visible immediately.
+        if (_probeResult is not null)
+        {
+            wizard.ViewModel.ApplyProbeResult(_probeResult);
+        }
+
+        // When the wizard signals completion, unlock the shell and go to Dashboard.
+        wizard.SetupCompleted += OnFirstRunCompleted;
+        ContentFrame.Content = wizard;
+    }
+
+    private void OnFirstRunCompleted(object? sender, EventArgs e)
+    {
+        // Restart the app so the normal launch path (DB role check) runs cleanly.
+        Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Empty);
+    }
+
+    /// <summary>
+    /// Disables all nav-pane items and hides the pane-toggle button so the user
+    /// cannot navigate away from the current content (first-run wizard or access-denied).
+    /// The content frame itself is NOT disabled — controls inside remain interactive.
+    /// </summary>
+    private void LockNavPane()
+    {
+        // Disable every item in the main menu and the footer (Settings lives there).
+        foreach (var item in NavView.MenuItems.Cast<object>().Concat(NavView.FooterMenuItems.Cast<object>()))
+        {
+            if (item is NavigationViewItem nvi)
+            {
+                nvi.IsEnabled = false;
+            }
+        }
+
+        // Collapse the hamburger/pane-toggle so the pane cannot be opened.
+        NavView.IsPaneToggleButtonVisible = false;
+        NavView.IsPaneOpen = false;
+    }
+
+    /// <summary>
+    /// Shows a notice that MySQL is currently unreachable; the rest of the shell
+    /// is still accessible so the administrator can check settings and retry.
+    /// </summary>
+    private void ShowDegradedMode()
+    {
+        // Show a banner but still allow navigation (settings are still usable).
+        var banner = new InfoBar
+        {
+            Title = "Database Unreachable",
+            Message = "MySQL could not be reached. Some features are unavailable. Check Settings → Database.",
+            Severity = InfoBarSeverity.Warning,
+            IsOpen = true,
+            IsClosable = true,
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+
+        // Stack the banner above the main content frame using a StackPanel.
+        var panel = new StackPanel();
+        panel.Children.Add(banner);
+
+        var dashView = App.Services?.GetService(typeof(View_Dashboard)) as View_Dashboard;
+        if (dashView is not null)
+        {
+            panel.Children.Add(dashView);
+        }
+
+        ContentFrame.Content = panel;
+        NavView.SelectedItem = NavView.MenuItems[0];
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

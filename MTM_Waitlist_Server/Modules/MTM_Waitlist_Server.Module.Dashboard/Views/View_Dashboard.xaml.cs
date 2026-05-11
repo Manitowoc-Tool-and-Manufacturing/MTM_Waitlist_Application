@@ -20,6 +20,7 @@ public sealed partial class View_Dashboard : Page
     {
         InitializeComponent();
         ViewModel = viewModel;
+        Loaded += (_, _) => ViewModel.RefreshCommand.Execute(null);
     }
 
     private void KillButton_Click(object sender, RoutedEventArgs e)

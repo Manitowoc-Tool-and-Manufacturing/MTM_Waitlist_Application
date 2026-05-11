@@ -3,6 +3,7 @@ using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.Dashboard;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -185,7 +186,8 @@ public sealed class Service_Dashboard : IService_Dashboard
                 Host: host,
                 Command: reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
                 TimeSeconds: reader.IsDBNull(5) ? 0 : Convert.ToInt32(reader.GetValue(5)),
-                State: state));
+                State: state,
+                IsCritical: Model_ActiveConnection.DetectCritical(user, host)));
         }
 
         return results;
@@ -194,6 +196,24 @@ public sealed class Service_Dashboard : IService_Dashboard
     /// <inheritdoc/>
     public async Task KillConnectionAsync(long threadId, CancellationToken ct = default)
     {
+        // Verify the thread is not a critical internal connection before issuing KILL.
+        // Re-query the process list so the guard cannot be bypassed by a stale client snapshot.
+        var current = await GetActiveConnectionsAsync(ct);
+        var thread = current.FirstOrDefault(c => c.ThreadId == threadId);
+
+        if (thread is null)
+        {
+            // Thread already gone — nothing to do.
+            return;
+        }
+
+        if (thread.IsCritical)
+        {
+            throw new InvalidOperationException(
+                $"Thread {threadId} belongs to critical user '{thread.User}' and cannot be killed. " +
+                "Killing this connection would crash the admin application.");
+        }
+
         await using var conn = OpenUpdaterConnection();
         await conn.OpenAsync(ct);
 

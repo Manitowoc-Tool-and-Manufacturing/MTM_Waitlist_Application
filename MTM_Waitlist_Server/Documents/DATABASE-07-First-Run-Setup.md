@@ -77,27 +77,44 @@ The probe uses the **updater credentials** from `server-settings.json`. On a bra
 // App.xaml.cs — OnLaunched
 var probeStatus = await firstRunService.ProbeAsync();
 
-if (probeStatus != FirstRunStatus.Ready)
+## Auth Gate Fallback
+
+```csharp
+// App.xaml.cs — OnLaunched (actual implementation)
+var firstRunRequired = await firstRunService.IsFirstRunRequiredAsync();
+
+if (firstRunRequired)
 {
-    // Fall back to Windows group check — MySQL is not usable yet
+    // MySQL not ready or no admin user exists.
+    // Fall back to Windows Administrators group for wizard access.
     var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-    var requiredGroup = settingsStore.Get().Admin.RequiredWindowsGroup;
-    if (!principal.IsInRole(requiredGroup))
+    if (!principal.IsInRole("BUILTIN\\Administrators"))
     {
+        // Show access-denied screen — not a member of local Administrators.
         _window = new MainWindow(accessDenied: true);
         _window.Activate();
         return;
     }
 
-    // Open admin shell in first-run mode — nav locked to wizard
-    _window = new MainWindow(firstRunStatus: probeStatus);
+    // Open shell in first-run (wizard) mode — nav locked.
+    _window = new MainWindow(firstRun: true, services: host.Services);
     _window.Activate();
     return;
 }
 
-// Normal launch — MySQL role check
-var isAuthorised = await adminAuth.IsAuthorisedAsync(windowsUsername);
-if (!isAuthorised) { /* access denied */ }
+// Normal launch — MySQL role check.
+var windowsUser = WindowsIdentity.GetCurrent().Name.Split('\\').Last();
+var isAuthorised = await adminAuth.IsAuthorisedAsync(windowsUser);
+if (!isAuthorised)
+{
+    _window = new MainWindow(accessDenied: true);
+    _window.Activate();
+    return;
+}
+
+// Authorised — normal dashboard launch.
+_window = new MainWindow(services: host.Services);
+_window.Activate();
 ```
 
 ---
@@ -299,7 +316,9 @@ Key commands:
 
 ## `MainWindow` Integration
 
-`MainWindow.xaml.cs` receives the `FirstRunStatus` on construction. When not `Ready`, the NavigationView menu items are disabled and `View_FirstRun` is loaded as the frame content. The wizard's `CreateFirstUserAsync` command, on success, fires an event that `MainWindow` handles to re-enable the nav and navigate to the Dashboard.
+`MainWindow.xaml.cs` receives the `FirstRunStatus` on construction. When not `Ready`, the NavigationView menu items are disabled and `View_FirstRun` is loaded as the frame content. The Settings nav item is also disabled while the wizard is active to prevent the user from navigating away with no path back. The wizard's `CreateFirstUserAsync` command, on success, fires an event that `MainWindow` handles to re-enable the nav and navigate to the Dashboard.
+
+The database status indicator in the title bar is set to a neutral "Setting up…" state during first-run so users are not confused by a red "Disconnected" indicator while the wizard is guiding them through setup.
 
 ```csharp
 // MainWindow.xaml.cs
@@ -311,6 +330,27 @@ if (firstRunStatus != FirstRunStatus.Ready)
     ContentFrame.Navigate(typeof(View_FirstRun), vm);
 }
 ```
+
+---
+
+## Window Sizing Service
+
+The admin app uses `IService_WindowSizer` (implemented by `Service_WindowSizer` in the Admin host) to manage the application window dimensions at launch time. This prevents the wizard from appearing in a window sized for the normal dashboard, or vice versa.
+
+```
+Core/Interfaces/Window/
+  IService_WindowSizer.cs   ← ApplyFirstRunSize(), ApplyNormalSize(), CenterOnMonitor()
+
+Hosts/MTM_Waitlist_Server.Admin/Services/
+  Service_WindowSizer.cs    ← Implementation using AppWindow / DisplayArea
+```
+
+On launch `App.xaml.cs` chooses:
+- **First-run:** calls `ApplyFirstRunSize()` — taller window to accommodate the three-step wizard.
+- **Normal or degraded:** calls `ApplyNormalSize()` — compact window sized for the dashboard.
+- Both paths call `CenterOnMonitor()` to position the window in the center of the primary display.
+
+The Settings nav shortcut is disabled when first-run is active so the user cannot navigate away from the wizard mid-setup.
 
 ---
 

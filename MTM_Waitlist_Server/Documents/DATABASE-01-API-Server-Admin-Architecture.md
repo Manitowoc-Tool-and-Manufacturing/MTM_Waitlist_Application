@@ -10,7 +10,7 @@
 | 2 | How does the REST API start and who manages its lifecycle? | The admin app (which hosts the API in-process) **starts with Windows** via Task Scheduler. The admin UI provides **Start / Stop / Restart** controls for the embedded Kestrel listener |
 | 3 | New project or extend `MTM.DatabaseDeployment.Tooling`? | **New standalone project** — `MTM_Waitlist_Server.Admin` |
 | 4 | Host the API in-process or manage externally? | **In-process** — one exe hosts both the WinUI admin window and the Kestrel API |
-| 5 | Who has access to the admin app? | **Windows Authentication** — the app reads the current Windows identity on launch and restricts access to members of the IT admin Windows group |
+| 5 | Who has access to the admin app? | **MySQL Role-Based Auth** — the app queries `mtm_waitlist.Users` and permits Windows users whose `Role` is `Admin` or `Developer`. On a fresh machine where MySQL does not yet exist, the First Run wizard launches instead (see DATABASE-07) |
 
 ---
 
@@ -197,18 +197,19 @@ These controls are visible in both the Dashboard status bar (compact buttons) an
 
 ---
 
-## Windows Authentication Gate
+## Authorization Gate
 
-On launch, the admin app reads the current Windows identity:
+On launch, `App.xaml.cs` reads the current Windows identity and authorises it against the MySQL `mtm_waitlist.Users` table:
 
 ```csharp
-var identity = WindowsIdentity.GetCurrent();
-var principal = new WindowsPrincipal(identity);
+// App.xaml.cs — simplified
+var windowsUser = WindowsIdentity.GetCurrent().Name.Split('\\').Last();
+var authorised  = await _adminAuth.IsAuthorisedAsync(windowsUser);
 ```
 
-Access is granted if the current user is a member of the configured Windows group (default: the local `Administrators` group on the server machine). The group name is stored in `server-settings.json` under `Admin:RequiredWindowsGroup` (default: `BUILTIN\Administrators`). If access is denied, the app shows an access-denied screen and exits — it does not show the admin UI at all.
+`IsAuthorisedAsync` queries MySQL for a row where `Username = @windowsUser` and `Role IN ('Admin', 'Developer')`. If no matching row exists the app shows an access-denied screen and does not open the admin UI. No password prompt is shown — Windows identity is the authentication factor; MySQL role is the authorisation factor.
 
-This means no separate login screen or password is needed. Physical access to the server (or Remote Desktop with admin credentials) is the authentication factor.
+> **First-run edge case:** If MySQL is not yet installed or the database does not exist, `IService_FirstRun.ProbeAsync()` returns `true` and the app launches the First Run wizard instead of the normal dashboard (see DATABASE-07). The Windows group fallback is only used when MySQL is unreachable during an otherwise complete installation.
 
 ---
 

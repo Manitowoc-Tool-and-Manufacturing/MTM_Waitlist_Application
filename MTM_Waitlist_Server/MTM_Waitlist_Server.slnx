@@ -77,6 +77,7 @@
     <File Path="Documents/DATABASE-04-Backup-and-Restore.md" />
     <File Path="Documents/DATABASE-05-Client-Kill-Switch.md" />
     <File Path="Documents/DATABASE-06-Intelligent-Migration-System.md" />
+    <File Path="Documents/DATABASE-07-First-Run-Setup.md" />
     <File Path="Documents/DATABASE-INDEX.md" />
   </Folder>
   <Folder Name="/Hosts/">

@@ -1,17 +1,22 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
+using System.Security.Principal;
+using System.Threading.Tasks;
 using MTM_Waitlist_Server.Admin.Services;
+using MTM_Waitlist_Server.Admin.ViewModels;
+using MTM_Waitlist_Server.Admin.Views;
 using MTM_Waitlist_Server.Api;
 using MTM_Waitlist_Server.Api.Services;
-using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
 using MTM_Waitlist_Server.Core.Interfaces.Auth;
+using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
+using MTM_Waitlist_Server.Core.Interfaces.FirstRun;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
+using MTM_Waitlist_Server.Core.Models.FirstRun;
 using MTM_Waitlist_Server.Module.Dashboard.ViewModels;
 using MTM_Waitlist_Server.Module.Dashboard.Views;
 using MTM_Waitlist_Server.Module.Settings.ViewModels;
 using MTM_Waitlist_Server.Module.Settings.Views;
-using System.Threading.Tasks;
 
 namespace MTM_Waitlist_Server.Admin;
 
@@ -41,9 +46,47 @@ public partial class App : Application
         var provider = sharedServices.BuildServiceProvider();
         Services = provider;
 
-        // --- Database Role Auth Gate ---
-        // Checks the current Windows username against mtm_waitlist.Users.
-        // Only Role = 'Admin' or 'Developer' may open the admin app.
+        // --- First-run probe ---
+        // Determines if MySQL is reachable and the schema + admin user exist.
+        var firstRunService = provider.GetRequiredService<IService_FirstRun>();
+        var probeResult = Task.Run(() => firstRunService.ProbeAsync()).GetAwaiter().GetResult();
+        var settings = provider.GetRequiredService<IService_SettingsStore>().Get();
+
+        bool showWizard = probeResult.Status is FirstRunStatus.SchemaMissing
+                                                           or FirstRunStatus.NoAdminUser
+            || (probeResult.Status != FirstRunStatus.Ready && !settings.FirstRunComplete);
+
+        if (showWizard)
+        {
+            // Only fall back to Windows group when MySQL itself is unreachable.
+            // If the DB is reachable but the schema/users are missing, go straight
+            // to the wizard — no group check required or possible.
+            if (probeResult.Status == FirstRunStatus.MySqlUnreachable)
+            {
+                var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+                if (!principal.IsInRole(settings.Admin.RequiredWindowsGroup))
+                {
+                    _window = new MainWindow(accessDenied: true);
+                    _window.Activate();
+                    return;
+                }
+            }
+
+            // Open the shell locked to the first-run wizard.
+            _window = new MainWindow(firstRunStatus: probeResult.Status, probeResult: probeResult);
+            _window.Activate();
+            return;
+        }
+
+        // --- Degraded mode — first run done but MySQL is currently unreachable ---
+        if (probeResult.Status == FirstRunStatus.MySqlUnreachable && settings.FirstRunComplete)
+        {
+            _window = new MainWindow(degraded: true);
+            _window.Activate();
+            return;
+        }
+
+        // --- Normal launch — MySQL role check ---
         var adminAuth = provider.GetRequiredService<IService_AdminAuth>();
         var windowsUsername = Service_AdminAuth.GetCurrentWindowsUsername();
         var isAuthorised = Task.Run(() => adminAuth.IsAuthorisedAsync(windowsUsername)).GetAwaiter().GetResult();
@@ -62,7 +105,7 @@ public partial class App : Application
         _apiHostTask = webApp.RunAsync();
 
         // --- Open admin window ---
-        _window = new MainWindow(accessDenied: false);
+        _window = new MainWindow();
         _window.Activate();
     }
 
@@ -73,6 +116,7 @@ public partial class App : Application
     {
         services.AddSingleton<IService_SettingsStore, Service_SettingsStore>();
         services.AddSingleton<IService_AdminAuth, Service_AdminAuth>();
+        services.AddSingleton<IService_FirstRun, Service_FirstRun>();
         services.AddSingleton<IActivityLogBuffer, ActivityLogBuffer>();
         services.AddSingleton<IService_Dashboard, Service_Dashboard>();
 
@@ -81,8 +125,7 @@ public partial class App : Application
         services.AddTransient<View_Dashboard>();
         services.AddTransient<ViewModel_Settings>();
         services.AddTransient<View_Settings>();
-
-        // TODO: register IService_Backup, IService_Migration, IService_KillSwitch,
-        //       and remaining module ViewModels/Views as implementations are created.
+        services.AddTransient<ViewModel_FirstRun>();
+        services.AddTransient<View_FirstRun>();
     }
 }
