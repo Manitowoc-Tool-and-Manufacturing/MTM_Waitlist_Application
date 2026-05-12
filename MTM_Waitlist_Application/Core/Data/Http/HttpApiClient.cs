@@ -206,7 +206,10 @@ public sealed class HttpApiClient : IApiClient
     {
         var request = new HttpRequestMessage(method, $"{baseUrl}{endpoint}");
 
-        var token = await SecureStorage.GetAsync(Constants_AuthStorage.AuthTokenKey);
+        // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
+        // Marshal to the main thread to avoid InvalidOperationException.
+        var token = await MainThread.InvokeOnMainThreadAsync(
+            () => SecureStorage.GetAsync(Constants_AuthStorage.AuthTokenKey));
         if (!string.IsNullOrWhiteSpace(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

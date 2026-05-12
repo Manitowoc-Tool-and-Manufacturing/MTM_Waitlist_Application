@@ -15,13 +15,23 @@
         /// <returns>A fully configured <see cref="MauiApp"/> instance.</returns>
         public static MauiApp CreateMauiApp()
         {
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] MauiProgram.CreateMauiApp() — {DateTime.Now:HH:mm:ss.fff}");
+
             var builder = MauiApp.CreateBuilder();
+
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] MauiAppBuilder created — {DateTime.Now:HH:mm:ss.fff}");
+
             // ── Windows-specific configuration only ─────────────────────
             // Add anything here that is exclusive to Windows:
             // e.g. Windows notification services, WinUI theme config,
             //      desktop file system permissions, tray icon setup
             // ─────────────────────────────────────────────────
-            return builder.UseSharedMauiApp();  // ← builds the app, loads config, wires DI
+
+            var app = builder.UseSharedMauiApp();  // ← builds the app, loads config, wires DI
+
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] MauiApp fully built — {DateTime.Now:HH:mm:ss.fff}");
+
+            return app;
         }
     }
 }

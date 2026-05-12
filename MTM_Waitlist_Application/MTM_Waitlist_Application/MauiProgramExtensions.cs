@@ -41,24 +41,30 @@ namespace MTM_Waitlist_Application
         /// <returns>The fully built <see cref="MauiApp"/>.</returns>
         public static MauiApp UseSharedMauiApp(this MauiAppBuilder builder)
         {
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] UseSharedMauiApp — configuring MAUI app — {DateTime.Now:HH:mm:ss.fff}");
+
             builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
+                    System.Diagnostics.Debug.WriteLine($"[STARTUP] Registering fonts — {DateTime.Now:HH:mm:ss.fff}");
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
 #if DEBUG
             builder.Logging.AddDebug();
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Debug logging registered — {DateTime.Now:HH:mm:ss.fff}");
 #endif
 
             // Load appsettings.json from embedded resource.
             // The using block disposes the stream immediately after AddJsonStream reads it
             // to prevent a memory leak on Android.
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Loading appsettings.json — {DateTime.Now:HH:mm:ss.fff}");
             using var stream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream("MTM_Waitlist_Application.appsettings.json")!;
             builder.Configuration.AddJsonStream(stream);
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] appsettings.json loaded — {DateTime.Now:HH:mm:ss.fff}");
 
 #if DEBUG
             using var devStream = Assembly.GetExecutingAssembly()
@@ -66,22 +72,48 @@ namespace MTM_Waitlist_Application
             if (devStream is not null)
             {
                 builder.Configuration.AddJsonStream(devStream);
+                System.Diagnostics.Debug.WriteLine($"[STARTUP] appsettings.Development.json loaded — {DateTime.Now:HH:mm:ss.fff}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[STARTUP] appsettings.Development.json NOT found (optional) — {DateTime.Now:HH:mm:ss.fff}");
             }
 #endif
 
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Registering IHttpClientFactory — {DateTime.Now:HH:mm:ss.fff}");
             // Register IHttpClientFactory — required by HttpApiClient.
             builder.Services.AddHttpClient();
 
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Registering shared services — {DateTime.Now:HH:mm:ss.fff}");
             builder.Services.AddSharedServices();
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Shared services registered — {DateTime.Now:HH:mm:ss.fff}");
 
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] Building MauiApp — {DateTime.Now:HH:mm:ss.fff}");
             var app = builder.Build();
+            System.Diagnostics.Debug.WriteLine($"[STARTUP] MauiApp built — {DateTime.Now:HH:mm:ss.fff}");
+
+            // Get a proper logger now that DI is available.
+            // ILogger<App> is used as the category since MauiProgramExtensions is a static class.
+            var logger = app.Services.GetRequiredService<ILogger<App>>();
 
             // Eagerly resolve SyncService so its IConnectivity.ConnectivityChanged
             // subscription is active before any screen loads.
             // The service subscribes in its constructor; without this call the
             // singleton would only be created on first ViewModel access and could
             // miss the initial reconnect event.
-            _ = Task.Run(() => app.Services.GetRequiredService<ISyncService>());
+            logger.LogInformation("[STARTUP] Eagerly resolving SyncService");
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    app.Services.GetRequiredService<ISyncService>();
+                    logger.LogInformation("[STARTUP] SyncService resolved and active");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "[STARTUP] Failed to resolve SyncService");
+                }
+            });
 
 #if DEBUG
             // Seed local SQLite with mock data when the primary API host (172.16.1.104)
@@ -90,28 +122,37 @@ namespace MTM_Waitlist_Application
             // the main thread during startup. Only runs in Debug builds.
             var primaryUrl = app.Services.GetRequiredService<IConfiguration>()["Api:PrimaryBaseUrl"]
                              ?? Core.Constants.Api.Constants_Api.PrimaryBaseUrl;
+            logger.LogInformation("[STARTUP] Debug mock-data seeder starting — primaryUrl={PrimaryUrl}", primaryUrl);
             _ = Task.Run(async () =>
             {
                 try
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
+                    logger.LogInformation("[STARTUP] Initializing LocalDbContext");
                     await app.Services.GetRequiredService<LocalDbContext>().InitializeAsync();
+                    logger.LogInformation("[STARTUP] LocalDbContext initialized");
 
+                    logger.LogInformation("[STARTUP] Probing primary API host: {Url}", primaryUrl);
                     var isPrimaryReachable = await IsPrimaryReachableAsync(primaryUrl);
+                    logger.LogInformation("[STARTUP] Primary API reachable: {IsReachable}", isPrimaryReachable);
+
                     if (!isPrimaryReachable)
                     {
+                        logger.LogInformation("[STARTUP] Seeding local SQLite with mock data");
                         var localRepo = app.Services.GetRequiredService<IRepository_WaitlistEntryLocal>();
                         await MockDataSeeder.SeedIfEmptyAsync(localRepo);
+                        logger.LogInformation("[STARTUP] Mock data seed complete");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Debug mock data seeding failed: {ex.Message}");
+                    logger.LogError(ex, "[STARTUP] Debug mock data seeding failed");
                 }
             });
 #endif
 
+            logger.LogInformation("[STARTUP] UseSharedMauiApp complete — app ready");
             return app;
         }
 

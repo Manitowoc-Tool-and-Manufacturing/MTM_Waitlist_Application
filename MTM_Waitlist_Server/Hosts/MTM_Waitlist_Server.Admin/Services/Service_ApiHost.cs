@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using MTM_Waitlist_Server.Admin.Logging;
 using MTM_Waitlist_Server.Api;
 using MTM_Waitlist_Server.Core.Interfaces.Api;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
@@ -36,8 +37,11 @@ internal sealed class Service_ApiHost : IService_ApiHost
     public void Start()
     {
         var listenUrl = _settingsStore.Get().Api.ListenAddress;
+        StartupLogger.Info($"ApiHost.Start: building Kestrel app bound to '{listenUrl}'.");
         _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices);
+        StartupLogger.Info("ApiHost.Start: WebApplication built. Starting RunAsync on background task.");
         _hostTask = _webApp.RunAsync();
+        StartupLogger.Info("ApiHost.Start: RunAsync task launched.");
     }
 
     /// <inheritdoc/>
@@ -46,24 +50,39 @@ internal sealed class Service_ApiHost : IService_ApiHost
         // Already healthy — nothing to do.
         if (IsRunning)
         {
+            StartupLogger.Info("ApiHost.EnsureRunningAsync: host is already running — no action needed.");
             return true;
         }
+
+        StartupLogger.Warn("ApiHost.EnsureRunningAsync: host task is not running (completed or faulted). Attempting restart.");
 
         // Stop stale host cleanly before rebuilding.
         if (_webApp is not null)
         {
-            try { await _webApp.StopAsync(CancellationToken.None); } catch { /* ignore */ }
+            try
+            {
+                StartupLogger.Info("ApiHost.EnsureRunningAsync: stopping stale WebApplication.");
+                await _webApp.StopAsync(CancellationToken.None);
+                StartupLogger.Info("ApiHost.EnsureRunningAsync: stale WebApplication stopped.");
+            }
+            catch (Exception ex)
+            {
+                StartupLogger.Warn($"ApiHost.EnsureRunningAsync: StopAsync threw during stale-host cleanup — {ex.GetType().Name}: {ex.Message}. Ignoring and proceeding.");
+            }
         }
 
         try
         {
             var listenUrl = _settingsStore.Get().Api.ListenAddress;
+            StartupLogger.Info($"ApiHost.EnsureRunningAsync: rebuilding WebApplication on '{listenUrl}'.");
             _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices);
             _hostTask = _webApp.RunAsync();
+            StartupLogger.Info("ApiHost.EnsureRunningAsync: restart succeeded — RunAsync task launched.");
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            StartupLogger.Error("ApiHost.EnsureRunningAsync: restart FAILED.", ex);
             return false;
         }
     }

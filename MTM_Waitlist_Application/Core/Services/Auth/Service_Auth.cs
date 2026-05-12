@@ -91,7 +91,9 @@ public sealed class Service_Auth : IService_Auth
 
         try
         {
-            refreshToken = await SecureStorage.GetAsync(Constants_AuthStorage.RefreshTokenKey) ?? string.Empty;
+            // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
+            refreshToken = await MainThread.InvokeOnMainThreadAsync(
+                () => SecureStorage.GetAsync(Constants_AuthStorage.RefreshTokenKey)) ?? string.Empty;
         }
         catch
         {
@@ -114,17 +116,25 @@ public sealed class Service_Auth : IService_Auth
 
     private static async Task StoreSessionAsync(Model_AuthToken token)
     {
-        await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenKey, token.Token);
-        await SecureStorage.SetAsync(Constants_AuthStorage.RefreshTokenKey, token.RefreshToken);
-        await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenExpiresAtKey, token.ExpiresAt.ToString("O"));
-        await SecureStorage.SetAsync(Constants_AuthStorage.AuthRoleKey, token.Role);
+        // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenKey, token.Token);
+            await SecureStorage.SetAsync(Constants_AuthStorage.RefreshTokenKey, token.RefreshToken);
+            await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenExpiresAtKey, token.ExpiresAt.ToString("O"));
+            await SecureStorage.SetAsync(Constants_AuthStorage.AuthRoleKey, token.Role);
+        });
     }
 
     private static void ClearStoredSession()
     {
-        SecureStorage.Remove(Constants_AuthStorage.AuthTokenKey);
-        SecureStorage.Remove(Constants_AuthStorage.RefreshTokenKey);
-        SecureStorage.Remove(Constants_AuthStorage.AuthTokenExpiresAtKey);
-        SecureStorage.Remove(Constants_AuthStorage.AuthRoleKey);
+        // SecureStorage.Remove is synchronous but still requires the UI thread on WinUI.
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            SecureStorage.Remove(Constants_AuthStorage.AuthTokenKey);
+            SecureStorage.Remove(Constants_AuthStorage.RefreshTokenKey);
+            SecureStorage.Remove(Constants_AuthStorage.AuthTokenExpiresAtKey);
+            SecureStorage.Remove(Constants_AuthStorage.AuthRoleKey);
+        });
     }
 }

@@ -1,3 +1,4 @@
+using MTM_Waitlist_Server.Admin.Logging;
 using MTM_Waitlist_Server.Core.Interfaces.FirstRun;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
@@ -26,6 +27,10 @@ internal sealed class Service_FirstRun : IService_FirstRun
     public async Task<Model_FirstRunProbeResult> ProbeAsync(CancellationToken cancellationToken = default)
     {
         var db = _settingsStore.Get().Database;
+
+        StartupLogger.Info($"Probe step 1: attempting TCP connection to {db.Host}:{db.Port} " +
+            $"as '{db.UpdaterUsername}' (timeout={db.ConnectionTimeout}s).");
+
         var csb = new MySqlConnectionStringBuilder
         {
             Server                   = db.Host,
@@ -45,10 +50,13 @@ internal sealed class Service_FirstRun : IService_FirstRun
         {
             conn = new MySqlConnection(csb.ConnectionString);
             await conn.OpenAsync(cancellationToken);
+            StartupLogger.Info($"Probe step 1: TCP connection established (ServerVersion={conn.ServerVersion}).");
         }
         catch (MySqlException ex) when (IsNetworkError(ex))
         {
             // Genuinely unreachable — wrong host, port closed, firewall, etc.
+            StartupLogger.Warn($"Probe step 1: NETWORK ERROR — {ex.GetType().Name} (Number={ex.Number}): {ex.Message}");
+            StartupLogger.Info("Probe result: MySqlUnreachable (network/firewall/host failure).");
             return Model_FirstRunProbeResult.Unreachable(ex.Message);
         }
         catch (Exception ex)
@@ -56,12 +64,14 @@ internal sealed class Service_FirstRun : IService_FirstRun
             // Server is reachable but the updater credentials are wrong or the
             // database/user hasn't been created yet.  Treat this as SchemaMissing
             // so the wizard opens at Step 1 to let the user configure credentials.
+            StartupLogger.Warn($"Probe step 1: AUTH/CREDENTIAL ERROR — {ex.GetType().Name}: {ex.Message}. Treating as SchemaMissing so wizard can re-collect credentials.");
             return Model_FirstRunProbeResult.SchemaMissing(ex.Message);
         }
 
         await using (conn)
         {
             // Step 2 — does the schema + Users table exist?
+            StartupLogger.Info($"Probe step 2: checking for database '{db.DatabaseName}' and 'Users' table in information_schema.");
             var schemaExists = await ScalarAsync<long>(
                 conn,
                 """
@@ -73,12 +83,16 @@ internal sealed class Service_FirstRun : IService_FirstRun
                 new MySqlParameter("@schema", db.DatabaseName),
                 cancellationToken);
 
+            StartupLogger.Info($"Probe step 2: information_schema row count for '{db.DatabaseName}'.Users = {schemaExists}.");
+
             if (schemaExists == 0)
             {
+                StartupLogger.Info("Probe result: SchemaMissing (Users table not found).");
                 return Model_FirstRunProbeResult.SchemaMissing();
             }
 
             // Step 3 — does at least one active Admin or Developer user exist?
+            StartupLogger.Info($"Probe step 3: counting active Admin/Developer users in '{db.DatabaseName}'.Users.");
             var adminCount = await ScalarAsync<long>(
                 conn,
                 $"""
@@ -90,12 +104,16 @@ internal sealed class Service_FirstRun : IService_FirstRun
                 null,
                 cancellationToken);
 
+            StartupLogger.Info($"Probe step 3: active Admin/Developer count = {adminCount}.");
+
             if (adminCount == 0)
             {
+                StartupLogger.Info("Probe result: NoAdminUser (schema exists but no active admin found).");
                 return Model_FirstRunProbeResult.NoAdminUser();
             }
         }
 
+        StartupLogger.Info("Probe result: Ready (all checks passed).");
         return Model_FirstRunProbeResult.Ready();
     }
 
