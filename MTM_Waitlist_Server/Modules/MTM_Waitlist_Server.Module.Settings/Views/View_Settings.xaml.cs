@@ -16,5 +16,6 @@ public sealed partial class View_Settings : Page
     {
         InitializeComponent();
         ViewModel = viewModel;
+        Loaded += (_, _) => ViewModel.LoadCommand.Execute(null);
     }
 }

@@ -22,10 +22,13 @@ GRANT EXECUTE, SELECT
 CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'localhost'
     IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
 
--- PROCESS    : required for SHOW FULL PROCESSLIST (dashboard active connections)
+-- PROCESS          : required for SHOW FULL PROCESSLIST (dashboard active connections)
 -- REPLICATION CLIENT : required for SHOW MASTER STATUS (backup metadata)
--- KILL       : required for session termination from dashboard
-GRANT SELECT, PROCESS, REPLICATION CLIENT, KILL
+-- KILL             : required for session termination from dashboard
+-- SYSTEM_USER      : required to DROP/ALTER procedures owned by a SYSTEM_USER account
+--                    (MySQL 8.0+ security model — root is implicitly SYSTEM_USER)
+-- CREATE ROUTINE   : required to CREATE/DROP stored procedures and functions
+GRANT SELECT, PROCESS, REPLICATION CLIENT, KILL, SYSTEM_USER, CREATE ROUTINE
     ON *.* TO 'waitlist_admin_dbupdater'@'localhost';
 
 GRANT ALL PRIVILEGES

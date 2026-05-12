@@ -67,6 +67,68 @@ internal static class SqlScriptRunner
         return log;
     }
 
+    /// <summary>
+    /// Parses the provided <paramref name="sqlContent"/> string, splits it into
+    /// individual statements (handling DELIMITER directives), and executes each
+    /// one against <paramref name="connection"/>.  Used for disk-based migration files.
+    /// </summary>
+    /// <remarks>
+    /// Any <c>DEFINER = `user`@`host`</c> clause is stripped before execution so that
+    /// objects are always created owned by the connected user.  This prevents MySQL
+    /// Error 1227 ("you need SYSTEM_USER privilege") when re-running scripts that were
+    /// originally authored by a <c>root</c> / SYSTEM_USER account.
+    /// </remarks>
+    /// <param name="connection">An open connection with the target database already selected.</param>
+    /// <param name="sqlContent">Raw SQL content read from a migration file on disk.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public static async Task RunFileScriptAsync(
+        MySqlConnection connection,
+        string sqlContent,
+        CancellationToken cancellationToken = default)
+    {
+        var statements = SplitStatements(sqlContent);
+
+        foreach (var statement in statements)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var trimmed = statement.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed)) { continue; }
+            if (trimmed.StartsWith("USE ", StringComparison.OrdinalIgnoreCase)) { continue; }
+            if (trimmed.StartsWith("CREATE DATABASE", StringComparison.OrdinalIgnoreCase)) { continue; }
+
+            // Strip DEFINER clauses so the object is owned by the running user,
+            // preventing MySQL Error 1227 when the original author was root/SYSTEM_USER.
+            var safeStatement = StripDefiner(trimmed);
+
+            try
+            {
+                await using var cmd = connection.CreateCommand();
+                cmd.CommandText = safeStatement;
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+            catch (MySqlConnector.MySqlException ex)
+            {
+                var preview = safeStatement.Length > 120
+                    ? safeStatement[..120].Replace('\n', ' ') + "…"
+                    : safeStatement.Replace('\n', ' ');
+                throw new InvalidOperationException(
+                    $"MySQL error {ex.Number}: {ex.Message}\nStatement: {preview}", ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes a <c>DEFINER = `user`@`host`</c> (or <c>DEFINER = 'user'@'host'</c>)
+    /// clause from a CREATE PROCEDURE / FUNCTION / TRIGGER / VIEW / EVENT statement.
+    /// </summary>
+    private static readonly Regex DefinerRegex = new(
+        @"(?i)(CREATE\s+)DEFINER\s*=\s*(`[^`]*`|'[^']*')\s*@\s*(`[^`]*`|'[^']*')\s*",
+        RegexOptions.Compiled);
+
+    private static string StripDefiner(string sql) =>
+        DefinerRegex.Replace(sql, "$1");
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private static string LoadEmbeddedResource(string logicalName)

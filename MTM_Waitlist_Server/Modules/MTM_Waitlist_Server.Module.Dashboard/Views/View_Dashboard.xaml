@@ -6,7 +6,9 @@
     xmlns:models="using:MTM_Waitlist_Server.Core.Models.Dashboard"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch">
 
         <!--
         5-row Grid: rows 0-1 and 3-4 are Auto; row 2 (Active Connections) is *
@@ -155,15 +157,15 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="models:Model_TableStat">
                                 <Grid ColumnDefinitions="*,100,110,190" MinHeight="32">
-                                    <TextBlock Grid.Column="0" Text="{x:Bind TableName, Mode=OneWay}"
+                                    <TextBlock Grid.Column="0" Text="{x:Bind TableName, Mode=OneTime}"
                                                VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind EstimatedRows, Mode=OneWay}"
+                                    <TextBlock Grid.Column="1" Text="{x:Bind EstimatedRows, Mode=OneTime}"
                                                VerticalAlignment="Center"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="2" Text="{x:Bind DataSizeDisplay, Mode=OneWay}"
+                                    <TextBlock Grid.Column="2" Text="{x:Bind DataSizeDisplay, Mode=OneTime}"
                                                VerticalAlignment="Center"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="3" Text="{x:Bind LastUpdated, Mode=OneWay}"
+                                    <TextBlock Grid.Column="3" Text="{x:Bind LastUpdated, Mode=OneTime}"
                                                VerticalAlignment="Center"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </Grid>
@@ -248,13 +250,13 @@
                                     <Expander.Header>
                                         <Grid ColumnDefinitions="*,80" Padding="0,6,12,6">
                                             <TextBlock Grid.Column="0"
-                                                       Text="{x:Bind User, Mode=OneWay}"
+                                                       Text="{x:Bind User, Mode=OneTime}"
                                                        VerticalAlignment="Center" />
                                             <Border Grid.Column="1"
                                                     Background="{ThemeResource AccentFillColorDefaultBrush}"
                                                     CornerRadius="10" Padding="8,2"
                                                     HorizontalAlignment="Left">
-                                                <TextBlock Text="{x:Bind ThreadCount, Mode=OneWay}"
+                                                <TextBlock Text="{x:Bind ThreadCount, Mode=OneTime}"
                                                            Style="{ThemeResource CaptionTextBlockStyle}"
                                                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                                                            VerticalAlignment="Center" />
@@ -299,7 +301,7 @@
                                         </Border>
 
                                         <!-- Individual thread rows -->
-                                        <ListView ItemsSource="{x:Bind Threads, Mode=OneWay}"
+                                        <ListView ItemsSource="{x:Bind Threads, Mode=OneTime}"
                                                   SelectionMode="None" Padding="0" BorderThickness="0">
                                             <ListView.ItemContainerStyle>
                                                 <Style TargetType="ListViewItem">
@@ -310,28 +312,28 @@
                                             </ListView.ItemContainerStyle>
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="models:Model_ActiveConnection">
-                                                    <Grid ColumnDefinitions="70,160,90,70,*,70" MinHeight="30">
-                                                        <TextBlock Grid.Column="0"
-                                                                   Text="{x:Bind ThreadId, Mode=OneWay}"
-                                                                   VerticalAlignment="Center" />
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{x:Bind Host, Mode=OneWay}"
-                                                                   VerticalAlignment="Center"
-                                                                   TextTrimming="CharacterEllipsis"
-                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                        <TextBlock Grid.Column="2"
-                                                                   Text="{x:Bind Command, Mode=OneWay}"
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                        <TextBlock Grid.Column="3"
-                                                                   Text="{x:Bind TimeSeconds, Mode=OneWay}"
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                        <TextBlock Grid.Column="4"
-                                                                   Text="{x:Bind State, Mode=OneWay}"
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                   TextTrimming="CharacterEllipsis" />
+                                                <Grid ColumnDefinitions="70,160,90,70,*,70" MinHeight="30">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{x:Bind ThreadId, Mode=OneTime}"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{x:Bind Host, Mode=OneTime}"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{x:Bind Command, Mode=OneTime}"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{x:Bind TimeSeconds, Mode=OneTime}"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Grid.Column="4"
+                                                               Text="{x:Bind State, Mode=OneTime}"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
                                                         <Button Grid.Column="5" Content="Kill"
                                                                 MinHeight="28" Padding="8,4"
                                                                 IsEnabled="{x:Bind CanKill}"
@@ -363,16 +365,16 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:LogEntry">
                         <TextBlock FontFamily="Consolas" FontSize="12">
-                            <Run Text="{x:Bind TimestampUtc, Mode=OneWay}"
+                            <Run Text="{x:Bind TimestampUtc, Mode=OneTime}"
                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <Run Text="  " />
-                            <Run Text="{x:Bind Method, Mode=OneWay}" FontWeight="SemiBold" />
+                            <Run Text="{x:Bind Method, Mode=OneTime}" FontWeight="SemiBold" />
                             <Run Text=" " />
-                            <Run Text="{x:Bind Path, Mode=OneWay}" />
+                            <Run Text="{x:Bind Path, Mode=OneTime}" />
                             <Run Text="  " />
-                            <Run Text="{x:Bind StatusCode, Mode=OneWay}" />
+                            <Run Text="{x:Bind StatusCode, Mode=OneTime}" />
                             <Run Text=" (" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <Run Text="{x:Bind DurationMs, Mode=OneWay}" />
+                            <Run Text="{x:Bind DurationMs, Mode=OneTime}" />
                             <Run Text="ms)" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </TextBlock>
                     </DataTemplate>

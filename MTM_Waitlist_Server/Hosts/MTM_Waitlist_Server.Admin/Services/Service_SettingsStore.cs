@@ -26,6 +26,7 @@ internal sealed class Service_SettingsStore : IService_SettingsStore
 
     private ServerSettings _cached = new();
     private bool _loaded;
+    private DateTime _lastFileWriteUtc = DateTime.MinValue;
 
     /// <inheritdoc/>
     public ServerSettings Get()
@@ -33,7 +34,22 @@ internal sealed class Service_SettingsStore : IService_SettingsStore
         if (!_loaded)
         {
             LoadFromDisk();
+            return _cached;
         }
+
+        // Re-read if the file has been modified externally since the last load.
+        try
+        {
+            var writeTime = File.Exists(SettingsPath)
+                ? File.GetLastWriteTimeUtc(SettingsPath)
+                : DateTime.MinValue;
+
+            if (writeTime > _lastFileWriteUtc)
+            {
+                LoadFromDisk();
+            }
+        }
+        catch { /* ignore — keep cached copy */ }
 
         return _cached;
     }
@@ -49,6 +65,7 @@ internal sealed class Service_SettingsStore : IService_SettingsStore
         var json = JsonSerializer.Serialize(settings, JsonOptions);
         await File.WriteAllTextAsync(SettingsPath, json);
         _cached = settings;
+        _lastFileWriteUtc = File.GetLastWriteTimeUtc(SettingsPath);
         _loaded = true;
     }
 
@@ -73,6 +90,7 @@ internal sealed class Service_SettingsStore : IService_SettingsStore
         {
             var json = File.ReadAllText(SettingsPath);
             _cached = JsonSerializer.Deserialize<ServerSettings>(json, JsonOptions) ?? new ServerSettings();
+            _lastFileWriteUtc = File.GetLastWriteTimeUtc(SettingsPath);
         }
         catch
         {

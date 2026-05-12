@@ -5,6 +5,17 @@ namespace MTM_Waitlist_Server.Core.Interfaces.Migration;
 /// <summary>Manages incremental database migrations using the SchemaVersions tracking table.</summary>
 public interface IService_Migration
 {
+    /// <summary>
+    /// Detects the current migration schema state in a single coordinated pass:
+    /// <list type="bullet">
+    ///   <item><see cref="MigrationSchemaState.Ready"/> — SchemaVersions exists and data loaded.</item>
+    ///   <item><see cref="MigrationSchemaState.PreExistingSchema"/> — core tables exist but SchemaVersions does not; tracking table will be created and known versions backfilled automatically.</item>
+    ///   <item><see cref="MigrationSchemaState.FreshDatabase"/> — no core tables found; full migration run from V001 is required.</item>
+    ///   <item><see cref="MigrationSchemaState.Error"/> — database unreachable or probe failed.</item>
+    /// </list>
+    /// </summary>
+    Task<(MigrationSchemaState State, string? ErrorMessage)> DetectSchemaStateAsync(CancellationToken ct = default);
+
     /// <summary>Returns true if the SchemaVersions table exists in the database.</summary>
     Task<bool> SchemaVersionsTableExistsAsync(CancellationToken ct = default);
 

@@ -28,24 +28,24 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
 
     // ── Step tracking ─────────────────────────────────────────────────────────
 
-    [ObservableProperty] private int _currentStep = 1;
-    [ObservableProperty] private FirstRunStatus _probeStatus;
-    [ObservableProperty] private bool _isWorking;
-    [ObservableProperty] private string _statusMessage = string.Empty;
-    [ObservableProperty] private bool _step1Complete;
-    [ObservableProperty] private bool _step2Complete;
+    [ObservableProperty] public partial int CurrentStep { get; set; }
+    [ObservableProperty] public partial FirstRunStatus ProbeStatus { get; set; }
+    [ObservableProperty] public partial bool IsWorking { get; set; }
+    [ObservableProperty] public partial string StatusMessage { get; set; }
+    [ObservableProperty] public partial bool Step1Complete { get; set; }
+    [ObservableProperty] public partial bool Step2Complete { get; set; }
 
     // ── Step 1 — privileged MySQL connection + bootstrap ─────────────────────
 
-    [ObservableProperty] private string _dbHost = "localhost";
-    [ObservableProperty] private string _dbPort = "3306";
-    [ObservableProperty] private string _dbName = "mtm_waitlist";
+    [ObservableProperty] public partial string DbHost { get; set; }
+    [ObservableProperty] public partial string DbPort { get; set; }
+    [ObservableProperty] public partial string DbName { get; set; }
     // Privileged (e.g. root) account — used only during bootstrap, never stored.
-    [ObservableProperty] private string _dbAdminUsername = "root";
-    [ObservableProperty] private string _dbAdminPassword = string.Empty;
+    [ObservableProperty] public partial string DbAdminUsername { get; set; }
+    [ObservableProperty] public partial string DbAdminPassword { get; set; }
     // Application MySQL user that will be created and granted access to the target DB.
-    [ObservableProperty] private string _dbAppUsername = "waitlist_admin_dbupdater";
-    [ObservableProperty] private string _dbAppPassword = string.Empty;
+    [ObservableProperty] public partial string DbAppUsername { get; set; }
+    [ObservableProperty] public partial string DbAppPassword { get; set; }
     /// <summary>
     /// True when the probe found that the application MySQL user already exists on the server.
     /// When true the app-user creation fields are greyed out — the user was already created
@@ -63,16 +63,16 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
 
     // ── Step 2 — migration log ────────────────────────────────────────────────
 
-    [ObservableProperty] private string _migrationLog = string.Empty;
+    [ObservableProperty] public partial string MigrationLog { get; set; }
 
     // ── Step 3 — first user fields ────────────────────────────────────────────
 
-    [ObservableProperty] private string _windowsUsername = string.Empty;
-    [ObservableProperty] private string _appUsername = string.Empty;
-    [ObservableProperty] private string _displayName = string.Empty;
-    [ObservableProperty] private string _userPassword = string.Empty;
-    [ObservableProperty] private string _confirmPassword = string.Empty;
-    [ObservableProperty] private string _selectedRole = "Admin";
+    [ObservableProperty] public partial string WindowsUsername { get; set; }
+    [ObservableProperty] public partial string AppUsername { get; set; }
+    [ObservableProperty] public partial string DisplayName { get; set; }
+    [ObservableProperty] public partial string UserPassword { get; set; }
+    [ObservableProperty] public partial string ConfirmPassword { get; set; }
+    [ObservableProperty] public partial string SelectedRole { get; set; }
 
     /// <summary>Roles the first user may be assigned — bound as strings so SelectedItem round-trips cleanly.</summary>
     public IReadOnlyList<string> AvailableRoles { get; } = ["Admin", "Developer"];
@@ -83,6 +83,19 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     {
         _firstRun      = firstRun;
         _settingsStore = settingsStore;
+
+        // Set defaults for fields that previously had inline initializers.
+        CurrentStep     = 1;
+        StatusMessage   = string.Empty;
+        MigrationLog    = string.Empty;
+        AppUsername     = string.Empty;
+        DisplayName     = string.Empty;
+        UserPassword    = string.Empty;
+        ConfirmPassword = string.Empty;
+        SelectedRole    = "Admin";
+        DbAdminUsername = "root";
+        DbAdminPassword = string.Empty;
+        DbAppPassword   = string.Empty;
 
         // Pre-fill host/port/name from any existing saved settings so the user
         // doesn't have to re-type them on repeat visits to the wizard.

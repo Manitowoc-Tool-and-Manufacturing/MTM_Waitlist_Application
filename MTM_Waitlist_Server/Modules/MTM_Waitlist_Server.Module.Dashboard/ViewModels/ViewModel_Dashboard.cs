@@ -76,6 +76,10 @@ public partial class ViewModel_Dashboard : ObservableObject
 
             LastRefreshedAt = DateTime.Now;
         }
+        catch
+        {
+            // DB unavailable (degraded mode) — leave existing placeholder values in place.
+        }
         finally
         {
             IsRefreshing = false;

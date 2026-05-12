@@ -19,9 +19,22 @@ public partial class ViewModel_Backup : ObservableObject
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private DateTimeOffset _selectedClearDate = DateTimeOffset.Now;
 
+    /// <summary>True when the operation log has content; used to enable the Operation Log card.</summary>
+    public bool HasProgressLines => ProgressLines.Count > 0;
+
+    /// <summary>Description shown on the Operation Log expander; notes when no output is available.</summary>
+    public string OperationLogDescription => HasProgressLines
+        ? "Output from the most recent backup or restore operation"
+        : "No output yet — run a backup or restore to populate this log";
+
     public ViewModel_Backup(IService_Backup backup)
     {
         _backup = backup;
+        ProgressLines.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasProgressLines));
+            OnPropertyChanged(nameof(OperationLogDescription));
+        };
     }
 
     /// <summary>Runs a full manual backup.</summary>

@@ -28,12 +28,14 @@ internal sealed class Service_FirstRun : IService_FirstRun
         var db = _settingsStore.Get().Database;
         var csb = new MySqlConnectionStringBuilder
         {
-            Server   = db.Host,
-            Port     = (uint)db.Port,
-            UserID   = db.UpdaterUsername,
-            Password = db.UpdaterPassword,
+            Server                   = db.Host,
+            Port                     = (uint)db.Port,
+            UserID                   = db.UpdaterUsername,
+            Password                 = db.UpdaterPassword,
             ConnectionTimeout        = (uint)db.ConnectionTimeout,
             DefaultCommandTimeout    = (uint)db.CommandTimeout,
+            AllowPublicKeyRetrieval  = true,
+            SslMode                  = MySqlSslMode.Preferred,
             // Do not specify a database yet — we are checking whether it exists.
         };
 

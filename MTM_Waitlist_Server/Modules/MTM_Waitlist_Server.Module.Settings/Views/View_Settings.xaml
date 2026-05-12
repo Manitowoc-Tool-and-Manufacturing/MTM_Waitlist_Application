@@ -5,7 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch">
 
     <Grid Margin="24,16,24,16" RowDefinitions="Auto,*" RowSpacing="16">
 
@@ -32,12 +34,11 @@
 
         <!-- Scrollable settings body -->
         <ScrollViewer Grid.Row="1">
-            <StackPanel Spacing="4" MaxWidth="900" HorizontalAlignment="Left">
+            <StackPanel Spacing="4" HorizontalAlignment="Stretch">
 
                 <!-- DATABASE CONNECTION -->
                 <ctk:SettingsExpander Header="Database Connection"
-                                      Description="MySQL connection settings for the mtm_waitlist schema"
-                                      IsExpanded="True">
+                                      Description="MySQL connection settings for the mtm_waitlist schema">
                     <ctk:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE9CE;" />
                     </ctk:SettingsExpander.HeaderIcon>
@@ -364,6 +365,30 @@
                                 <FontIcon Glyph="&#xE8B7;" />
                             </ctk:SettingsCard.HeaderIcon>
                             <TextBox MinWidth="300" Text="{x:Bind ViewModel.Migrations.MigrationFolder, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
+
+                        <ctk:SettingsCard Header="Procedures Folder"
+                                          Description="Folder containing stored procedure .sql files (always re-run)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Migrations.ProceduresFolder, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
+
+                        <ctk:SettingsCard Header="Triggers Folder"
+                                          Description="Folder containing trigger .sql files (always re-run)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Migrations.TriggersFolder, Mode=TwoWay}" />
+                        </ctk:SettingsCard>
+
+                        <ctk:SettingsCard Header="Indexes Folder"
+                                          Description="Folder containing index .sql files (always re-run)">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <TextBox MinWidth="300" Text="{x:Bind ViewModel.Migrations.IndexesFolder, Mode=TwoWay}" />
                         </ctk:SettingsCard>
                     </ctk:SettingsExpander.Items>
                 </ctk:SettingsExpander>

@@ -38,13 +38,15 @@ internal sealed class Service_AdminAuth : IService_AdminAuth
             var db = _settingsStore.Get().Database;
             var csb = new MySqlConnectionStringBuilder
             {
-                Server = db.Host,
-                Port = (uint)db.Port,
-                Database = db.DatabaseName,
-                UserID = db.UpdaterUsername,
-                Password = db.UpdaterPassword,
-                ConnectionTimeout = (uint)db.ConnectionTimeout,
-                DefaultCommandTimeout = (uint)db.CommandTimeout
+                Server                  = db.Host,
+                Port                    = (uint)db.Port,
+                Database                = db.DatabaseName,
+                UserID                  = db.UpdaterUsername,
+                Password                = db.UpdaterPassword,
+                ConnectionTimeout       = (uint)db.ConnectionTimeout,
+                DefaultCommandTimeout   = (uint)db.CommandTimeout,
+                AllowPublicKeyRetrieval = true,
+                SslMode                 = MySqlSslMode.Preferred,
             };
 
             await using var conn = new MySqlConnection(csb.ConnectionString);
