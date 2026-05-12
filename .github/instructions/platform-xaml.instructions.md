@@ -9,7 +9,7 @@ following MSBuild ItemGroups to its `.csproj`. This prevents the MAUI source
 generator from processing both files and only includes the file that matches
 the current build target.
 
-The canonical reference is `MTM_Waitlist_Application.Feature.Dashboard.csproj`.
+The canonical reference is `Feature.Dashboard.csproj`.
 
 ## Required .csproj Pattern
 
@@ -72,8 +72,8 @@ Replace `<Screen>` and `<Feature>_<Screen>` with the actual screen name.
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\MTM_Waitlist_Application.Core\MTM_Waitlist_Application.Core.csproj" />
-    <ProjectReference Include="..\..\Core\MTM_Waitlist_Application.Services\MTM_Waitlist_Application.Services.csproj" />
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Core\Services\Services.csproj" />
   </ItemGroup>
 
   <!-- Platform XAML ItemGroups go here — one block per screen -->

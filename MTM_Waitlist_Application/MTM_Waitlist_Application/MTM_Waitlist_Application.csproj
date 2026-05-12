@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))"
+      >net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks
+    >
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MTM_Waitlist_Application</RootNamespace>
@@ -31,12 +33,15 @@
        Without this explicit ItemGroup the build excludes them and AddJsonStream throws. -->
   <ItemGroup>
     <EmbeddedResource Include="appsettings.json" />
-    <EmbeddedResource Include="appsettings.Development.json" Condition="'$(Configuration)'=='Debug'" />
+    <EmbeddedResource
+      Include="appsettings.Development.json"
+      Condition="'$(Configuration)'=='Debug'"
+    />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\MTM_Waitlist_Application.Data\MTM_Waitlist_Application.Data.csproj" />
-    <ProjectReference Include="..\Core\MTM_Waitlist_Application.Services\MTM_Waitlist_Application.Services.csproj" />
-    <ProjectReference Include="..\Features\MTM_Waitlist_Application.Feature.Dashboard\MTM_Waitlist_Application.Feature.Dashboard.csproj" />
+    <ProjectReference Include="..\Core\Data\Data.csproj" />
+    <ProjectReference Include="..\Core\Services\Services.csproj" />
+    <ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
   </ItemGroup>
 </Project>

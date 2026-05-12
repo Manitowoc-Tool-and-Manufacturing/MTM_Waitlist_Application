@@ -68,31 +68,31 @@ Feature.Mobile:    (commented out — no classes yet)
 
 | File location | Namespace |
 |--------------|-----------|
-| `Feature.Dashboard/ViewModels/Main/` | `MTM_Waitlist_Application.Feature.Dashboard.ViewModels.Main` |
-| `Feature.Dashboard/Views/Main/` | `MTM_Waitlist_Application.Feature.Dashboard.Views.Main` |
-| `Feature.Waitlist/ViewModels/<Screen>/` | `MTM_Waitlist_Application.Feature.Waitlist.ViewModels.<Screen>` |
-| `Feature.Waitlist/Views/<Screen>/` | `MTM_Waitlist_Application.Feature.Waitlist.Views.<Screen>` |
-| `Services/Waitlist/` | `MTM_Waitlist_Application.Services.Waitlist` |
-| `Services/Auth/` | `MTM_Waitlist_Application.Services.Auth` |
-| `Services/Sync/` | `MTM_Waitlist_Application.Services.Sync` |
-| `Data/Repositories/Waitlist/` | `MTM_Waitlist_Application.Data.Repositories.Waitlist` |
-| `Data/Local/` | `MTM_Waitlist_Application.Data.Local` |
-| `Data/Http/` | `MTM_Waitlist_Application.Data.Http` |
-| `Core/Models/Waitlist/` | `MTM_Waitlist_Application.Core.Models.Waitlist` |
-| `Core/Models/Auth/` | `MTM_Waitlist_Application.Core.Models.Auth` |
-| `Core/Models/Shared/` | `MTM_Waitlist_Application.Core.Models.Shared` |
-| `Core/Interfaces/Waitlist/` | `MTM_Waitlist_Application.Core.Interfaces.Waitlist` |
-| `Core/Interfaces/Auth/` | `MTM_Waitlist_Application.Core.Interfaces.Auth` |
-| `Core/Interfaces/Api/` | `MTM_Waitlist_Application.Core.Interfaces.Api` |
-| `Core/Interfaces/Sync/` | `MTM_Waitlist_Application.Core.Interfaces.Sync` |
-| `Core/Constants/Api/` | `MTM_Waitlist_Application.Core.Constants.Api` |
-| `Core/Enums/Waitlist/` | `MTM_Waitlist_Application.Core.Enums.Waitlist` |
-| `Core/Enums/Auth/` | `MTM_Waitlist_Application.Core.Enums.Auth` |
-| `Tests/Unit/MTM_Waitlist_Application.Core.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Core.<Folder>.<Subfolder>.<Category>` |
-| `Tests/Unit/MTM_Waitlist_Application.Data.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Data.<Folder>.<Subfolder>.<Category>` |
-| `Tests/Unit/MTM_Waitlist_Application.Services.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Services.<Folder>.<Subfolder>.<Category>` |
-| `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Dashboard.<Folder>.<Subfolder>.<Category>` |
-| `Tests/Unit/MTM_Waitlist_Application.Feature.Waitlist.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Waitlist.<Folder>.<Subfolder>.<Category>` |
+| `Feature.Dashboard/ViewModels/Main/` | `Feature.Dashboard.ViewModels.Main` |
+| `Feature.Dashboard/Views/Main/` | `Feature.Dashboard.Views.Main` |
+| `Feature.Waitlist/ViewModels/<Screen>/` | `Feature.Waitlist.ViewModels.<Screen>` |
+| `Feature.Waitlist/Views/<Screen>/` | `Feature.Waitlist.Views.<Screen>` |
+| `Services/Waitlist/` | `Services.Waitlist` |
+| `Services/Auth/` | `Services.Auth` |
+| `Services/Sync/` | `Services.Sync` |
+| `Data/Repositories/Waitlist/` | `Data.Repositories.Waitlist` |
+| `Data/Local/` | `Data.Local` |
+| `Data/Http/` | `Data.Http` |
+| `Core/Models/Waitlist/` | `Core.Models.Waitlist` |
+| `Core/Models/Auth/` | `Core.Models.Auth` |
+| `Core/Models/Shared/` | `Core.Models.Shared` |
+| `Core/Interfaces/Waitlist/` | `Core.Interfaces.Waitlist` |
+| `Core/Interfaces/Auth/` | `Core.Interfaces.Auth` |
+| `Core/Interfaces/Api/` | `Core.Interfaces.Api` |
+| `Core/Interfaces/Sync/` | `Core.Interfaces.Sync` |
+| `Core/Constants/Api/` | `Core.Constants.Api` |
+| `Core/Enums/Waitlist/` | `Core.Enums.Waitlist` |
+| `Core/Enums/Auth/` | `Core.Enums.Auth` |
+| `Tests/Unit/Core.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Core.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/Data.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Data.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/Services.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Services.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/Feature.Dashboard.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Dashboard.<Folder>.<Subfolder>.<Category>` |
+| `Tests/Unit/Feature.Waitlist.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Waitlist.<Folder>.<Subfolder>.<Category>` |
 
 ## Test Project State (as of May 11, 2026)
 

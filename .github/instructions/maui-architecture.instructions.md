@@ -63,7 +63,7 @@ Files placed directly in a type root are a violation.
 
 **Pattern:** `<TypeFolder>/<DomainSubfolder>/FileName.cs`
 
-### Core (`MTM_Waitlist_Application.Core/`)
+### Core (`Core/`)
 
 | Type | Path pattern |
 |------|--------------|
@@ -85,7 +85,7 @@ Files placed directly in a type root are a violation.
 | `ISyncService` | `Interfaces/Sync/ISyncService.cs` |
 | `Constants_Api` | `Constants/Api/Constants_Api.cs` |
 
-### Data (`MTM_Waitlist_Application.Data/`)
+### Data (`Data/`)
 
 | Type | Path |
 |------|------|
@@ -93,7 +93,7 @@ Files placed directly in a type root are a violation.
 | Local DB context | `Local/LocalDbContext.cs` |
 | Repository | `Repositories/<Domain>/Repository_<Entity>.cs` |
 
-### Services (`MTM_Waitlist_Application.Services/`)
+### Services (`Services/`)
 
 | Type | Path pattern |
 |------|--------------|

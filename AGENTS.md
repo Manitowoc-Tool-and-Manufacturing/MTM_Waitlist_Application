@@ -15,13 +15,13 @@ by describing the task — Copilot will apply the relevant agent behavior.
 - `MTM_Waitlist_Application.Feature.<Name>/` project (MAUI Class Library)
 - `Views/<Screen>/View_<Feature>_<Screen>.Windows.xaml` + `.Android.xaml` + `.xaml.cs` (ONE shared code-behind)
 - `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs`
-- `MTM_Waitlist_Application.Core/Models/<Domain>/Model_<Entity>.cs`
-- `MTM_Waitlist_Application.Core/Interfaces/<Domain>/IService_<Feature>.cs`
-- `MTM_Waitlist_Application.Core/Interfaces/<Domain>/IRepository_<Entity>.cs` (online)
-- `MTM_Waitlist_Application.Core/Interfaces/<Domain>/IRepository_<Entity>Local.cs` (offline)
-- `MTM_Waitlist_Application.Services/<Domain>/Service_<Feature>.cs` (connectivity-aware, dual-repo)
-- `MTM_Waitlist_Application.Data/Repositories/<Domain>/Repository_<Entity>.cs` (online via IApiClient)
-- `MTM_Waitlist_Application.Data/Repositories/<Domain>/Repository_<Entity>Local.cs` (offline via LocalDbContext)
+- `Core/Models/<Domain>/Model_<Entity>.cs`
+- `Core/Interfaces/<Domain>/IService_<Feature>.cs`
+- `Core/Interfaces/<Domain>/IRepository_<Entity>.cs` (online)
+- `Core/Interfaces/<Domain>/IRepository_<Entity>Local.cs` (offline)
+- `Services/<Domain>/Service_<Feature>.cs` (connectivity-aware, dual-repo)
+- `Data/Repositories/<Domain>/Repository_<Entity>.cs` (online via IApiClient)
+- `Data/Repositories/<Domain>/Repository_<Entity>Local.cs` (offline via LocalDbContext)
 - Registration stubs in `AddSharedServices()`
 - `.csproj` with CommunityToolkit.Mvvm 8.4.2, MVVMTK0045 suppression, platform XAML ItemGroups
 
@@ -101,18 +101,18 @@ Valid category folders: `Success`, `Failure`, `Validation`, `Commands`, `Propert
 
 **Examples:**
 ```
-// Source: Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs
-Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs
-Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs
+// Source: Core/Data/Mock/MockDataSeeder.cs
+Tests/Unit/Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs
+Tests/Unit/Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs
 
-// Source: Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs
-Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs
-Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs
-Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs
+// Source: Core/Services/Waitlist/Service_WaitlistEntry.cs
+Tests/Unit/Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs
+Tests/Unit/Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs
+Tests/Unit/Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs
 
 // Source: Features/.../ViewModels/Main/ViewModel_Dashboard_Main.cs
-Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs
-Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs
+Tests/Unit/Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs
+Tests/Unit/Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs
 ```
 
 **What it produces:**

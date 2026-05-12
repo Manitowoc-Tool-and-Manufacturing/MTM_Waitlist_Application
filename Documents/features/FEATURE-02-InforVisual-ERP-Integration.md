@@ -208,7 +208,7 @@ ORDER BY sr.ID;
 
 ### New DAO: `Dao_InforVisualWorkOrder`
 
-Mirrors the pattern from Receiving's `Dao_InforVisualConnection`. Placed in `MTM_Waitlist_Application.Data`:
+Mirrors the pattern from Receiving's `Dao_InforVisualConnection`. Placed in `Data`:
 
 ```
 Data/
@@ -235,7 +235,7 @@ Core/Models/InforVisual/
 
 ### New Service: `IService_InforVisual` / `Service_InforVisual`
 
-Placed in `MTM_Waitlist_Application.Services`:
+Placed in `Services`:
 
 ```
 Services/

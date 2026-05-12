@@ -8,11 +8,11 @@ applyTo: "**/*.Tests.cs,**/*Tests/**"
 
 | Solution Folder | Project | Target Framework | References |
 |---|---|---|---|
-| `/Tests/Unit/` | `MTM_Waitlist_Application.Core.Tests` | `net10.0` | `Core` |
-| `/Tests/Unit/` | `MTM_Waitlist_Application.Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` |
-| `/Tests/Unit/` | `MTM_Waitlist_Application.Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` |
-| `/Tests/Unit/` | `MTM_Waitlist_Application.Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` |
-| `/Tests/Unit/` | `MTM_Waitlist_Application.Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` |
+| `/Tests/Unit/` | `Core.Tests` | `net10.0` | `Core` |
+| `/Tests/Unit/` | `Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` |
+| `/Tests/Unit/` | `Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` |
+| `/Tests/Unit/` | `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` |
+| `/Tests/Unit/` | `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` |
 | `/Tests/UI/` | `MTM_Waitlist_Application.UITests.WinUI` | `net10.0-windows10.0.19041.0` | None (runtime Appium) |
 | `/Tests/UI/` | `MTM_Waitlist_Application.UITests.Droid` | `net10.0` | None (runtime Appium) |
 
@@ -51,38 +51,38 @@ Add new category names as needed — keep them concise and consistent.
 ### Core.Tests  (`net10.0`)
 | Source file | Test file path |
 |---|---|
-| `Core/MTM_Waitlist_Application.Core/Models/Auth/Model_AuthToken.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Auth/Success/Model_AuthTokenTests.cs` |
-| `Core/MTM_Waitlist_Application.Core/Models/Shared/Model_Dao_Result.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Shared/Success/Model_Dao_ResultTests.cs` |
-| `Core/MTM_Waitlist_Application.Core/Models/Waitlist/Model_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Core.Tests/Models/Waitlist/Validation/Model_WaitlistEntryTests.cs` |
+| `Core/Core/Models/Auth/Model_AuthToken.cs` | `Tests/Unit/Core.Tests/Models/Auth/Success/Model_AuthTokenTests.cs` |
+| `Core/Core/Models/Shared/Model_Dao_Result.cs` | `Tests/Unit/Core.Tests/Models/Shared/Success/Model_Dao_ResultTests.cs` |
+| `Core/Core/Models/Waitlist/Model_WaitlistEntry.cs` | `Tests/Unit/Core.Tests/Models/Waitlist/Validation/Model_WaitlistEntryTests.cs` |
 
 ### Data.Tests  (`net10.0-windows10.0.19041.0`)
 | Source file | Test file path |
 |---|---|
-| `Core/MTM_Waitlist_Application.Data/Http/HttpApiClient.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Http/Success/HttpApiClientTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Http/HttpApiClient.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Http/Failure/HttpApiClientTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Local/LocalDbContext.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Local/Success/LocalDbContextTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Mock/MockDataSeeder.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryLocalTests.cs` |
-| `Core/MTM_Waitlist_Application.Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/MTM_Waitlist_Application.Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryLocalTests.cs` |
+| `Core/Data/Http/HttpApiClient.cs` | `Tests/Unit/Data.Tests/Http/Success/HttpApiClientTests.cs` |
+| `Core/Data/Http/HttpApiClient.cs` | `Tests/Unit/Data.Tests/Http/Failure/HttpApiClientTests.cs` |
+| `Core/Data/Local/LocalDbContext.cs` | `Tests/Unit/Data.Tests/Local/Success/LocalDbContextTests.cs` |
+| `Core/Data/Mock/MockDataSeeder.cs` | `Tests/Unit/Data.Tests/Mock/AuthSeeds/MockDataSeederTests.cs` |
+| `Core/Data/Mock/MockDataSeeder.cs` | `Tests/Unit/Data.Tests/Mock/WaitlistSeeds/MockDataSeederTests.cs` |
+| `Core/Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryTests.cs` |
+| `Core/Data/Repositories/Waitlist/Repository_WaitlistEntry.cs` | `Tests/Unit/Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryTests.cs` |
+| `Core/Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/Data.Tests/Repositories/Waitlist/Success/Repository_WaitlistEntryLocalTests.cs` |
+| `Core/Data/Repositories/Waitlist/Repository_WaitlistEntryLocal.cs` | `Tests/Unit/Data.Tests/Repositories/Waitlist/Failure/Repository_WaitlistEntryLocalTests.cs` |
 
 ### Services.Tests  (`net10.0-windows10.0.19041.0`)
 | Source file | Test file path |
 |---|---|
-| `Core/MTM_Waitlist_Application.Services/Auth/Service_Auth.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Auth/Success/Service_AuthTests.cs` |
-| `Core/MTM_Waitlist_Application.Services/Auth/Service_Auth.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Auth/Failure/Service_AuthTests.cs` |
-| `Core/MTM_Waitlist_Application.Services/Sync/SyncService.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Sync/Connectivity/SyncServiceTests.cs` |
-| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs` |
-| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs` |
-| `Core/MTM_Waitlist_Application.Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/MTM_Waitlist_Application.Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs` |
+| `Core/Services/Auth/Service_Auth.cs` | `Tests/Unit/Services.Tests/Auth/Success/Service_AuthTests.cs` |
+| `Core/Services/Auth/Service_Auth.cs` | `Tests/Unit/Services.Tests/Auth/Failure/Service_AuthTests.cs` |
+| `Core/Services/Sync/SyncService.cs` | `Tests/Unit/Services.Tests/Sync/Connectivity/SyncServiceTests.cs` |
+| `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs` |
+| `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs` |
+| `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs` |
 
 ### Feature.Dashboard.Tests  (`net10.0-windows10.0.19041.0`)
 | Source file | Test file path |
 |---|---|
-| `Features/MTM_Waitlist_Application.Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs` |
-| `Features/MTM_Waitlist_Application.Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/MTM_Waitlist_Application.Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs` |
+| `Features/Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/Feature.Dashboard.Tests/ViewModels/Main/Commands/ViewModel_Dashboard_MainTests.cs` |
+| `Features/Feature.Dashboard/ViewModels/Main/ViewModel_Dashboard_Main.cs` | `Tests/Unit/Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboard_MainTests.cs` |
 
 ### Feature.Waitlist.Tests  (`net10.0-windows10.0.19041.0`)
 *(No source files yet — add entries as ViewModels and Views are created)*

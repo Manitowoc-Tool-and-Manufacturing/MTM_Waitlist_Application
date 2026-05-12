@@ -52,7 +52,7 @@ If the network drops in the middle of a request that was already in progress —
 
 This phase creates the shared language of the app — definitions for what a waitlist record looks like, what a successful or failed result looks like, what a login token looks like, and the rules each piece of the system must follow. Nothing in this phase does any real work yet; it just defines the contracts everything else will honor.
 
-**Files created in `MTM_Waitlist_Application.Core/`:**
+**Files created in `Core/`:**
 
 1. `Models/Model_WaitlistEntry.cs` — The template for what a single waitlist record contains. Fields will be filled in once the [API](#api-application-programming-interface) is defined.
 2. `Models/Model_Dao_Result.cs` — A standard envelope every operation returns — either "here is your data" or "something went wrong, here is why." Used throughout the entire app so errors are handled consistently.
@@ -71,7 +71,7 @@ This phase creates the shared language of the app — definitions for what a wai
 
 This phase builds the code that does the real work: sending requests to the middleman over the internet, and managing the local copy of data on the device for when there is no connection.
 
-**Files created in `MTM_Waitlist_Application.Data/`:**
+**Files created in `Data/`:**
 
 10. Add the `sqlite-net-pcl` library to the project — this gives the app the ability to maintain a small [local database](#sqlite) on the device.
 11. `HttpApiClient.cs` — The messenger that sends requests to the middleman over a secure connection ([HTTPS](#https)). It reads the middleman's address from the app's configuration file (so it can be changed without rewriting code), and it automatically attaches the user's login [token](#jwt-json-web-token) to every request so the middleman knows who is asking. If a request fails mid-flight because the network drops, it catches the error quietly and returns a safe “something went wrong” response — it never crashes the app.
@@ -85,7 +85,7 @@ This phase builds the code that does the real work: sending requests to the midd
 
 This phase builds the code that the app's screens talk to. It handles login, manages waitlist data requests, and watches for connectivity changes to trigger syncing.
 
-**Files created in `MTM_Waitlist_Application.Services/`:**
+**Files created in `Services/`:**
 
 14. `Auth/Service_Auth.cs` — Handles everything related to the user's identity. When a user logs in, this sends the credentials to the middleman, receives the login [token](#jwt-json-web-token), and stores it in the device's secure vault. When the user logs out, it removes the token. If the token is close to expiring, it quietly requests a new one.
 15. `Waitlist/Service_WaitlistEntry.cs` — The layer the app's screens talk to when they need waitlist information. Before passing a request along, it checks whether the device currently has network access and chooses which record-keeper to use — the online one when connected, the offline one when not. It also handles the situation where a request starts while connected but the connection drops halfway through, catching that failure silently and falling back to the local copy rather than showing the user an error or crash screen.

@@ -1,20 +1,20 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MTM_Waitlist_Application.Core.Interfaces.Api;
-using MTM_Waitlist_Application.Core.Interfaces.Auth;
-using MTM_Waitlist_Application.Core.Interfaces.Sync;
-using MTM_Waitlist_Application.Core.Interfaces.Waitlist;
-using MTM_Waitlist_Application.Data.Http;
-using MTM_Waitlist_Application.Data.Local;
-using MTM_Waitlist_Application.Data.Repositories.Waitlist;
-using MTM_Waitlist_Application.Feature.Dashboard.ViewModels.Main;
-using MTM_Waitlist_Application.Feature.Dashboard.Views.Main;
-using MTM_Waitlist_Application.Services.Auth;
-using MTM_Waitlist_Application.Services.Sync;
-using MTM_Waitlist_Application.Services.Waitlist;
+using Core.Interfaces.Api;
+using Core.Interfaces.Auth;
+using Core.Interfaces.Sync;
+using Core.Interfaces.Waitlist;
+using Data.Http;
+using Data.Local;
+using Data.Repositories.Waitlist;
+using Feature.Dashboard.ViewModels.Main;
+using Feature.Dashboard.Views.Main;
+using Services.Auth;
+using Services.Sync;
+using Services.Waitlist;
 #if DEBUG
-using MTM_Waitlist_Application.Data.Mock;
+using Data.Mock;
 #endif
 
 namespace MTM_Waitlist_Application
@@ -87,7 +87,7 @@ namespace MTM_Waitlist_Application
             // Runs on a background thread (fire-and-forget) so it never blocks
             // the main thread during startup. Only runs in Debug builds.
             var primaryUrl = app.Services.GetRequiredService<IConfiguration>()["Api:PrimaryBaseUrl"]
-                             ?? MTM_Waitlist_Application.Core.Constants.Api.Constants_Api.PrimaryBaseUrl;
+                             ?? Core.Constants.Api.Constants_Api.PrimaryBaseUrl;
             _ = Task.Run(async () =>
             {
                 try
@@ -179,13 +179,13 @@ namespace MTM_Waitlist_Application
 
             // ── Feature: Waitlist ──────────────────────────────────────
             // Registered here as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Waitlist
+            // Feature.Waitlist
             // services.AddTransient<ViewModel_Waitlist_Entry>();
             // services.AddTransient<View_Waitlist_Entry>();
 
             // ── Feature: Mobile ────────────────────────────────────────
             // Registered here as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Mobile
+            // Feature.Mobile
             // services.AddTransient<ViewModel_Mobile_Home>();
             // services.AddTransient<View_Mobile_Home>();
 

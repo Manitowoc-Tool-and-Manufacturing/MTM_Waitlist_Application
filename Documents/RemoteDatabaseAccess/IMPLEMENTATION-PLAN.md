@@ -41,7 +41,7 @@ WinUI / Android (on work LAN — wired or wireless)
 ---
 
 ## Phase 1 — Core Models & Interfaces
-**Project:** `MTM_Waitlist_Application.Core`
+**Project:** `Core`
 
 - [ ] `Models/Waitlist/Model_WaitlistEntry.cs` — placeholder entity (fields added when API is defined)
 - [ ] `Models/Shared/Model_Dao_Result.cs` — two variants, both needed:
@@ -59,7 +59,7 @@ WinUI / Android (on work LAN — wired or wireless)
 ---
 
 ## Phase 2 — Data Layer
-**Project:** `MTM_Waitlist_Application.Data`
+**Project:** `Data`
 
 - [ ] Add NuGet `sqlite-net-pcl` to `Data.csproj`
 - [ ] `Http/HttpApiClient.cs` — implements `IApiClient`
@@ -79,7 +79,7 @@ WinUI / Android (on work LAN — wired or wireless)
 ---
 
 ## Phase 3 — Services Layer
-**Project:** `MTM_Waitlist_Application.Services`
+**Project:** `Services`
 
 - [ ] `Auth/Service_Auth.cs` — implements `IService_Auth`
   - Login → JWT → `SecureStorage.SetAsync("auth_token", token)`

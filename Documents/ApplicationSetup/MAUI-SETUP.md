@@ -102,15 +102,15 @@ flowchart TD
     end
 
     subgraph Features["📁 Features"]
-        FWaitlist["MTM_Waitlist_Application.Feature.Waitlist"]
-        FDashboard["MTM_Waitlist_Application.Feature.Dashboard"]
-        FMobile["MTM_Waitlist_Application.Feature.Mobile"]
+        FWaitlist["Feature.Waitlist"]
+        FDashboard["Feature.Dashboard"]
+        FMobile["Feature.Mobile"]
     end
 
     subgraph Core["📁 Core"]
-        CoreProj["MTM_Waitlist_Application.Core"]
-        Services["MTM_Waitlist_Application.Services"]
-        Data["MTM_Waitlist_Application.Data"]
+        CoreProj["Core"]
+        Services["Services"]
+        Data["Data"]
     end
 
     Droid --> SharedProj
@@ -194,12 +194,12 @@ flowchart TD
 
 | Project | Template | Contains UI? | Why |
 |---------|----------|:------------:|-----|
-| `MTM_Waitlist_Application.Core` | **Class Library** | ❌ | Pure models & interfaces — zero UI, zero MAUI |
-| `MTM_Waitlist_Application.Services` | **Class Library** | ❌ | Pure business logic — zero UI, zero MAUI |
-| `MTM_Waitlist_Application.Data` | **Class Library** | ❌ | EF Core & repositories — zero UI, zero MAUI |
-| `MTM_Waitlist_Application.Feature.Waitlist` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
-| `MTM_Waitlist_Application.Feature.Dashboard` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
-| `MTM_Waitlist_Application.Feature.Mobile` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
+| `Core` | **Class Library** | ❌ | Pure models & interfaces — zero UI, zero MAUI |
+| `Services` | **Class Library** | ❌ | Pure business logic — zero UI, zero MAUI |
+| `Data` | **Class Library** | ❌ | EF Core & repositories — zero UI, zero MAUI |
+| `Feature.Waitlist` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
+| `Feature.Dashboard` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
+| `Feature.Mobile` | **.NET MAUI Class Library** | ✅ | Contains XAML pages & controls |
 
 > ⚠️ Using .NET MAUI Class Library for Core/Services/Data pulls in the entire
 > MAUI dependency chain, adds bloat, and breaks portability to unit test projects.
@@ -271,29 +271,29 @@ namespace MTM_Waitlist_Application
         {
             // ── Repositories (Data layer) ──────────────────────────────
             // Uncomment as concrete repository classes are created in
-            // MTM_Waitlist_Application.Data
+            // Data
             // services.AddSingleton<IWaitlistRepository, WaitlistRepository>();
 
             // ── Services (Business logic layer) ───────────────────────
             // Uncomment as service classes are created in
-            // MTM_Waitlist_Application.Services
+            // Services
             // services.AddSingleton<IWaitlistService, WaitlistService>();
 
             // ── Feature: Waitlist ──────────────────────────────────────
             // Uncomment as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Waitlist
+            // Feature.Waitlist
             // services.AddTransient<WaitlistPage>();
             // services.AddTransient<WaitlistViewModel>();
 
             // ── Feature: Dashboard ─────────────────────────────────────
             // Uncomment as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Dashboard
+            // Feature.Dashboard
             // services.AddTransient<DashboardPage>();
             // services.AddTransient<DashboardViewModel>();
 
             // ── Feature: Mobile ────────────────────────────────────────
             // Uncomment as pages and ViewModels are created in
-            // MTM_Waitlist_Application.Feature.Mobile
+            // Feature.Mobile
             // services.AddTransient<MobileHomePage>();
             // services.AddTransient<MobileHomeViewModel>();
 
@@ -418,11 +418,11 @@ dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Hosts" `
 
 **Terminal:**
 ```powershell
-dotnet new classlib -n MTM_Waitlist_Application.Core `
-  -o MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core
+dotnet new classlib -n Core `
+  -o MTM_Waitlist_Application/Core/Core
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Core" `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj
+  MTM_Waitlist_Application/Core/Core/Core.csproj
 ```
 
 > No references to add — Core has zero dependencies.
@@ -433,14 +433,14 @@ dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Core" `
 
 **Terminal:**
 ```powershell
-dotnet new classlib -n MTM_Waitlist_Application.Services `
-  -o MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services
+dotnet new classlib -n Services `
+  -o MTM_Waitlist_Application/Core/Services
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Core" `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj
+  MTM_Waitlist_Application/Core/Services/Services.csproj
 
-dotnet add MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj
+dotnet add MTM_Waitlist_Application/Core/Services/Services.csproj reference `
+  MTM_Waitlist_Application/Core/Core/Core.csproj
 ```
 
 ---
@@ -449,14 +449,14 @@ dotnet add MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_W
 
 **Terminal:**
 ```powershell
-dotnet new classlib -n MTM_Waitlist_Application.Data `
-  -o MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data
+dotnet new classlib -n Data `
+  -o MTM_Waitlist_Application/Core/Data
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Core" `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitlist_Application.Data.csproj
+  MTM_Waitlist_Application/Core/Data/Data.csproj
 
-dotnet add MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitlist_Application.Data.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj
+dotnet add MTM_Waitlist_Application/Core/Data/Data.csproj reference `
+  MTM_Waitlist_Application/Core/Core/Core.csproj
 ```
 
 ---
@@ -466,37 +466,37 @@ dotnet add MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitl
 **Terminal:**
 ```powershell
 # ── Feature: Waitlist ──────────────────────────────────────────────
-dotnet new mauilib -n MTM_Waitlist_Application.Feature.Waitlist `
-  -o MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist
+dotnet new mauilib -n Feature.Waitlist `
+  -o MTM_Waitlist_Application/Features/Feature.Waitlist
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Features" `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist/MTM_Waitlist_Application.Feature.Waitlist.csproj
+  MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist.csproj
 
-dotnet add MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist/MTM_Waitlist_Application.Feature.Waitlist.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj
+dotnet add MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist.csproj reference `
+  MTM_Waitlist_Application/Core/Core/Core.csproj `
+  MTM_Waitlist_Application/Core/Services/Services.csproj
 
 # ── Feature: Dashboard ─────────────────────────────────────────────
-dotnet new mauilib -n MTM_Waitlist_Application.Feature.Dashboard `
-  -o MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Dashboard
+dotnet new mauilib -n Feature.Dashboard `
+  -o MTM_Waitlist_Application/Features/Feature.Dashboard
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Features" `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Dashboard/MTM_Waitlist_Application.Feature.Dashboard.csproj
+  MTM_Waitlist_Application/Features/Feature.Dashboard/Feature.Dashboard.csproj
 
-dotnet add MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Dashboard/MTM_Waitlist_Application.Feature.Dashboard.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj
+dotnet add MTM_Waitlist_Application/Features/Feature.Dashboard/Feature.Dashboard.csproj reference `
+  MTM_Waitlist_Application/Core/Core/Core.csproj `
+  MTM_Waitlist_Application/Core/Services/Services.csproj
 
 # ── Feature: Mobile ────────────────────────────────────────────────
-dotnet new mauilib -n MTM_Waitlist_Application.Feature.Mobile `
-  -o MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Mobile
+dotnet new mauilib -n Feature.Mobile `
+  -o MTM_Waitlist_Application/Features/Feature.Mobile
 
 dotnet sln MTM_Waitlist_Application.slnx add --solution-folder "Features" `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Mobile/MTM_Waitlist_Application.Feature.Mobile.csproj
+  MTM_Waitlist_Application/Features/Feature.Mobile/Feature.Mobile.csproj
 
-dotnet add MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Mobile/MTM_Waitlist_Application.Feature.Mobile.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj
+dotnet add MTM_Waitlist_Application/Features/Feature.Mobile/Feature.Mobile.csproj reference `
+  MTM_Waitlist_Application/Core/Core/Core.csproj `
+  MTM_Waitlist_Application/Core/Services/Services.csproj
 ```
 
 > ❌ **Do NOT add a reference to Data in any Feature project.**
@@ -512,12 +512,12 @@ The Shared project is the DI hub — it must reference everything so
 **Terminal:**
 ```powershell
 dotnet add MTM_Waitlist_Application/MTM_Waitlist_Application/MTM_Waitlist_Application.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitlist_Application.Data.csproj `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist/MTM_Waitlist_Application.Feature.Waitlist.csproj `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Dashboard/MTM_Waitlist_Application.Feature.Dashboard.csproj `
-  MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Mobile/MTM_Waitlist_Application.Feature.Mobile.csproj
+  MTM_Waitlist_Application/Core/Core/Core.csproj `
+  MTM_Waitlist_Application/Core/Services/Services.csproj `
+  MTM_Waitlist_Application/Core/Data/Data.csproj `
+  MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist.csproj `
+  MTM_Waitlist_Application/Features/Feature.Dashboard/Feature.Dashboard.csproj `
+  MTM_Waitlist_Application/Features/Feature.Mobile/Feature.Mobile.csproj
 ```
 
 > ⚠️ The Shared project references Data here (and nowhere else) purely so
@@ -546,7 +546,7 @@ If any other references appear, remove them:
 ```powershell
 # Example: remove an incorrect direct Core reference from the Droid host
 dotnet remove MTM_Waitlist_Application/MTM_Waitlist_Application.Droid/MTM_Waitlist_Application.Droid.csproj reference `
-  MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Core/MTM_Waitlist_Application.Core.csproj
+  MTM_Waitlist_Application/Core/Core/Core.csproj
 ```
 
 ---
@@ -577,9 +577,9 @@ dotnet build MTM_Waitlist_Application.slnx
 
 # Confirm references on key projects
 dotnet list MTM_Waitlist_Application/MTM_Waitlist_Application/MTM_Waitlist_Application.csproj reference
-dotnet list MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Services/MTM_Waitlist_Application.Services.csproj reference
-dotnet list MTM_Waitlist_Application/Core/MTM_Waitlist_Application.Data/MTM_Waitlist_Application.Data.csproj reference
-dotnet list MTM_Waitlist_Application/Features/MTM_Waitlist_Application.Feature.Waitlist/MTM_Waitlist_Application.Feature.Waitlist.csproj reference
+dotnet list MTM_Waitlist_Application/Core/Services/Services.csproj reference
+dotnet list MTM_Waitlist_Application/Core/Data/Data.csproj reference
+dotnet list MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist.csproj reference
 ```
 
 **Expected build output:**

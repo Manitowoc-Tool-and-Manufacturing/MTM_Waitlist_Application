@@ -96,13 +96,13 @@ MTM_Waitlist_Application.slnx
 │   └── MTM_Waitlist_Application           ← DI hub, navigation, global styles
 │       └── MauiProgramExtensions.cs       ← ALL service registration lives here
 ├── Core/
-│   ├── MTM_Waitlist_Application.Core      ← models, interfaces, constants — zero dependencies
-│   ├── MTM_Waitlist_Application.Services  ← business logic — references Core only
-│   └── MTM_Waitlist_Application.Data      ← repositories, sqlite-net-pcl — references Core only
+│   ├── Core      ← models, interfaces, constants — zero dependencies
+│   ├── Services  ← business logic — references Core only
+│   └── Data      ← repositories, sqlite-net-pcl — references Core only
 └── Features/
-    ├── MTM_Waitlist_Application.Feature.Waitlist    ← XAML + ViewModels
-    ├── MTM_Waitlist_Application.Feature.Dashboard   ← XAML + ViewModels
-    └── MTM_Waitlist_Application.Feature.Mobile      ← Android-only screens
+    ├── Feature.Waitlist    ← XAML + ViewModels
+    ├── Feature.Dashboard   ← XAML + ViewModels
+    └── Feature.Mobile      ← Android-only screens
 ```
 
 ---
@@ -148,7 +148,7 @@ All `.cs` and `.xaml` files **must** be placed in a segregated domain subfolder 
 
 The domain subfolder groups files by the feature or concern they belong to — not by the project they live in.
 
-### Core (`MTM_Waitlist_Application.Core/`)
+### Core (`Core/`)
 
 | What | Path pattern |
 |------|--------------|
@@ -172,7 +172,7 @@ The domain subfolder groups files by the feature or concern they belong to — n
 | `ISyncService` | `Interfaces/Sync/ISyncService.cs` |
 | `Constants_Api` | `Constants/Api/Constants_Api.cs` |
 
-### Data (`MTM_Waitlist_Application.Data/`)
+### Data (`Data/`)
 
 | What | Path pattern |
 |------|--------------|
@@ -182,7 +182,7 @@ The domain subfolder groups files by the feature or concern they belong to — n
 
 **Examples:** `Repositories/Waitlist/Repository_WaitlistEntry.cs` · `Repositories/Waitlist/Repository_WaitlistEntryLocal.cs`
 
-### Services (`MTM_Waitlist_Application.Services/`)
+### Services (`Services/`)
 
 | What | Path pattern |
 |------|--------------|
@@ -207,7 +207,7 @@ The `<Screen>` subfolder name matches the `<Screen>` segment of the class name (
 
 | What | Where |
 |------|-------|
-| Mobile-only pages | `MTM_Waitlist_Application.Feature.Mobile/Views/<Screen>/` |
+| Mobile-only pages | `Feature.Mobile/Views/<Screen>/` |
 | Global styles / themes | `MTM_Waitlist_Application/Resources/Styles/` |
 | Shared images / fonts | `MTM_Waitlist_Application/Resources/` |
 
@@ -219,7 +219,7 @@ The `<Screen>` subfolder name matches the `<Screen>` segment of the class name (
 
 ```csharp
 // ✅ CORRECT
-namespace MTM_Waitlist_Application.Feature.Waitlist.ViewModels;
+namespace Feature.Waitlist.ViewModels;
 
 /// <summary>
 /// ViewModel for the waitlist entry screen.
@@ -289,7 +289,7 @@ pattern in `Service_WaitlistEntry`.
 
 ```csharp
 // ✅ CORRECT — connectivity-aware dual-repository service
-namespace MTM_Waitlist_Application.Services.Waitlist;
+namespace Services.Waitlist;
 
 public sealed class Service_WaitlistEntry : IService_WaitlistEntry
 {
@@ -331,7 +331,7 @@ There are **two repository types** per entity:
 
 ```csharp
 // ✅ CORRECT — online repository via IApiClient
-namespace MTM_Waitlist_Application.Data.Repositories.Waitlist;
+namespace Data.Repositories.Waitlist;
 
 public sealed class Repository_WaitlistEntry : IRepository_WaitlistEntry
 {
@@ -351,7 +351,7 @@ public sealed class Repository_WaitlistEntry : IRepository_WaitlistEntry
 
 ```csharp
 // ✅ CORRECT — local repository via sqlite-net-pcl (LocalDbContext)
-namespace MTM_Waitlist_Application.Data.Repositories.Waitlist;
+namespace Data.Repositories.Waitlist;
 
 public sealed class Repository_WaitlistEntryLocal : IRepository_WaitlistEntryLocal
 {
@@ -389,7 +389,7 @@ public sealed class Repository_WaitlistEntryLocal : IRepository_WaitlistEntryLoc
 ```xml
 <!-- ✅ CORRECT — compiled bindings with x:DataType -->
 <ContentPage
-    xmlns:vm="clr-namespace:MTM_Waitlist_Application.Feature.Waitlist.ViewModels"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels"
     x:DataType="vm:ViewModel_Waitlist_Entry">
 
     <CollectionView ItemsSource="{Binding Entries, Mode=OneWay}">

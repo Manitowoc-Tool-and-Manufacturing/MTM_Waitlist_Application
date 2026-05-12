@@ -3,26 +3,28 @@
     x:Class="MTM_Waitlist_Application.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:dashboard="clr-namespace:MTM_Waitlist_Application.Feature.Dashboard.Views.Main;assembly=MTM_Waitlist_Application.Feature.Dashboard"
+    xmlns:dashboard="clr-namespace:Feature.Dashboard.Views.Main;assembly=Feature.Dashboard"
     Title="MTM Waitlist"
-    FlyoutBehavior="{OnPlatform WinUI=Locked, Android=Flyout}">
+    FlyoutBehavior="{OnPlatform WinUI=Locked,
+                                Android=Flyout}">
 
-    <!-- ── Flyout header (shown on Android hamburger panel and Windows sidebar) ── -->
+    <!--  ── Flyout header (shown on Android hamburger panel and Windows sidebar) ──  -->
     <Shell.FlyoutHeader>
         <Grid
-            HeightRequest="80"
             Padding="16,0"
-            BackgroundColor="{AppThemeBinding Light=#1565C0, Dark=#0D47A1}">
+            BackgroundColor="{AppThemeBinding Light=#1565C0,
+                                              Dark=#0D47A1}"
+            HeightRequest="80">
             <Label
+                FontAttributes="Bold"
+                FontSize="18"
                 Text="MTM Waitlist"
                 TextColor="White"
-                FontSize="18"
-                FontAttributes="Bold"
                 VerticalOptions="Center" />
         </Grid>
     </Shell.FlyoutHeader>
 
-    <!-- ── Navigation items ────────────────────────────────────────────────────── -->
+    <!--  ── Navigation items ──────────────────────────────────────────────────────  -->
     <ShellContent
         Title="Dashboard"
         ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"

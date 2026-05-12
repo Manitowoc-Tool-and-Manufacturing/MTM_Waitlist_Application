@@ -59,13 +59,13 @@ MTM_Waitlist_Application.slnx
     ├── MTM_Waitlist_Application.Droid/                   # Android host launcher
     ├── MTM_Waitlist_Application.WinUI/                   # Windows host launcher
     ├── Core/
-    │   ├── MTM_Waitlist_Application.Core/                # Models, interfaces, constants
-    │   ├── MTM_Waitlist_Application.Data/                # API, SQLite, repositories, mock data
-    │   └── MTM_Waitlist_Application.Services/            # Business logic services
+    │   ├── Core/                # Models, interfaces, constants
+    │   ├── Data/                # API, SQLite, repositories, mock data
+    │   └── Services/            # Business logic services
     └── Features/
-        ├── MTM_Waitlist_Application.Feature.Dashboard/   # Dashboard page and ViewModel
-        ├── MTM_Waitlist_Application.Feature.Waitlist/    # Waitlist feature placeholder project
-        └── MTM_Waitlist_Application.Feature.Mobile/      # Mobile feature placeholder project
+        ├── Feature.Dashboard/   # Dashboard page and ViewModel
+        ├── Feature.Waitlist/    # Waitlist feature placeholder project
+        └── Feature.Mobile/      # Mobile feature placeholder project
 ```
 
 ---
