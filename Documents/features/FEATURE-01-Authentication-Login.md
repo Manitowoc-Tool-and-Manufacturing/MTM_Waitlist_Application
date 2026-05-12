@@ -1,17 +1,17 @@
 # FEATURE-01: Authentication & Login
 
-**Status:** Ready to Implement  
+**Status:** In Progress  
 **Priority:** Critical — Blocks Everything Else  
-**Depends On:** Nothing (backend API + Service_Auth already exist)  
+**Depends On:** `MTM_Waitlist_Server` auth controller completion for workstation detection / auto-login  
 **Blocks:** All other features  
 
 ---
 
 ## Overview
 
-The backend authentication layer is fully built: `Service_Auth`, `IService_Auth`, `/api/auth/login`, `/api/auth/refresh`, `/api/auth/auto-login`, `/api/auth/check-workstation`, `SecureStorage` JWT token handling, and the `Users` + `SharedWorkstations` MySQL tables are all defined.
+The server and database foundations now exist in the separate `MTM_Waitlist_Server/` solution. On the MAUI client side, `Service_Auth`, `IService_Auth`, and secure JWT storage are already present. The database tables and procedures for auth also exist in the server solution.
 
-What does **not** exist yet is any UI. This feature implements the login screen and session lifecycle that every other feature depends on.
+What is **not** fully implemented yet is the complete auth API surface described in the original design. The current server `AuthController` exposes stubbed `login`, `refresh`, and `revoke` endpoints, while `auto-login` and `check-workstation` are not yet implemented there. This feature therefore starts with the login UI in `Feature.Auth` and will layer in workstation detection once the server endpoints are completed.
 
 ---
 
@@ -34,43 +34,52 @@ Two login modes were confirmed during schema finalization (May 10, 2026):
 
 ## What to Build
 
-### 1. `View_Auth_Login` (Feature.Waitlist or a new Feature.Auth project)
+### 1. `View_Auth_Login` (`Feature.Auth`)
 
 **Windows layout:**
 - Full-screen centered card — not a navigation flyout item
-- Two states driven by `ViewModel_Auth_Login.IsSharedWorkstation`:
+- Initial implementation: credential entry screen using username + password/PIN
+- Future workstation-aware states (pending server endpoints):
   - **Auto-login in progress:** spinner + "Signing in as [Windows username]…"
   - **Credential entry:** username field + PIN pad (large tap targets, 48 px minimum)
 - Error banner for failed logins (`InvalidCredentials`, `AccountLocked`, network failure)
 - No "Remember Me" — JWT refresh handles session continuity
 
 **Android layout:**
-- Same two-state design, full-screen
-- PIN pad buttons minimum 64 px for factory floor tap accuracy
-- Keyboard should not auto-open (PIN pad is custom)
+- Initial implementation: full-screen username/password login
+- Future kiosk-specific PIN pad remains planned once workstation detection is available
 
 ### 2. `ViewModel_Auth_Login`
 
 ```
-[ObservableProperty] bool _isSharedWorkstation
-[ObservableProperty] bool _isCheckingWorkstation   // spinner during /check-workstation
 [ObservableProperty] bool _isAuthenticating        // spinner during login call
 [ObservableProperty] string _username
-[ObservableProperty] string _pin
+[ObservableProperty] string _password
 [ObservableProperty] string _errorMessage
 
-[RelayCommand] InitializeAsync()   // called OnAppearing — runs check-workstation flow
+[RelayCommand] InitializeAsync()   // called OnAppearing — pre-fills username and clears stale errors
 [RelayCommand] LoginAsync()        // credential submit
-[RelayCommand] ClearPinAsync()     // reset PIN field
+[RelayCommand] ClearPasswordAsync()     // reset password field
 ```
 
-**Startup flow:**
+**Current startup flow (implemented first):**
+```
+InitializeAsync()
+  → prefill Username from current environment when available
+  → show credential screen
+LoginAsync()
+  → Service_Auth.LoginAsync(username, password)
+  → success → navigate to AppShell
+  → failure → show error banner
+```
+
+**Future startup flow (pending server implementation):**
 ```
 InitializeAsync()
   → Service_Auth.CheckWorkstationAsync(Environment.MachineName)
   → if IsShared == false:
       Service_Auth.AutoLoginAsync(WindowsIdentity.GetCurrent().Name)
-      → success → navigate to AppShell (role-based landing)
+      → success → navigate to AppShell
       → failure → show credential screen (fallback)
   → if IsShared == true:
       IsSharedWorkstation = true → show credential screen
@@ -79,8 +88,8 @@ InitializeAsync()
 ### 3. Session lifecycle
 
 - On successful login, `Service_Auth` stores JWT via `SecureStorage` — already implemented
-- AppShell checks `SecureStorage` for a valid token on startup — if present and not expired, skip login
-- Token refresh is handled by `Service_Auth.RefreshAsync()` — already implemented
+- Initial implementation starts on the login page and navigates to `AppShell` after successful login
+- Token refresh is handled by `Service_Auth.RefreshTokenAsync()`
 - On token expiry or 401, navigate back to login screen
 - Session timeout: not auto-logout for personal workstations; shared kiosks → configurable idle timeout (future enhancement, stubbed as a no-op for v1)
 
@@ -119,15 +128,16 @@ All exist in `Database/procedures/Auth/`:
 
 | File | Project |
 |---|---|
-| `Views/Login/View_Auth_Login.Windows.xaml` | Feature.Waitlist (or Feature.Auth) |
-| `Views/Login/View_Auth_Login.Android.xaml` | Feature.Waitlist (or Feature.Auth) |
-| `Views/Login/View_Auth_Login.xaml.cs` | Feature.Waitlist (or Feature.Auth) |
-| `ViewModels/Login/ViewModel_Auth_Login.cs` | Feature.Waitlist (or Feature.Auth) |
+| `Views/Login/View_Auth_Login.Windows.xaml` | Feature.Auth |
+| `Views/Login/View_Auth_Login.Android.xaml` | Feature.Auth |
+| `Views/Login/View_Auth_Login.xaml.cs` | Feature.Auth |
+| `ViewModels/Login/ViewModel_Auth_Login.cs` | Feature.Auth |
 
 ---
 
 ## Open Decisions
 
-- **Project placement:** Should auth live in `Feature.Waitlist` (simplest, no new project) or a dedicated `Feature.Auth`? Given the project is not yet large, `Feature.Waitlist` is recommended to avoid project-count bloat.
+- **Project placement:** Resolved — auth lives in `Feature.Auth`.
 - **PIN vs password:** The original meeting used "badge + PIN". Current schema stores a `bcrypt` password hash. The UI should present a numeric PIN pad. The PIN is the user's password stored hashed — no separate PIN field needed in the schema.
 - **Idle timeout for kiosks:** Stubbed out as no-op in v1. A future enhancement would monitor `PointerMoved`/`Tapped` events and auto-logout shared workstations after N minutes.
+- **Server dependency:** `check-workstation` and `auto-login` must be added to `MTM_Waitlist_Server` before the full workstation-aware auth flow can replace the initial manual login slice.

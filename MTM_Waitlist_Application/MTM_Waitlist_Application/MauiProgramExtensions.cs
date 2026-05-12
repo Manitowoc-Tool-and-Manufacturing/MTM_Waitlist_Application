@@ -8,6 +8,8 @@ using Core.Interfaces.Waitlist;
 using Data.Http;
 using Data.Local;
 using Data.Repositories.Waitlist;
+using Feature.Auth.ViewModels.Login;
+using Feature.Auth.Views.Login;
 using Feature.Dashboard.ViewModels.Main;
 using Feature.Dashboard.Views.Main;
 using Services.Auth;
@@ -172,6 +174,10 @@ namespace MTM_Waitlist_Application
             services.AddSingleton<IService_Auth, Service_Auth>();
             services.AddSingleton<IService_WaitlistEntry, Service_WaitlistEntry>();
             services.AddSingleton<ISyncService, SyncService>();
+
+            // ── Feature: Auth ──────────────────────────────────────────
+            services.AddTransient<ViewModel_Auth_Login>();
+            services.AddTransient<View_Auth_Login>();
 
             // ── Feature: Dashboard ─────────────────────────────────────
             services.AddTransient<ViewModel_Dashboard_Main>();

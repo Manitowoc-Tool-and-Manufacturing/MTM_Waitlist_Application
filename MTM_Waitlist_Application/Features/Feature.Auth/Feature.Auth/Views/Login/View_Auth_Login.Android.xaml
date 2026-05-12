@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Auth.Views.Login.View_Auth_Login"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Feature.Auth.ViewModels.Login"
+    Title="Sign In"
+    x:DataType="vm:ViewModel_Auth_Login">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,28" Spacing="16">
+            <Label
+                FontAttributes="Bold"
+                FontSize="26"
+                HorizontalTextAlignment="Center"
+                Text="MTM Waitlist" />
+            <Label
+                FontSize="14"
+                HorizontalTextAlignment="Center"
+                Text="Sign in with your Windows username and password or floor PIN."
+                TextColor="{AppThemeBinding Light=#666666, Dark=#B8B8B8}" />
+
+            <VerticalStackLayout Spacing="8">
+                <Label FontAttributes="Bold" FontSize="13" Text="Windows Username" />
+                <Entry
+                    ClearButtonVisibility="WhileEditing"
+                    Placeholder="DOMAIN\\username"
+                    Text="{Binding Username, Mode=TwoWay}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="8">
+                <Label FontAttributes="Bold" FontSize="13" Text="Password / PIN" />
+                <Entry
+                    IsPassword="True"
+                    Placeholder="Enter your password or PIN"
+                    Text="{Binding Password, Mode=TwoWay}" />
+            </VerticalStackLayout>
+
+            <Label
+                FontSize="12"
+                HorizontalTextAlignment="Center"
+                Text="{Binding ErrorMessage, Mode=OneWay}"
+                TextColor="#B42318" />
+
+            <Button
+                Command="{Binding LoginCommand}"
+                HeightRequest="52"
+                Text="Sign In" />
+            <Button
+                Command="{Binding ClearPasswordCommand}"
+                HeightRequest="52"
+                Text="Clear" />
+
+            <ActivityIndicator
+                HorizontalOptions="Center"
+                IsRunning="{Binding IsAuthenticating, Mode=OneWay}"
+                IsVisible="{Binding IsAuthenticating, Mode=OneWay}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Auth.Views.Login.View_Auth_Login"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Feature.Auth.ViewModels.Login"
+    Title="Sign In"
+    x:DataType="vm:ViewModel_Auth_Login">
+
+    <Grid Padding="24" BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#1A1D21}">
+        <Border
+            Padding="28"
+            HorizontalOptions="Center"
+            MaximumWidthRequest="460"
+            StrokeShape="RoundRectangle 12"
+            VerticalOptions="Center">
+            <VerticalStackLayout Spacing="18">
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="28"
+                    Text="MTM Waitlist" />
+                <Label
+                    FontSize="14"
+                    Text="Sign in with your Windows username and password or floor PIN."
+                    TextColor="{AppThemeBinding Light=#666666,
+                                                Dark=#B8B8B8}" />
+
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Text="Windows Username" />
+                    <Entry
+                        ClearButtonVisibility="WhileEditing"
+                        Placeholder="DOMAIN\\username"
+                        Text="{Binding Username, Mode=TwoWay}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Text="Password / PIN" />
+                    <Entry
+                        IsPassword="True"
+                        Placeholder="Enter your password or PIN"
+                        Text="{Binding Password, Mode=TwoWay}" />
+                </VerticalStackLayout>
+
+                <Label
+                    FontSize="12"
+                    Text="{Binding ErrorMessage, Mode=OneWay}"
+                    TextColor="#B42318" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button
+                        Grid.Column="0"
+                        Command="{Binding ClearPasswordCommand}"
+                        HeightRequest="40"
+                        Text="Clear" />
+                    <Button
+                        Grid.Column="1"
+                        Command="{Binding LoginCommand}"
+                        HeightRequest="40"
+                        Text="Sign In" />
+                </Grid>
+
+                <ActivityIndicator
+                    HorizontalOptions="Center"
+                    IsRunning="{Binding IsAuthenticating, Mode=OneWay}"
+                    IsVisible="{Binding IsAuthenticating, Mode=OneWay}" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+</ContentPage>

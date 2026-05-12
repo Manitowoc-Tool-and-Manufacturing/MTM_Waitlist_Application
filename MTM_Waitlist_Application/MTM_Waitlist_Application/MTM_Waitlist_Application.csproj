@@ -42,6 +42,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Data\Data.csproj" />
     <ProjectReference Include="..\Core\Services\Services.csproj" />
+    <ProjectReference Include="..\Features\Feature.Auth\Feature.Auth\Feature.Auth.csproj" />
     <ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
   </ItemGroup>
 </Project>

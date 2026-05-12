@@ -591,6 +591,7 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 
 | Feature | Status | Files Present |
 |---------|--------|---------------|
+| Feature.Auth | 🚧 In Progress | ViewModel_Auth_Login, View_Auth_Login (Windows + Android + code-behind), app starts on login page |
 | Feature.Dashboard | ✅ Complete | ViewModel_Dashboard_Main, View_Dashboard_Main (Windows + Android + code-behind) |
 | Feature.Waitlist | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
 | Feature.Mobile | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
@@ -600,12 +601,13 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 | Project | TFM | Status |
 |---------|-----|--------|
 | `Core.Tests` | `net10.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Data.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Services.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | 🚧 Scaffold only — WinUI MSTest template placeholders |
-| `UITests.Droid` | `net10.0` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Data.Tests` | `net10.0-windows10.0.19041.0` | ✅ Implemented repository + seeding tests |
+| `Services.Tests` | `net10.0-windows10.0.19041.0` | ✅ Implemented auth, sync, and waitlist service tests |
+| `Feature.Auth.Tests` | `net10.0-windows10.0.19041.0` | ✅ Implemented login ViewModel tests |
+| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | ✅ Implemented ViewModel property tests |
+| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | 🚧 Project exists but no source logic yet |
+| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | 🚧 Project exists but no authored UI tests yet |
+| `UITests.Droid` | `net10.0` | 🚧 Project exists but no authored UI tests yet |
 
 Test folder structure rule: mirror the source project path, then add a category subfolder at the leaf.
 See `testing.instructions.md` for the full path mapping table and category definitions.
@@ -624,9 +626,10 @@ See `testing.instructions.md` for the full path mapping table and category defin
   - `testing.instructions.md` — xUnit / Moq / FluentAssertions patterns
 - Prompt files: `.github/prompts/`
 - Database files: `Database/` — MySQL schema, procedures, triggers, indexes, seed, migrations
+- Server solution: `MTM_Waitlist_Server/` — implemented server admin app, REST API host, migrations, backup/restore, and database operations
 
 ## Server-Specific Instructions
 
-- Maintain `MTM_Waitlist_Server` as a separate standalone solution rather than including it in the main MAUI solution.
-- Migrate/copy relevant DATABASE documentation into the server solution.
-- Add a Copilot initialization prompt for server-specific instructions, agents, and documentation
+- Maintain `MTM_Waitlist_Server` as a separate standalone solution inside this repository rather than including it in the main MAUI solution.
+- The server-side DATABASE documents have been carried forward into the server solution and should be treated as implemented unless contradicted by source.
+- For FEATURE-01 specifically: the client-side auth UI is now in `Feature.Auth`; workstation detection and silent auto-login remain dependent on server auth endpoint implementation.

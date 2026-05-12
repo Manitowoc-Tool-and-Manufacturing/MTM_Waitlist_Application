@@ -3,9 +3,17 @@ applyTo: "**/*.{cs,xaml,csproj}"
 ---
 
 # Codebase State — MTM Waitlist Application
-*Verified against source files on May 10, 2026. Do not assume — read this first.*
+*Verified against source files on May 12, 2026. Do not assume — read this first.*
 
 ## What Is Actually Built
+
+### Feature.Auth — IN PROGRESS
+- `ViewModels/Login/ViewModel_Auth_Login.cs` — `partial class`, inherits `ObservableObject`
+- `Views/Login/View_Auth_Login.Windows.xaml` — centered desktop login card
+- `Views/Login/View_Auth_Login.Android.xaml` — full-screen mobile login layout
+- `Views/Login/View_Auth_Login.xaml.cs` — shared code-behind, init + authenticated handoff event only
+- Current scope is **manual username/password login** through `IService_Auth.LoginAsync`
+- Workstation detection and silent auto-login are **not yet available** because the required server endpoints are not implemented yet
 
 ### Feature.Dashboard — COMPLETE
 - `ViewModels/Main/ViewModel_Dashboard_Main.cs` — `partial class`, inherits `ObservableObject`
@@ -40,29 +48,37 @@ Data:            LocalDbContext (Singleton)
 Services:        IService_Auth → Service_Auth (Singleton)
                  IService_WaitlistEntry → Service_WaitlistEntry (Singleton)
                  ISyncService → SyncService (Singleton)
+Feature.Auth:     ViewModel_Auth_Login (Transient)
+                  View_Auth_Login (Transient)
 Feature.Dashboard: ViewModel_Dashboard_Main (Transient)
                    View_Dashboard_Main (Transient)
 Feature.Waitlist:  (commented out — no classes yet)
 Feature.Mobile:    (commented out — no classes yet)
 ```
 
+### Startup Flow — Current
+- `App.CreateWindow()` resolves `View_Auth_Login` from DI and opens there first
+- Successful manual login switches the window page to `AppShell`
+
 ### AppShell — Current Routes
 - `Dashboard` → `View_Dashboard_Main` via `ShellContent ContentTemplate`
 - No other routes yet
 
 ### API Backend Status
-- Backend REST API exists at `http://172.16.1.104:5000` (internal LAN)
+- Backend REST API is hosted by the separate `MTM_Waitlist_Server/` solution in this repository
+- Server app exists and is implemented as a separate standalone solution (`MTM_Waitlist_Server.slnx`)
+- Runtime base URL remains `http://172.16.1.104:5000` (internal LAN)
 - Endpoint for waitlist: `/api/waitlist` (GET, POST, PUT, DELETE)
-- Auth endpoints: `/api/auth/login`, `/api/auth/refresh`
-- API schema IS finalized — confirmed May 10, 2026 (see `.github/assumptions/05102026-1000AM-Assumptions.md`)
-- Auth also adds: `/api/auth/auto-login` (Windows username lookup), `/api/auth/check-workstation` (shared workstation check)
+- Auth controller currently exposes stubbed `/api/auth/login`, `/api/auth/refresh`, and `/api/auth/revoke`
+- `/api/auth/auto-login` and `/api/auth/check-workstation` are still pending in the server solution
 
 ### Database Status
 - MySQL 5.7 at `172.16.1.104` — database name: `mtm_waitlist` (lowercase)
-- Schema fully defined in `Database/migrations/V001__Initial_Schema.sql`
+- Server-side database implementation now lives under `MTM_Waitlist_Server/Database/`
+- Client repo `Database/` folder remains the shared reference copy used for client-side documentation and schema visibility
 - Tables: `Users`, `SharedWorkstations`, `RefreshTokens`, `WaitlistEntries`
 - Auth procedure set includes: `usp_Auth_CheckSharedWorkstation`, `usp_Auth_GetUserByWindowsUsername`, `usp_Auth_ValidateCredentials`, and 5 more
-- **NOT YET APPLIED TO SERVER** — awaiting admin credentials and connectivity confirmation
+- Database design docs have been implemented in the server solution; treat them as built server-side unless a specific source file says otherwise
 
 ## Key Namespace Patterns
 
@@ -70,6 +86,8 @@ Feature.Mobile:    (commented out — no classes yet)
 |--------------|-----------|
 | `Feature.Dashboard/ViewModels/Main/` | `Feature.Dashboard.ViewModels.Main` |
 | `Feature.Dashboard/Views/Main/` | `Feature.Dashboard.Views.Main` |
+| `Feature.Auth/ViewModels/Login/` | `Feature.Auth.ViewModels.Login` |
+| `Feature.Auth/Views/Login/` | `Feature.Auth.Views.Login` |
 | `Feature.Waitlist/ViewModels/<Screen>/` | `Feature.Waitlist.ViewModels.<Screen>` |
 | `Feature.Waitlist/Views/<Screen>/` | `Feature.Waitlist.Views.<Screen>` |
 | `Services/Waitlist/` | `Services.Waitlist` |
@@ -94,17 +112,18 @@ Feature.Mobile:    (commented out — no classes yet)
 | `Tests/Unit/Feature.Dashboard.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Dashboard.<Folder>.<Subfolder>.<Category>` |
 | `Tests/Unit/Feature.Waitlist.Tests/<Folder>/<Subfolder>/<Category>/` | `MTM_Waitlist_Application.Tests.Unit.Feature.Waitlist.<Folder>.<Subfolder>.<Category>` |
 
-## Test Project State (as of May 11, 2026)
+## Test Project State (as of May 12, 2026)
 
 | Project | TFM | References | Status |
 |---------|-----|-----------|--------|
-| `Core.Tests` | `net10.0` | `Core` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
-| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | None | 🚧 Scaffold only — WinUI MSTest template placeholders |
-| `UITests.Droid` | `net10.0` | None | 🚧 Scaffold only — `UnitTest1.cs` placeholder |
+| `Core.Tests` | `net10.0` | `Core` | ✅ Implemented core model/result tests |
+| `Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` | ✅ Implemented repository and mock-seed tests |
+| `Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` | ✅ Implemented auth, waitlist, and sync tests |
+| `Feature.Auth.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Auth` | ✅ Implemented login ViewModel tests |
+| `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` | ✅ Implemented ViewModel property tests |
+| `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` | 🚧 Project exists but no source logic yet |
+| `UITests.WinUI` | `net10.0-windows10.0.19041.0` | None | 🚧 Project exists but no authored UI tests yet |
+| `UITests.Droid` | `net10.0` | None | 🚧 Project exists but no authored UI tests yet |
 
 Physical disk location: `MTM_Waitlist_Application/Tests/Unit/` and `MTM_Waitlist_Application/Tests/UI/`
 Solution folder location: `/Tests/Unit/` and `/Tests/UI/`

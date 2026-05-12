@@ -2,6 +2,8 @@
 
 MTM Waitlist Application is a .NET MAUI 10 solution for managing waitlist workflows across a Windows-primary experience with Android companion support.
 
+The server-side admin application and REST API now live in the sibling solution folder `MTM_Waitlist_Server/` inside this repository. It is maintained as a separate solution and is not loaded into the MAUI `.slnx`.
+
 ---
 
 ## Overview
@@ -11,6 +13,7 @@ The repository has moved beyond the initial scaffold and now contains the modula
 - thin WinUI and Android host projects
 - a shared MAUI startup and dependency injection hub
 - Core, Data, Services, and Feature projects
+- a dedicated `Feature.Auth` project for authentication UI
 - a Dashboard feature with separate Windows and Android XAML layouts
 - API client plumbing with primary and fallback base URL support
 - authentication service wiring with secure token storage
@@ -19,6 +22,7 @@ The repository has moved beyond the initial scaffold and now contains the modula
 - offline write queue and sync service foundations
 - debug mock-data seeding for UI development when the primary API is unavailable
 - architecture, setup, UI, and Copilot guidance documentation
+- a separate implemented server/admin solution under `MTM_Waitlist_Server/`
 
 ---
 
@@ -35,18 +39,22 @@ The repository has moved beyond the initial scaffold and now contains the modula
 - Core project with waitlist, auth, API, sync, and result contracts
 - Data project with HTTP API access, SQLite local storage, repositories, and debug mock data
 - Services project with auth, waitlist, and sync services
+- Feature.Auth project scaffolded for login UX implementation
 - Dashboard feature project with MVVM ViewModel and platform-specific XAML
 - Waitlist and Mobile feature projects created for upcoming screens
+- MTM Waitlist Server solution implemented separately in `MTM_Waitlist_Server/`
+- database administration, migrations, backup/restore, kill switch, and server-hosted API implemented in the server solution
 - WinUI `WMC1006` warning suppression in the WinUI project file
 
 ### In Progress / Next Phase
 
 - expand `Model_WaitlistEntry` once the backend API contract is finalized
+- implement authentication UI in `Feature.Auth`
 - implement waitlist entry pages and ViewModels
 - connect Dashboard summary cards to real service data
 - add navigation routes and Shell entries for feature pages
-- add unit tests for services, repositories, and ViewModels
-- complete production API integration and validation rules
+- complete auth controller implementation for workstation detection and auto-login in `MTM_Waitlist_Server`
+- continue expanding unit and UI test coverage
 
 ---
 
@@ -64,9 +72,21 @@ MTM_Waitlist_Application.slnx
     │   └── Services/            # Business logic services
     └── Features/
         ├── Feature.Dashboard/   # Dashboard page and ViewModel
+        ├── Feature.Auth/        # Authentication/login feature
         ├── Feature.Waitlist/    # Waitlist feature placeholder project
         └── Feature.Mobile/      # Mobile feature placeholder project
 ```
+
+      Separate server solution:
+
+      ```text
+      MTM_Waitlist_Server/
+      ├── Hosts/      # WinUI server admin app
+      ├── Core/       # API + shared server contracts
+      ├── Modules/    # Dashboard, Settings, Backup, KillSwitch, Migrations
+      ├── Database/   # Executed server-side schema/procedures/triggers/indexes
+      └── Tests/      # Server-side test projects
+      ```
 
 ---
 
@@ -192,6 +212,10 @@ The Dashboard feature includes:
 
 The Waitlist feature project exists and references Core and Services. Pages and ViewModels are the next implementation step.
 
+### Auth
+
+The Auth feature project exists and is the selected home for FEATURE-01. The current client-side auth service supports manual username/password login, logout, and token refresh. Workstation detection and silent auto-login remain dependent on server endpoint implementation in `MTM_Waitlist_Server`.
+
 ### Mobile
 
 The Mobile feature project exists for Android-focused screens. Pages and ViewModels are the next implementation step.
@@ -213,6 +237,9 @@ The following documents support current and future development:
 
 - [AGENTS.md](./AGENTS.md)  
   AI agent roles used to scaffold features, audit architecture, register DI services, update docs, and manage assumptions.
+
+- [MTM_Waitlist_Server/README.md](./MTM_Waitlist_Server/README.md)  
+  Server admin application, REST API, migration system, backup/restore, and database operations.
 
 If present in the repository, the following `.github` files also support future development:
 

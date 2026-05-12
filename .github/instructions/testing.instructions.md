@@ -11,6 +11,7 @@ applyTo: "**/*.Tests.cs,**/*Tests/**"
 | `/Tests/Unit/` | `Core.Tests` | `net10.0` | `Core` |
 | `/Tests/Unit/` | `Data.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Data` |
 | `/Tests/Unit/` | `Services.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Services` |
+| `/Tests/Unit/` | `Feature.Auth.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Auth` |
 | `/Tests/Unit/` | `Feature.Dashboard.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Dashboard` |
 | `/Tests/Unit/` | `Feature.Waitlist.Tests` | `net10.0-windows10.0.19041.0` | `Core`, `Feature.Waitlist` |
 | `/Tests/UI/` | `MTM_Waitlist_Application.UITests.WinUI` | `net10.0-windows10.0.19041.0` | None (runtime Appium) |
@@ -77,6 +78,11 @@ Add new category names as needed — keep them concise and consistent.
 | `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Success/Service_WaitlistEntryTests.cs` |
 | `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Failure/Service_WaitlistEntryTests.cs` |
 | `Core/Services/Waitlist/Service_WaitlistEntry.cs` | `Tests/Unit/Services.Tests/Waitlist/Connectivity/Service_WaitlistEntryTests.cs` |
+
+### Feature.Auth.Tests  (`net10.0-windows10.0.19041.0`)
+| Source file | Test file path |
+|---|---|
+| `Features/Feature.Auth/Feature.Auth/ViewModels/Login/ViewModel_Auth_Login.cs` | `Tests/Unit/Feature.Auth.Tests/Feature.Auth.Tests/ViewModels/Login/Properties/ViewModel_Auth_LoginTests.cs` |
 
 ### Feature.Dashboard.Tests  (`net10.0-windows10.0.19041.0`)
 | Source file | Test file path |
