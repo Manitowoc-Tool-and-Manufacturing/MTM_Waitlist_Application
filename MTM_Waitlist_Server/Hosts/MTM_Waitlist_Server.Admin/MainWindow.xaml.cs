@@ -5,6 +5,7 @@ using MTM_Waitlist_Server.Admin.Views;
 using MTM_Waitlist_Server.Core.Interfaces.Window;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
 using MTM_Waitlist_Server.Module.Backup.Views;
+using MTM_Waitlist_Server.Module.ConnectedUsers.Views;
 using MTM_Waitlist_Server.Module.Dashboard.Views;
 using MTM_Waitlist_Server.Module.KillSwitch.Views;
 using MTM_Waitlist_Server.Module.Migrations.Views;
@@ -296,6 +297,11 @@ ContentFrame.Content = root;
             case "KillSwitch":
                 ContentFrame.Content = App.Services?.GetService(typeof(View_KillSwitch)) as View_KillSwitch
                     ?? throw new InvalidOperationException("View_KillSwitch is not registered in DI.");
+                break;
+
+            case "ConnectedUsers":
+                ContentFrame.Content = App.Services?.GetService(typeof(View_ConnectedUsers)) as View_ConnectedUsers
+                    ?? throw new InvalidOperationException("View_ConnectedUsers is not registered in DI.");
                 break;
         }
     }

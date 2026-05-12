@@ -123,6 +123,8 @@ public sealed class Service_Auth : IService_Auth
             await SecureStorage.SetAsync(Constants_AuthStorage.RefreshTokenKey, token.RefreshToken);
             await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenExpiresAtKey, token.ExpiresAt.ToString("O"));
             await SecureStorage.SetAsync(Constants_AuthStorage.AuthRoleKey, token.Role);
+            await SecureStorage.SetAsync(Constants_AuthStorage.AuthUsernameKey, token.Username);
+            await SecureStorage.SetAsync(Constants_AuthStorage.AuthDisplayNameKey, token.DisplayName);
         });
     }
 
@@ -135,6 +137,8 @@ public sealed class Service_Auth : IService_Auth
             SecureStorage.Remove(Constants_AuthStorage.RefreshTokenKey);
             SecureStorage.Remove(Constants_AuthStorage.AuthTokenExpiresAtKey);
             SecureStorage.Remove(Constants_AuthStorage.AuthRoleKey);
+            SecureStorage.Remove(Constants_AuthStorage.AuthUsernameKey);
+            SecureStorage.Remove(Constants_AuthStorage.AuthDisplayNameKey);
         });
     }
 }

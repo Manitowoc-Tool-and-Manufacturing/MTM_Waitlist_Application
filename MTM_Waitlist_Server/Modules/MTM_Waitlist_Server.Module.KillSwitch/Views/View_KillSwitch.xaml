@@ -148,25 +148,39 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="ks:ClientHeartbeat">
                                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12"
-                                              Padding="0,4,0,4">
+                                              Padding="0,6,0,6">
                                             <StackPanel Grid.Column="0" Spacing="2">
-                                                <TextBlock Text="{x:Bind MachineName}"
-                                                           Style="{ThemeResource BodyTextBlockStyle}" />
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <!-- Full name (primary) -->
+                                                <TextBlock Text="{x:Bind FullName}"
+                                                           Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                                <!-- Username + machine -->
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <TextBlock Text="{x:Bind Username}"
                                                                Style="{ThemeResource CaptionTextBlockStyle}"
                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                    <TextBlock Text="| Last seen:"
+                                                    <TextBlock Text="&#x2022;"
+                                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{x:Bind WorkstationName, TargetNullValue='Personal workstation'}"
+                                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="&#x2022; Last seen:"
                                                                Style="{ThemeResource CaptionTextBlockStyle}"
                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     <TextBlock Text="{x:Bind LastSeenUtc}"
                                                                Style="{ThemeResource CaptionTextBlockStyle}"
                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 </StackPanel>
+                                                <!-- Machine name (tertiary) -->
+                                                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                    <Run Text="Machine: " /><Run Text="{x:Bind MachineName}" />
+                                                </TextBlock>
                                             </StackPanel>
                                             <Button Grid.Column="1"
                                                     Content="Shut Down"
                                                     MinHeight="32"
+                                                    VerticalAlignment="Center"
                                                     Tag="{x:Bind}"
                                                     Click="ShutDownClientButton_Click" />
                                         </Grid>

@@ -1,4 +1,6 @@
 ﻿using Core.Constants.Auth;
+using Core.Interfaces.KillSwitch;
+using Core.Models.KillSwitch;
 using Feature.Auth.Views.Login;
 using Microsoft.Extensions.Logging;
 
@@ -87,6 +89,71 @@ namespace MTM_Waitlist_Application
                 _window.Page = CreateShellForCurrentRole();
                 _logger.LogInformation("{LogMessage}", logMessage);
             }
+
+            // Start the kill-switch heartbeat now that the user is authenticated.
+            // Runs on a background thread so SecureStorage reads don't block the UI.
+            _ = Task.Run(StartKillSwitchAsync);
+        }
+
+        /// <summary>
+        /// Reads the authenticated user's credentials from SecureStorage and starts
+        /// the kill-switch heartbeat loop.
+        /// </summary>
+        private async Task StartKillSwitchAsync()
+        {
+            try
+            {
+                var username = await MainThread.InvokeOnMainThreadAsync(
+                    () => SecureStorage.GetAsync(Constants_AuthStorage.AuthUsernameKey)) ?? string.Empty;
+                var displayName = await MainThread.InvokeOnMainThreadAsync(
+                    () => SecureStorage.GetAsync(Constants_AuthStorage.AuthDisplayNameKey)) ?? string.Empty;
+
+                // Workstation name is not stored in SecureStorage — pass null so the
+                // admin console will show the machine name from DeviceInfo.Name instead.
+                var killSwitch = _serviceProvider.GetRequiredService<IService_KillSwitch>();
+                killSwitch.ShutdownSignalReceived += OnShutdownSignalReceived;
+                killSwitch.StartHeartbeat(username, displayName, workstationName: null);
+
+                _logger.LogInformation("[KillSwitch] Heartbeat started — username={Username}", username);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[KillSwitch] Failed to start heartbeat");
+            }
+        }
+
+        /// <summary>
+        /// Handles a shutdown signal from the admin console.
+        /// Displays a countdown dialog and closes the application when the warning expires.
+        /// Guaranteed to run on the main thread (raised by the kill-switch service).
+        /// </summary>
+        private async void OnShutdownSignalReceived(object? sender, Model_KillSwitch_Signal signal)
+        {
+            _logger.LogWarning(
+                "[KillSwitch] Shutdown signal received — target={Target}, warningSeconds={Warning}, message={Msg}",
+                signal.Target, signal.WarningSeconds, signal.Message);
+
+            // Stop sending further heartbeats — the session is ending.
+            if (sender is IService_KillSwitch ks)
+            {
+                ks.ShutdownSignalReceived -= OnShutdownSignalReceived;
+                ks.StopHeartbeat();
+            }
+
+            if (signal.WarningSeconds > 0 && _window?.Page is not null)
+            {
+                // Show a non-cancellable countdown alert for the warning period.
+                // Blocks the UI intentionally — the user should not be able to continue working.
+                await _window.Page.DisplayAlertAsync(
+                    "⚠️  Application Closing",
+                    $"{signal.Message}\n\nThis application will close in {signal.WarningSeconds} seconds.",
+                    "OK");
+
+                await Task.Delay(TimeSpan.FromSeconds(signal.WarningSeconds));
+            }
+
+            _logger.LogInformation("[KillSwitch] Closing application per admin signal");
+            Application.Current?.Quit();
         }
 
         private async Task<bool> HasValidStoredSessionAsync()

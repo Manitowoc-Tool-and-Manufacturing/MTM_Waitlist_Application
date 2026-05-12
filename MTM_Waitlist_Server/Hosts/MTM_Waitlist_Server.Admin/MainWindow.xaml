@@ -36,6 +36,7 @@
                 <NavigationViewItem Tag="Migrations" Icon="Sync" Content="Migrations" />
                 <NavigationViewItem Tag="Backup" Icon="Save" Content="Backup &amp; Restore" />
                 <NavigationViewItem Tag="KillSwitch" Icon="Cancel" Content="Kill Switch" />
+                <NavigationViewItem Tag="ConnectedUsers" Icon="People" Content="Connected Users" />
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>

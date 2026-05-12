@@ -40,7 +40,8 @@ public class AdminController : ControllerBase
     [HttpPost("heartbeat")]
     public IActionResult PostHeartbeat([FromBody] HeartbeatRequest request)
     {
-        _killSwitch.RecordHeartbeat(request.MachineName, request.Username);
+        _killSwitch.RecordHeartbeat(request.MachineName, request.Username,
+            request.FullName, request.WorkstationName);
         return Ok();
     }
 
@@ -83,7 +84,11 @@ public class AdminController : ControllerBase
 }
 
 /// <summary>Request body for POST /api/admin/heartbeat.</summary>
-public record HeartbeatRequest(string MachineName, string Username);
+public record HeartbeatRequest(
+    string MachineName,
+    string Username,
+    string FullName,
+    string? WorkstationName);
 
 /// <summary>Request body for POST /api/admin/shutdown.</summary>
 public record SetShutdownRequest(

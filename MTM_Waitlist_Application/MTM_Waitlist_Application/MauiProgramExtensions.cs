@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
+using Core.Interfaces.KillSwitch;
 using Core.Interfaces.Sync;
 using Core.Interfaces.Waitlist;
 using Data.Http;
@@ -13,6 +14,7 @@ using Feature.Auth.Views.Login;
 using Feature.Dashboard.ViewModels.Main;
 using Feature.Dashboard.Views.Main;
 using Services.Auth;
+using Services.KillSwitch;
 using Services.Sync;
 using Services.Waitlist;
 #if DEBUG
@@ -215,6 +217,7 @@ namespace MTM_Waitlist_Application
             services.AddSingleton<IService_Auth, Service_Auth>();
             services.AddSingleton<IService_WaitlistEntry, Service_WaitlistEntry>();
             services.AddSingleton<ISyncService, SyncService>();
+            services.AddSingleton<IService_KillSwitch, Service_KillSwitch>();
 
             // ── Feature: Auth ──────────────────────────────────────────
             services.AddTransient<ViewModel_Auth_Login>();

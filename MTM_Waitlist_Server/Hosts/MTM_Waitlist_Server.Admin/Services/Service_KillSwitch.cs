@@ -27,13 +27,13 @@ internal sealed class Service_KillSwitch : IService_KillSwitch
     public bool IsRestoreInProgress { get; set; }
 
     /// <inheritdoc />
-    public void RecordHeartbeat(string machineName, string username)
+    public void RecordHeartbeat(string machineName, string username, string fullName, string? workstationName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(machineName);
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
 
         _heartbeats[machineName.ToLowerInvariant()] =
-            new ClientHeartbeat(machineName, username, DateTime.UtcNow);
+            new ClientHeartbeat(machineName, username, fullName, workstationName, DateTime.UtcNow);
     }
 
     /// <inheritdoc />

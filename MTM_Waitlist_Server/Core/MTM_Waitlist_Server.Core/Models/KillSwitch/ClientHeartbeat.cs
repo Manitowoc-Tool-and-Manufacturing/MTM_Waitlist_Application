@@ -4,4 +4,6 @@ namespace MTM_Waitlist_Server.Core.Models.KillSwitch;
 public record ClientHeartbeat(
     string MachineName,
     string Username,
+    string FullName,
+    string? WorkstationName,
     DateTime LastSeenUtc);

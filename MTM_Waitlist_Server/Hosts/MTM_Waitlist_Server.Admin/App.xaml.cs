@@ -25,6 +25,9 @@ using MTM_Waitlist_Server.Module.KillSwitch.ViewModels;
 using MTM_Waitlist_Server.Module.KillSwitch.Views;
 using MTM_Waitlist_Server.Module.Migrations.ViewModels;
 using MTM_Waitlist_Server.Module.Migrations.Views;
+using MTM_Waitlist_Server.Core.Interfaces.ConnectedUsers;
+using MTM_Waitlist_Server.Module.ConnectedUsers.ViewModels;
+using MTM_Waitlist_Server.Module.ConnectedUsers.Views;
 using MTM_Waitlist_Server.Module.Settings.ViewModels;
 using MTM_Waitlist_Server.Module.Settings.Views;
 namespace MTM_Waitlist_Server.Admin;
@@ -277,8 +280,11 @@ public partial class App : Application
         services.AddSingleton<IService_Backup, Service_Backup>();
         services.AddSingleton<IService_KillSwitch, Service_KillSwitch>();
         services.AddSingleton<IService_Migration, Service_Migration>();
+        services.AddSingleton<IService_ConnectedUsers, Service_ConnectedUsers>();
         services.AddSingleton<BackupSchedulerService>();
         // ViewModels and views are Transient — new instance per navigation.
+        services.AddTransient<ViewModel_ConnectedUsers>();
+        services.AddTransient<View_ConnectedUsers>();
         services.AddTransient<ViewModel_Dashboard>();
         services.AddTransient<View_Dashboard>();
         services.AddTransient<ViewModel_Settings>();

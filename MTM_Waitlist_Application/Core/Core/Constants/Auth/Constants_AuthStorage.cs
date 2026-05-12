@@ -16,4 +16,10 @@ public static class Constants_AuthStorage
 
     /// <summary>Key for the current authenticated role.</summary>
     public const string AuthRoleKey = "auth_role";
+
+    /// <summary>Key for the authenticated user's application username.</summary>
+    public const string AuthUsernameKey = "auth_username";
+
+    /// <summary>Key for the authenticated user's display name (full name).</summary>
+    public const string AuthDisplayNameKey = "auth_display_name";
 }

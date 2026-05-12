@@ -9,7 +9,7 @@ public interface IService_KillSwitch
     bool IsRestoreInProgress { get; set; }
 
     /// <summary>Registers or refreshes a client heartbeat.</summary>
-    void RecordHeartbeat(string machineName, string username);
+    void RecordHeartbeat(string machineName, string username, string fullName, string? workstationName);
 
     /// <summary>Returns all clients whose last heartbeat is within the expiry window.</summary>
     IReadOnlyList<ClientHeartbeat> GetConnectedClients();

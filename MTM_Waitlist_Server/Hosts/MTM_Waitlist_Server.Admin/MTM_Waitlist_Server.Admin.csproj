@@ -51,6 +51,7 @@
     <ProjectReference Include="..\..\Core\MTM_Waitlist_Server.Api\MTM_Waitlist_Server.Api.csproj" />
     <ProjectReference Include="..\..\Core\MTM_Waitlist_Server.Core\MTM_Waitlist_Server.Core.csproj" />
     <ProjectReference Include="..\..\Modules\MTM_Waitlist_Server.Module.Backup\MTM_Waitlist_Server.Module.Backup.csproj" />
+    <ProjectReference Include="..\..\Modules\MTM_Waitlist_Server.Module.ConnectedUsers\MTM_Waitlist_Server.Module.ConnectedUsers.csproj" />
     <ProjectReference Include="..\..\Modules\MTM_Waitlist_Server.Module.Dashboard\MTM_Waitlist_Server.Module.Dashboard.csproj" />
     <ProjectReference Include="..\..\Modules\MTM_Waitlist_Server.Module.KillSwitch\MTM_Waitlist_Server.Module.KillSwitch.csproj" />
     <ProjectReference Include="..\..\Modules\MTM_Waitlist_Server.Module.Migrations\MTM_Waitlist_Server.Module.Migrations.csproj" />

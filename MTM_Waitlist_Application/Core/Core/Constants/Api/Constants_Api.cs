@@ -24,4 +24,10 @@ public static class Constants_Api
 
     /// <summary>REST endpoint for all waitlist entry operations.</summary>
     public const string WaitlistEntryEndpoint = "/api/waitlist";
+
+    /// <summary>REST endpoint for client heartbeat POST.</summary>
+    public const string HeartbeatEndpoint = "/api/admin/heartbeat";
+
+    /// <summary>REST endpoint for polling the shutdown signal for the calling client.</summary>
+    public const string ShutdownSignalEndpoint = "/api/admin/shutdown-signal";
 }
