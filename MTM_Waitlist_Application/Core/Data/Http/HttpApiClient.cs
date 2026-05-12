@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
+using Core.Constants.Auth;
 using Core.Constants.Api;
 using Core.Interfaces.Api;
 using Core.Models.Shared;
@@ -42,6 +43,20 @@ public sealed class HttpApiClient : IApiClient
     /// a dev machine with no work-LAN route.
     /// </summary>
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(3);
+
+    /// <summary>
+    /// How long a cached URL resolution is considered valid before re-probing.
+    /// Re-probing lets the client switch back to primary if the network comes up.
+    /// </summary>
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    // Cached result of the last probe — null means not yet resolved.
+    private string? _cachedBaseUrl;
+    private DateTime _cachedAt = DateTime.MinValue;
+
+    // SemaphoreSlim ensures only one probe runs at a time even if multiple
+    // requests arrive concurrently before the first probe completes.
+    private readonly SemaphoreSlim _probeLock = new(1, 1);
 
     /// <summary>
     /// Initialises a new instance using URL values from <paramref name="configuration"/>.
@@ -130,35 +145,55 @@ public sealed class HttpApiClient : IApiClient
     // ── Private helpers ────────────────────────────────────────────────────
 
     /// <summary>
-    /// Probes the primary URL with a short timeout.  Returns the primary URL
-    /// (and a fresh <see cref="HttpClient"/>) if reachable; otherwise returns
-    /// the fallback URL so the caller does not have to know which host was chosen.
+    /// Returns the resolved base URL, using a cached result when valid to avoid
+    /// paying the probe timeout on every request.  The cache is invalidated after
+    /// <see cref="CacheDuration"/> so the client can switch back to the primary
+    /// host if the work-LAN becomes reachable again.
     /// </summary>
-    /// <remarks>
-    /// The probe is a lightweight HEAD request to the API health endpoint.
-    /// If the primary host is simply offline (connection refused) the OS returns
-    /// immediately; the <see cref="ProbeTimeout"/> only guards against a route
-    /// that exists but is very slow.
-    /// </remarks>
     private async Task<(string baseUrl, HttpClient client)> ResolveBaseUrlAsync(
         CancellationToken cancellationToken)
     {
-        using var probeClient = _httpClientFactory.CreateClient();
-        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        probeCts.CancelAfter(ProbeTimeout);
+        // Fast path — return the cached URL if it is still fresh.
+        if (_cachedBaseUrl is not null && DateTime.UtcNow - _cachedAt < CacheDuration)
+        {
+            return (_cachedBaseUrl, _httpClientFactory.CreateClient());
+        }
 
+        // Slow path — only one thread probes at a time.
+        await _probeLock.WaitAsync(cancellationToken);
         try
         {
-            // HEAD to /health avoids triggering any side-effects on the server.
-            using var probe = new HttpRequestMessage(HttpMethod.Head, $"{_primaryUrl}/health");
-            using var resp = await probeClient.SendAsync(probe, HttpCompletionOption.ResponseHeadersRead, probeCts.Token);
-            // Any HTTP response (even 404/405) means the host is reachable.
-            return (_primaryUrl, _httpClientFactory.CreateClient());
+            // Re-check inside the lock in case another thread already resolved it.
+            if (_cachedBaseUrl is not null && DateTime.UtcNow - _cachedAt < CacheDuration)
+            {
+                return (_cachedBaseUrl, _httpClientFactory.CreateClient());
+            }
+
+            using var probeClient = _httpClientFactory.CreateClient();
+            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            probeCts.CancelAfter(ProbeTimeout);
+
+            try
+            {
+                // HEAD to /health avoids triggering any side-effects on the server.
+                using var probe = new HttpRequestMessage(HttpMethod.Head, $"{_primaryUrl}/health");
+                using var resp = await probeClient.SendAsync(
+                    probe, HttpCompletionOption.ResponseHeadersRead, probeCts.Token);
+                // Any HTTP response (even 404/405) means the host is reachable.
+                _cachedBaseUrl = _primaryUrl;
+            }
+            catch
+            {
+                // Primary unreachable — silently switch to fallback.
+                _cachedBaseUrl = _fallbackUrl;
+            }
+
+            _cachedAt = DateTime.UtcNow;
+            return (_cachedBaseUrl, _httpClientFactory.CreateClient());
         }
-        catch
+        finally
         {
-            // Primary unreachable — silently switch to fallback.
-            return (_fallbackUrl, _httpClientFactory.CreateClient());
+            _probeLock.Release();
         }
     }
 
@@ -171,7 +206,7 @@ public sealed class HttpApiClient : IApiClient
     {
         var request = new HttpRequestMessage(method, $"{baseUrl}{endpoint}");
 
-        var token = await SecureStorage.GetAsync("auth_token");
+        var token = await SecureStorage.GetAsync(Constants_AuthStorage.AuthTokenKey);
         if (!string.IsNullOrWhiteSpace(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

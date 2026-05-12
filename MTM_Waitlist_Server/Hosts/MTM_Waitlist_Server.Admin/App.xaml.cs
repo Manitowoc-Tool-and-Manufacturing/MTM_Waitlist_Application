@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using MTM_Waitlist_Server.Admin.Services;
 using MTM_Waitlist_Server.Admin.ViewModels;
 using MTM_Waitlist_Server.Admin.Views;
-using MTM_Waitlist_Server.Api;
 using MTM_Waitlist_Server.Api.Services;
+using MTM_Waitlist_Server.Core.Interfaces.Api;
 using MTM_Waitlist_Server.Core.Interfaces.Auth;
 using MTM_Waitlist_Server.Core.Interfaces.Backup;
 using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
@@ -35,7 +35,6 @@ namespace MTM_Waitlist_Server.Admin;
 public partial class App : Application
 {
     private MainWindow? _window;
-    private Task? _apiHostTask;
 
     /// <summary>Shared DI provider — accessible by module ViewModels and API controllers.</summary>
     internal static IServiceProvider? Services { get; private set; }
@@ -178,11 +177,14 @@ public partial class App : Application
         }
 
         // ── Normal launch ─────────────────────────────────────────────────────
-        var listenUrl = settingsStore.Get().Api.ListenAddress;
-        var webApp    = ApiStartup.BuildApp(listenUrl, sharedServices);
-        _apiHostTask  = webApp.RunAsync();
+        var apiHost = new Service_ApiHost(settingsStore, sharedServices);
+        apiHost.Start();
+        // Re-register the same singleton instance so ViewModels can inject it.
+        sharedServices.AddSingleton<IService_ApiHost>(apiHost);
+        var finalProvider = sharedServices.BuildServiceProvider();
+        Services = finalProvider;
 
-        var scheduler = provider.GetRequiredService<BackupSchedulerService>();
+        var scheduler = finalProvider.GetRequiredService<BackupSchedulerService>();
         _ = scheduler.StartAsync(CancellationToken.None);
 
         _window = new MainWindow();

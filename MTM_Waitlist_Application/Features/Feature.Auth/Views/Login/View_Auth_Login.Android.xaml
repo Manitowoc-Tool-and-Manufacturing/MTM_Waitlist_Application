@@ -18,10 +18,14 @@
                 FontSize="14"
                 HorizontalTextAlignment="Center"
                 Text="Sign in with your Windows username and password or floor PIN."
-                TextColor="{AppThemeBinding Light=#666666, Dark=#B8B8B8}" />
+                TextColor="{AppThemeBinding Light=#666666,
+                                            Dark=#B8B8B8}" />
 
             <VerticalStackLayout Spacing="8">
-                <Label FontAttributes="Bold" FontSize="13" Text="Windows Username" />
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="13"
+                    Text="Windows Username" />
                 <Entry
                     ClearButtonVisibility="WhileEditing"
                     Placeholder="DOMAIN\\username"
@@ -29,7 +33,10 @@
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="8">
-                <Label FontAttributes="Bold" FontSize="13" Text="Password / PIN" />
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="13"
+                    Text="Password / PIN" />
                 <Entry
                     IsPassword="True"
                     Placeholder="Enter your password or PIN"
@@ -53,8 +60,8 @@
 
             <ActivityIndicator
                 HorizontalOptions="Center"
-                IsRunning="{Binding IsAuthenticating, Mode=OneWay}"
-                IsVisible="{Binding IsAuthenticating, Mode=OneWay}" />
+                IsRunning="{Binding IsBusy, Mode=OneWay}"
+                IsVisible="{Binding IsBusy, Mode=OneWay}" />
         </VerticalStackLayout>
     </ScrollView>
 

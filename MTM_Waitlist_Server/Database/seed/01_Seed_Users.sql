@@ -16,7 +16,7 @@
 -- Example (C#):       BCrypt.Net.BCrypt.HashPassword("Admin@MTM2026", 12)
 -- =============================================================
 
-USE `MTM_Waitlist`;
+USE `mtm_waitlist`;
 
 INSERT INTO `Users`
     (`Username`, `PasswordHash`,                      `DisplayName`,       `Role`,    `IsActive`)

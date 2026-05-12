@@ -1,5 +1,6 @@
 using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
+using Core.Constants.Auth;
 using Core.Models.Auth;
 using Core.Models.Shared;
 
@@ -13,9 +14,6 @@ namespace Services.Auth;
 public sealed class Service_Auth : IService_Auth
 {
     private readonly IApiClient _apiClient;
-
-    /// <summary>Key used when reading/writing the JWT in SecureStorage.</summary>
-    private const string AuthTokenKey = "auth_token";
 
     /// <summary>
     /// Initialises a new instance with the supplied API client.
@@ -39,9 +37,36 @@ public sealed class Service_Auth : IService_Auth
             return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
         }
 
-        // Store JWT in platform secure vault — never write to Preferences or a plain file.
-        await SecureStorage.SetAsync(AuthTokenKey, result.Data.Token);
+        await StoreSessionAsync(result.Data);
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Model_Dao_Result<Model_AuthToken>> AutoLoginAsync(
+        string windowsUsername, CancellationToken cancellationToken = default)
+    {
+        var result = await _apiClient.PostAsync<Model_AuthToken>(
+            "/api/auth/auto-login",
+            new { windowsUsername },
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
+        }
+
+        await StoreSessionAsync(result.Data);
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Model_Dao_Result<Model_Auth_LoginMode>> CheckWorkstationAsync(
+        string windowsUsername, CancellationToken cancellationToken = default)
+    {
+        return await _apiClient.PostAsync<Model_Auth_LoginMode>(
+            "/api/auth/check-workstation",
+            new { windowsUsername },
+            cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -49,8 +74,7 @@ public sealed class Service_Auth : IService_Auth
     {
         try
         {
-            // Remove clears the key from the platform keystore.
-            SecureStorage.Remove(AuthTokenKey);
+            ClearStoredSession();
             return Task.FromResult(Model_Dao_Result.Success());
         }
         catch (Exception ex)
@@ -63,9 +87,20 @@ public sealed class Service_Auth : IService_Auth
     public async Task<Model_Dao_Result<Model_AuthToken>> RefreshTokenAsync(
         CancellationToken cancellationToken = default)
     {
+        string refreshToken = string.Empty;
+
+        try
+        {
+            refreshToken = await SecureStorage.GetAsync(Constants_AuthStorage.RefreshTokenKey) ?? string.Empty;
+        }
+        catch
+        {
+            refreshToken = string.Empty;
+        }
+
         var result = await _apiClient.PostAsync<Model_AuthToken>(
             "/api/auth/refresh",
-            new { },
+            new { refreshToken },
             cancellationToken);
 
         if (!result.IsSuccess || result.Data is null)
@@ -73,7 +108,23 @@ public sealed class Service_Auth : IService_Auth
             return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
         }
 
-        await SecureStorage.SetAsync(AuthTokenKey, result.Data.Token);
+        await StoreSessionAsync(result.Data);
         return result;
+    }
+
+    private static async Task StoreSessionAsync(Model_AuthToken token)
+    {
+        await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenKey, token.Token);
+        await SecureStorage.SetAsync(Constants_AuthStorage.RefreshTokenKey, token.RefreshToken);
+        await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenExpiresAtKey, token.ExpiresAt.ToString("O"));
+        await SecureStorage.SetAsync(Constants_AuthStorage.AuthRoleKey, token.Role);
+    }
+
+    private static void ClearStoredSession()
+    {
+        SecureStorage.Remove(Constants_AuthStorage.AuthTokenKey);
+        SecureStorage.Remove(Constants_AuthStorage.RefreshTokenKey);
+        SecureStorage.Remove(Constants_AuthStorage.AuthTokenExpiresAtKey);
+        SecureStorage.Remove(Constants_AuthStorage.AuthRoleKey);
     }
 }

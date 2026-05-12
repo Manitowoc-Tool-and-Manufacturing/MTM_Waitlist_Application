@@ -591,7 +591,7 @@ dotnet build MTM_Waitlist_Application.slnx 2>&1 | Select-String "WMC1006"
 
 | Feature | Status | Files Present |
 |---------|--------|---------------|
-| Feature.Auth | 🚧 In Progress | ViewModel_Auth_Login, View_Auth_Login (Windows + Android + code-behind), app starts on login page |
+| Feature.Auth | 🚧 In Progress | ViewModel_Auth_Login, View_Auth_Login (Windows + Android + code-behind), stored-session startup bypass, workstation detection, and Windows auto-login |
 | Feature.Dashboard | ✅ Complete | ViewModel_Dashboard_Main, View_Dashboard_Main (Windows + Android + code-behind) |
 | Feature.Waitlist | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
 | Feature.Mobile | 🚧 Empty stub | Platforms/ folder only — no Views, no ViewModels yet |
@@ -632,4 +632,4 @@ See `testing.instructions.md` for the full path mapping table and category defin
 
 - Maintain `MTM_Waitlist_Server` as a separate standalone solution inside this repository rather than including it in the main MAUI solution.
 - The server-side DATABASE documents have been carried forward into the server solution and should be treated as implemented unless contradicted by source.
-- For FEATURE-01 specifically: the client-side auth UI is now in `Feature.Auth`; workstation detection and silent auto-login remain dependent on server auth endpoint implementation.
+- For FEATURE-01 specifically: the client-side auth UI is in `Feature.Auth`, and the matching server auth endpoints now live in `MTM_Waitlist_Server.Api.AuthController`.

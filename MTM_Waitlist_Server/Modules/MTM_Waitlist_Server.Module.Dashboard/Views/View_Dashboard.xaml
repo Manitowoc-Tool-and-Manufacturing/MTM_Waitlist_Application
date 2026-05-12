@@ -4,22 +4,41 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:MTM_Waitlist_Server.Module.Dashboard.ViewModels"
     xmlns:models="using:MTM_Waitlist_Server.Core.Models.Dashboard"
+    xmlns:conv="using:MTM_Waitlist_Server.Module.Dashboard.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch">
 
+    <Page.Resources>
+        <conv:BoolNegationConverter x:Key="BoolNegationConverter" />
+    </Page.Resources>
+
         <!--
-        5-row Grid: rows 0-1 and 3-4 are Auto; row 2 (Active Connections) is *
-        so it stretches to fill all remaining vertical space, pinning the
-        activity log and toolbar to the bottom regardless of window height.
+        6-row Grid: row 0 is the API status banner (Auto); rows 1-2 and 4-5 are Auto;
+        row 3 (Active Connections) is * so it stretches to fill remaining vertical space.
     -->
     <Grid Margin="16" RowSpacing="16"
-          RowDefinitions="Auto,Auto, Auto,*,Auto">
+          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
 
-        <!-- Row 0: Summary Cards -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <!-- Row 0: API host status banner -->
+        <!-- Shown as Informational (green) when running, Error (red) when not. -->
+        <InfoBar Grid.Row="0"
+                 Title="API Host — Running"
+                 Message="{x:Bind ViewModel.ApiStatusMessage, Mode=OneWay}"
+                 Severity="Informational"
+                 IsOpen="{x:Bind ViewModel.IsApiRunning, Mode=OneWay}"
+                 IsClosable="False" />
+        <InfoBar Grid.Row="0"
+                 Title="API Host — Not Running"
+                 Message="{x:Bind ViewModel.ApiStatusMessage, Mode=OneWay}"
+                 Severity="Error"
+                 IsOpen="{x:Bind ViewModel.IsApiRunning, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                 IsClosable="False" />
+
+        <!-- Row 1: Summary Cards -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
 
             <!-- Uptime -->
             <Border Grid.Column="0"
@@ -108,8 +127,8 @@
 
         </Grid>
 
-        <!-- Row 1: Table Status -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="8">
+        <!-- Row 2: Table Status -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto" RowSpacing="8">
             <TextBlock Grid.Row="0" Text="TABLE STATUS" Style="{ThemeResource BodyStrongTextBlockStyle}" />
 
             <!-- Table shell with border -->
@@ -177,8 +196,8 @@
             </Border>
         </Grid>
 
-        <!-- Row 2: Active Connections - grouped by user, expandable thread detail -->
-        <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="8">
+        <!-- Row 3: Active Connections - grouped by user, expandable thread detail -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
 
             <!-- Section label + total thread count badge -->
             <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*">
@@ -355,8 +374,8 @@
             </Border>
         </Grid>
 
-        <!-- Row 3: Recent Activity Log (fixed height) -->
-        <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="4">
+        <!-- Row 4: Recent Activity Log (fixed height) -->
+        <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="4">
             <TextBlock Grid.Row="0" Text="RECENT ACTIVITY LOG (last 20)"
                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
             <ListView Grid.Row="1"
@@ -382,8 +401,8 @@
             </ListView>
         </Grid>
 
-        <!-- Row 4: Toolbar - always pinned to the bottom -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <!-- Row 5: Toolbar - always pinned to the bottom -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
             <TextBlock VerticalAlignment="Center"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        Style="{ThemeResource CaptionTextBlockStyle}">

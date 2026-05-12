@@ -1,8 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MTM_Waitlist_Server.Core.Interfaces.Api;
 using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
 using MTM_Waitlist_Server.Core.Models.Dashboard;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MTM_Waitlist_Server.Module.Dashboard.ViewModels;
 
@@ -13,6 +16,7 @@ namespace MTM_Waitlist_Server.Module.Dashboard.ViewModels;
 public partial class ViewModel_Dashboard : ObservableObject
 {
     private readonly IService_Dashboard _dashboard;
+    private readonly IService_ApiHost? _apiHost;
     private DateTime _startedAt = DateTime.UtcNow;
 
     [ObservableProperty] private TimeSpan _apiUptime;
@@ -30,9 +34,16 @@ public partial class ViewModel_Dashboard : ObservableObject
     [ObservableProperty] private bool _isRefreshing;
     [ObservableProperty] private DateTime _lastRefreshedAt;
 
-    public ViewModel_Dashboard(IService_Dashboard dashboard)
+    /// <summary>True when the in-process Kestrel API host is alive.</summary>
+    [ObservableProperty] private bool _isApiRunning;
+
+    /// <summary>Human-readable API host status shown in the status bar.</summary>
+    [ObservableProperty] private string _apiStatusMessage = "Checking API…";
+
+    public ViewModel_Dashboard(IService_Dashboard dashboard, IService_ApiHost? apiHost = null)
     {
         _dashboard = dashboard;
+        _apiHost = apiHost;
     }
 
     /// <summary>Refreshes all dashboard data from the database.</summary>
@@ -48,6 +59,34 @@ public partial class ViewModel_Dashboard : ObservableObject
 
         try
         {
+            // ── API host health check ──────────────────────────────────────────
+            // If the Kestrel host task has faulted or stopped, restart it before
+            // reporting status.  This keeps the mobile app reachable even after
+            // a transient crash without requiring a full application restart.
+            if (_apiHost is not null)
+            {
+                bool apiWasRunning = _apiHost.IsRunning;
+                IsApiRunning = await _apiHost.EnsureRunningAsync(ct);
+
+                if (IsApiRunning && !apiWasRunning)
+                {
+                    ApiStatusMessage = "API restarted successfully.";
+                }
+                else if (IsApiRunning)
+                {
+                    ApiStatusMessage = "API host is running.";
+                }
+                else
+                {
+                    ApiStatusMessage = "API host is not running and could not be restarted.";
+                }
+            }
+            else
+            {
+                // Running without an API host (e.g. degraded mode) — mark unavailable.
+                IsApiRunning = false;
+                ApiStatusMessage = "API host is not available in this mode.";
+            }
             ApiUptime = DateTime.UtcNow - _startedAt;
             ApiUptimeDisplay = $"{(int)ApiUptime.TotalHours}h {ApiUptime.Minutes:D2}m";
 

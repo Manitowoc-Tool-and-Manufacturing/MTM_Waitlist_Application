@@ -32,6 +32,29 @@ public class ViewModel_Auth_LoginTests
     }
 
     [Fact]
+    public async Task InitializeAsync_ShouldSetSharedWorkstationFalse_WhenCheckWorkstationReturnsPersonalMachine()
+    {
+        var mockAuthService = new Mock<IService_Auth>();
+        var viewModel = new ViewModel_Auth_Login(mockAuthService.Object);
+
+        mockAuthService
+            .Setup(service => service.CheckWorkstationAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Model_Dao_Result<Model_Auth_LoginMode>.Success(new Model_Auth_LoginMode
+            {
+                IsSharedWorkstation = false,
+                WindowsUsername = "TEST-user"
+            }));
+        mockAuthService
+            .Setup(service => service.AutoLoginAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Model_Dao_Result<Model_AuthToken>.Failure("TEST-auto-login-failure"));
+
+        await viewModel.InitializeCommand.ExecuteAsync(null);
+
+        viewModel.IsSharedWorkstation.Should().BeFalse();
+        viewModel.IsCheckingWorkstation.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task LoginAsync_ShouldSetValidationMessage_WhenUsernameIsMissing()
     {
         var viewModel = new ViewModel_Auth_Login(Mock.Of<IService_Auth>())

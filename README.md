@@ -16,7 +16,7 @@ The repository has moved beyond the initial scaffold and now contains the modula
 - a dedicated `Feature.Auth` project for authentication UI
 - a Dashboard feature with separate Windows and Android XAML layouts
 - API client plumbing with primary and fallback base URL support
-- authentication service wiring with secure token storage
+- authentication service wiring with secure token, refresh-token, and stored-session handling
 - offline SQLite cache support for waitlist data
 - connectivity-aware waitlist service routing
 - offline write queue and sync service foundations
@@ -39,7 +39,7 @@ The repository has moved beyond the initial scaffold and now contains the modula
 - Core project with waitlist, auth, API, sync, and result contracts
 - Data project with HTTP API access, SQLite local storage, repositories, and debug mock data
 - Services project with auth, waitlist, and sync services
-- Feature.Auth project scaffolded for login UX implementation
+- Feature.Auth project implemented for workstation-aware login UX
 - Dashboard feature project with MVVM ViewModel and platform-specific XAML
 - Waitlist and Mobile feature projects created for upcoming screens
 - MTM Waitlist Server solution implemented separately in `MTM_Waitlist_Server/`
@@ -49,11 +49,10 @@ The repository has moved beyond the initial scaffold and now contains the modula
 ### In Progress / Next Phase
 
 - expand `Model_WaitlistEntry` once the backend API contract is finalized
-- implement authentication UI in `Feature.Auth`
+- expand role-specific post-login destinations as feature pages are added
 - implement waitlist entry pages and ViewModels
 - connect Dashboard summary cards to real service data
 - add navigation routes and Shell entries for feature pages
-- complete auth controller implementation for workstation detection and auto-login in `MTM_Waitlist_Server`
 - continue expanding unit and UI test coverage
 
 ---
@@ -112,6 +111,8 @@ View / XAML → ViewModel → Service → Repository → API or SQLite
 - `HttpApiClient` selects the primary API URL first and falls back to the configured fallback URL when needed.
 - Android emulator fallback URLs rewrite `localhost` to `10.0.2.2`.
 - JWT bearer tokens are read from MAUI `SecureStorage` and attached to outbound API requests.
+- valid stored sessions skip the login screen on startup.
+- Windows startup now checks shared-workstation status and attempts silent auto-login for personal workstations.
 - `Service_WaitlistEntry` uses the online repository when internet access is available.
 - Local SQLite is used when offline or when online requests fail.
 - Offline writes are queued locally for later replay by `SyncService` when connectivity returns.
@@ -139,6 +140,7 @@ Shared setup currently handles:
 - infrastructure, repository, service, page, and ViewModel registrations
 - eager `ISyncService` resolution so connectivity events are subscribed at startup
 - debug-only local mock data seeding when the primary API is unreachable
+- startup selection between the login screen and `AppShell` based on stored auth session state
 
 Rule of thumb:
 
@@ -214,7 +216,7 @@ The Waitlist feature project exists and references Core and Services. Pages and 
 
 ### Auth
 
-The Auth feature project exists and is the selected home for FEATURE-01. The current client-side auth service supports manual username/password login, logout, and token refresh. Workstation detection and silent auto-login remain dependent on server endpoint implementation in `MTM_Waitlist_Server`.
+The Auth feature project now provides the login page, shared/manual workstation detection flow, Windows auto-login for personal workstations, stored-session startup bypass, and refresh-token persistence. The client still requires the server admin app / API host to be running for live sign-in, whether that is the LAN server at `172.16.1.104:5000` or a local development host on `localhost:5000`.
 
 ### Mobile
 
@@ -240,6 +242,9 @@ The following documents support current and future development:
 
 - [MTM_Waitlist_Server/README.md](./MTM_Waitlist_Server/README.md)  
   Server admin application, REST API, migration system, backup/restore, and database operations.
+
+- [Documents/UserGuide/FEATURE-01-Authentication-Login-Guide.md](./Documents/UserGuide/FEATURE-01-Authentication-Login-Guide.md)  
+  Draft user-facing login guide for shared and personal workstation sign-in.
 
 If present in the repository, the following `.github` files also support future development:
 

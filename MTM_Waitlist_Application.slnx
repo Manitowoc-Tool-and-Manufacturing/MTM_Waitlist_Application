@@ -24,10 +24,7 @@
     <Project Path="MTM_Waitlist_Application/Core/Services/Services.csproj" />
   </Folder>
   <Folder Name="/Features/">
-    <Project
-      Path="MTM_Waitlist_Application/Features/Feature.Auth/Feature.Auth.csproj"
-      Id="1031f269-48a5-4abe-8d07-af4d0220c32e"
-    />
+    <Project Path="MTM_Waitlist_Application/Features/Feature.Auth/Feature.Auth.csproj" Id="1031f269-48a5-4abe-8d07-af4d0220c32e" />
     <Project Path="MTM_Waitlist_Application/Features/Feature.Dashboard/Feature.Dashboard.csproj" />
     <Project Path="MTM_Waitlist_Application/Features/Feature.Mobile/Feature.Mobile.csproj" />
     <Project Path="MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist.csproj" />
@@ -124,55 +121,30 @@
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/UI/">
-    <Project
-      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/MTM_Waitlist_Application.UITests.Droid.csproj"
-      Id="0110ebe5-0b53-425f-bcb3-2b0741fbc5ec"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/MTM_Waitlist_Application.UITests.WinUI.csproj"
-      Id="56fa9ccb-a575-4d69-a24f-f1255e80b59e"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/MTM_Waitlist_Application.UITests.Droid.csproj" Id="0110ebe5-0b53-425f-bcb3-2b0741fbc5ec" />
+    <Project Path="MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/MTM_Waitlist_Application.UITests.WinUI.csproj" Id="56fa9ccb-a575-4d69-a24f-f1255e80b59e">
       <Platform Project="x64" />
       <Deploy />
     </Project>
   </Folder>
   <Folder Name="/Tests/Unit/">
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Core.Tests/Core.Tests.csproj"
-      Id="d33b61ec-1e35-4da0-bf7a-2f4b82a38541"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Data.Tests/Data.Tests.csproj"
-      Id="8da18949-9293-441c-a931-90d4bbb01f0a"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Core.Tests/Core.Tests.csproj" Id="d33b61ec-1e35-4da0-bf7a-2f4b82a38541" />
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Data.Tests/Data.Tests.csproj" Id="8da18949-9293-441c-a931-90d4bbb01f0a">
       <Platform Project="x64" />
     </Project>
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Feature.Auth.Tests/Feature.Auth.Tests.csproj"
-      Id="bb0dfd7b-5de8-42f8-8912-2a3ad7c7195e"
-    />
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Feature.Dashboard.Tests/Feature.Dashboard.Tests.csproj"
-      Id="9a9c3bc9-84ba-4579-8051-dbe72d7d1f2c"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Feature.Auth.Tests/Feature.Auth.Tests.csproj" Id="bb0dfd7b-5de8-42f8-8912-2a3ad7c7195e">
+        <Platform Project="x64" />
+      </Project>
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Feature.Dashboard.Tests/Feature.Dashboard.Tests.csproj" Id="9a9c3bc9-84ba-4579-8051-dbe72d7d1f2c">
       <Platform Project="x64" />
     </Project>
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Feature.Waitlist.Tests/Feature.Waitlist.Tests.csproj"
-      Id="b80e5920-b204-4537-8123-bf40e40bc7ea"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Feature.Waitlist.Tests/Feature.Waitlist.Tests.csproj" Id="b80e5920-b204-4537-8123-bf40e40bc7ea">
       <Platform Project="x64" />
     </Project>
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Services.Tests/Services.Tests.csproj"
-      Id="9a9d55fb-cb0c-4fe4-8517-aeac48de03ff"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Services.Tests/Services.Tests.csproj" Id="9a9d55fb-cb0c-4fe4-8517-aeac48de03ff">
       <Platform Project="x64" />
     </Project>
-    <Project
-      Path="MTM_Waitlist_Application/Tests/Unit/Shared.Tests/Shared.Tests.csproj"
-      Id="2bfb5ee2-894d-4fd8-a21e-ff3f505d1b4c"
-    >
+    <Project Path="MTM_Waitlist_Application/Tests/Unit/Shared.Tests/Shared.Tests.csproj" Id="2bfb5ee2-894d-4fd8-a21e-ff3f505d1b4c">
       <Platform Project="x64" />
     </Project>
   </Folder>

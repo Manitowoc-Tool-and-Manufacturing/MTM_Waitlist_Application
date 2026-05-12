@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MTM_Waitlist_Server.Api.Services;
@@ -29,7 +30,14 @@ public static class ApiStartup
             builder.Services.Add(descriptor);
         }
 
-        builder.Services.AddControllers();
+        builder.Services.AddSingleton<Service_ApiAuth>();
+
+        // Explicitly register this assembly as an application part so that MVC
+        // discovers the controllers defined here even when the WebApplication host
+        // is launched from the WinUI Admin process (a different assembly).
+        builder.Services.AddControllers()
+            .AddApplicationPart(typeof(ApiStartup).Assembly);
+
         // TODO: configure JWT bearer auth once FEATURE-01 is implemented.
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();
@@ -40,6 +48,8 @@ public static class ApiStartup
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapMethods("/health", new[] { "GET", "HEAD" }, () => Results.Ok());
 
         // Request-logging middleware — appends every request/response to the in-process ring buffer.
         app.Use(async (ctx, next) =>

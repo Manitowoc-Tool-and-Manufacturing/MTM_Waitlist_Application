@@ -67,8 +67,8 @@
 
                 <ActivityIndicator
                     HorizontalOptions="Center"
-                    IsRunning="{Binding IsAuthenticating, Mode=OneWay}"
-                    IsVisible="{Binding IsAuthenticating, Mode=OneWay}" />
+                    IsRunning="{Binding IsBusy, Mode=OneWay}"
+                    IsVisible="{Binding IsBusy, Mode=OneWay}" />
             </VerticalStackLayout>
         </Border>
     </Grid>

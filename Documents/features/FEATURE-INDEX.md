@@ -41,7 +41,7 @@ FEATURE-08  Quality Control Queue              ← Quality-filtered view (parall
 
 | # | Feature | Priority | Status | Depends On |
 |---|---------|----------|--------|------------|
-| [01](FEATURE-01-Authentication-Login.md) | Authentication & Login | Critical | In Progress | — |
+| [01](FEATURE-01-Authentication-Login.md) | Authentication & Login | Critical | Core Flow Implemented | — |
 | [02](FEATURE-02-InforVisual-ERP-Integration.md) | Infor Visual ERP Integration (Read-Only) | High | Ready to Design | 01 |
 | [03](FEATURE-03-Operator-Request-Wizard.md) | Operator Request Wizard | High | Ready to Design | 01, 02 |
 | [04](FEATURE-04-Live-Queue-View.md) | Live Waitlist Queue View | High | Ready to Design | 01, 03 |

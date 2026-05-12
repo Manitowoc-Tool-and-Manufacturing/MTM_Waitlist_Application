@@ -11,15 +11,15 @@
 
 -- App user: used by the REST API for all client-facing requests.
 -- Minimal privileges: EXECUTE (stored procedures) + SELECT on app tables.
-CREATE USER IF NOT EXISTS 'waitlist_admin_dbappuser'@'localhost'
+CREATE USER IF NOT EXISTS 'waitlist_admin_dbappuser'@'%'
     IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
 
 GRANT EXECUTE, SELECT
-    ON `mtm_waitlist`.* TO 'waitlist_admin_dbappuser'@'localhost';
+    ON `mtm_waitlist`.* TO 'waitlist_admin_dbappuser'@'%';
 
 -- Updater user: used by the admin app for dashboard, backup, and migrations.
 -- Elevated privileges required for monitoring and maintenance operations.
-CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'localhost'
+CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'%'
     IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
 
 -- PROCESS          : required for SHOW FULL PROCESSLIST (dashboard active connections)
@@ -29,9 +29,9 @@ CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'localhost'
 --                    (MySQL 8.0+ security model — root is implicitly SYSTEM_USER)
 -- CREATE ROUTINE   : required to CREATE/DROP stored procedures and functions
 GRANT SELECT, PROCESS, REPLICATION CLIENT, KILL, SYSTEM_USER, CREATE ROUTINE
-    ON *.* TO 'waitlist_admin_dbupdater'@'localhost';
+    ON *.* TO 'waitlist_admin_dbupdater'@'%';
 
 GRANT ALL PRIVILEGES
-    ON `mtm_waitlist`.* TO 'waitlist_admin_dbupdater'@'localhost';
+    ON `mtm_waitlist`.* TO 'waitlist_admin_dbupdater'@'%';
 
 FLUSH PRIVILEGES;

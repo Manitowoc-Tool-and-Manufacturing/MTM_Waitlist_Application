@@ -1,44 +1,105 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MTM_Waitlist_Server.Api.Services;
 
 namespace MTM_Waitlist_Server.Api.Controllers;
 
 /// <summary>
-/// Authentication endpoints — login, token refresh, and revocation.
-/// Implementation is a TODO stub pending FEATURE-01 JWT auth scope definition.
+/// Authentication endpoints for MAUI client login, token refresh, logout,
+/// workstation detection, and Windows auto-login.
 /// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
+    private readonly Service_ApiAuth _authService;
+
+    /// <summary>
+    /// Initialises a new instance with the backing authentication service.
+    /// </summary>
+    public AuthController(Service_ApiAuth authService)
+    {
+        _authService = authService;
+    }
+
     /// <summary>Validates Windows credentials and returns a JWT + refresh token.</summary>
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        // TODO: implement Windows credential validation against the Users table.
-        return StatusCode(501, "Not implemented.");
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest("Username and password are required.");
+        }
+
+        var result = await _authService.LoginAsync(request.Username, request.Password, cancellationToken);
+        return result is null
+            ? Unauthorized("Invalid username or password.")
+            : Ok(result);
     }
 
     /// <summary>Exchanges a refresh token for a new JWT.</summary>
     [HttpPost("refresh")]
-    public IActionResult Refresh([FromBody] RefreshRequest request)
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request, CancellationToken cancellationToken)
     {
-        // TODO: implement refresh token validation.
-        return StatusCode(501, "Not implemented.");
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return BadRequest("Refresh token is required.");
+        }
+
+        var result = await _authService.RefreshAsync(request.RefreshToken, cancellationToken);
+        return result is null
+            ? Unauthorized("Refresh token is invalid or expired.")
+            : Ok(result);
     }
 
-    /// <summary>Revokes the caller's refresh token.</summary>
+    /// <summary>Revokes a refresh token on logout.</summary>
     [HttpPost("revoke")]
-    [Authorize]
-    public IActionResult Revoke()
+    public async Task<IActionResult> Revoke([FromBody] RefreshRequest request, CancellationToken cancellationToken)
     {
-        // TODO: implement token revocation.
-        return StatusCode(501, "Not implemented.");
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return BadRequest("Refresh token is required.");
+        }
+
+        await _authService.RevokeAsync(request.RefreshToken, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Checks whether the supplied Windows username belongs to a shared workstation.</summary>
+    [HttpPost("check-workstation")]
+    public async Task<IActionResult> CheckWorkstation([FromBody] CheckWorkstationRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.WindowsUsername))
+        {
+            return BadRequest("Windows username is required.");
+        }
+
+        return Ok(await _authService.CheckWorkstationAsync(request.WindowsUsername, cancellationToken));
+    }
+
+    /// <summary>Attempts silent Windows auto-login for a personal workstation.</summary>
+    [HttpPost("auto-login")]
+    public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.WindowsUsername))
+        {
+            return BadRequest("Windows username is required.");
+        }
+
+        var result = await _authService.AutoLoginAsync(request.WindowsUsername, cancellationToken);
+        return result is null
+            ? Unauthorized("No active user is mapped to that Windows identity.")
+            : Ok(result);
     }
 }
 
 /// <summary>Request body for POST /api/auth/login.</summary>
-public record LoginRequest(string WindowsUsername, string Password);
+public record LoginRequest(string Username, string Password);
 
 /// <summary>Request body for POST /api/auth/refresh.</summary>
 public record RefreshRequest(string RefreshToken);
+
+/// <summary>Request body for POST /api/auth/check-workstation.</summary>
+public record CheckWorkstationRequest(string WindowsUsername);
+
+/// <summary>Request body for POST /api/auth/auto-login.</summary>
+public record AutoLoginRequest(string WindowsUsername);

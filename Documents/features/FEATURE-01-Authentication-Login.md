@@ -1,17 +1,17 @@
 # FEATURE-01: Authentication & Login
 
-**Status:** In Progress  
+**Status:** Core Flow Implemented  
 **Priority:** Critical — Blocks Everything Else  
-**Depends On:** `MTM_Waitlist_Server` auth controller completion for workstation detection / auto-login  
+**Depends On:** Running server admin app / API host (`MTM_Waitlist_Server`)  
 **Blocks:** All other features  
 
 ---
 
 ## Overview
 
-The server and database foundations now exist in the separate `MTM_Waitlist_Server/` solution. On the MAUI client side, `Service_Auth`, `IService_Auth`, and secure JWT storage are already present. The database tables and procedures for auth also exist in the server solution.
+The server and database foundations now exist in the separate `MTM_Waitlist_Server/` solution, and the core auth API surface is now implemented there: `login`, `refresh`, `revoke`, `check-workstation`, `auto-login`, and `/health`.
 
-What is **not** fully implemented yet is the complete auth API surface described in the original design. The current server `AuthController` exposes stubbed `login`, `refresh`, and `revoke` endpoints, while `auto-login` and `check-workstation` are not yet implemented there. This feature therefore starts with the login UI in `Feature.Auth` and will layer in workstation detection once the server endpoints are completed.
+On the MAUI client side, `Feature.Auth` now provides the initial login experience, secure token persistence, stored-session startup bypass, shared-workstation detection, and silent Windows auto-login on personal workstations.
 
 ---
 
@@ -38,64 +38,69 @@ Two login modes were confirmed during schema finalization (May 10, 2026):
 
 **Windows layout:**
 - Full-screen centered card — not a navigation flyout item
-- Initial implementation: credential entry screen using username + password/PIN
-- Future workstation-aware states (pending server endpoints):
-  - **Auto-login in progress:** spinner + "Signing in as [Windows username]…"
-  - **Credential entry:** username field + PIN pad (large tap targets, 48 px minimum)
+- Two states driven by workstation mode:
+  - **Auto-login in progress:** spinner while the app checks the workstation and attempts silent sign-in
+  - **Credential entry:** username field + password/PIN entry for shared workstations or fallback failures
 - Error banner for failed logins (`InvalidCredentials`, `AccountLocked`, network failure)
 - No "Remember Me" — JWT refresh handles session continuity
 
 **Android layout:**
-- Initial implementation: full-screen username/password login
-- Future kiosk-specific PIN pad remains planned once workstation detection is available
+- Full-screen username/password login with shared-workstation fallback
+- Custom numeric PIN pad remains a future UX enhancement
 
 ### 2. `ViewModel_Auth_Login`
 
 ```
+[ObservableProperty] bool _isCheckingWorkstation   // spinner during workstation check / auto-login
+[ObservableProperty] bool _isSharedWorkstation
 [ObservableProperty] bool _isAuthenticating        // spinner during login call
 [ObservableProperty] string _username
 [ObservableProperty] string _password
 [ObservableProperty] string _errorMessage
 
-[RelayCommand] InitializeAsync()   // called OnAppearing — pre-fills username and clears stale errors
+[RelayCommand] InitializeAsync()   // startup workstation check and Windows auto-login
 [RelayCommand] LoginAsync()        // credential submit
 [RelayCommand] ClearPasswordAsync()     // reset password field
 ```
 
-**Current startup flow (implemented first):**
+**Current startup flow:**
 ```
+App.CreateWindow()
+  → if a stored token exists and is not expired:
+      open AppShell directly
+  → else:
+      open View_Auth_Login
+
 InitializeAsync()
-  → prefill Username from current environment when available
-  → show credential screen
+  → resolve current Windows identity on Windows
+  → Service_Auth.CheckWorkstationAsync(windowsUsername)
+  → if IsSharedWorkstation == false:
+      Service_Auth.AutoLoginAsync(windowsUsername)
+      → success → navigate to AppShell
+      → failure → fall back to credential screen
+  → if IsSharedWorkstation == true:
+      show credential screen
+
 LoginAsync()
   → Service_Auth.LoginAsync(username, password)
   → success → navigate to AppShell
   → failure → show error banner
 ```
 
-**Future startup flow (pending server implementation):**
-```
-InitializeAsync()
-  → Service_Auth.CheckWorkstationAsync(Environment.MachineName)
-  → if IsShared == false:
-      Service_Auth.AutoLoginAsync(WindowsIdentity.GetCurrent().Name)
-      → success → navigate to AppShell
-      → failure → show credential screen (fallback)
-  → if IsShared == true:
-      IsSharedWorkstation = true → show credential screen
-```
-
 ### 3. Session lifecycle
 
 - On successful login, `Service_Auth` stores JWT via `SecureStorage` — already implemented
-- Initial implementation starts on the login page and navigates to `AppShell` after successful login
-- Token refresh is handled by `Service_Auth.RefreshTokenAsync()`
+- `Service_Auth` also stores the refresh token, expiry timestamp, and current role
+- App startup checks the stored expiry and bypasses the login page when the session is still valid
+- Token refresh is handled by `Service_Auth.RefreshTokenAsync()` using the persisted refresh token
 - On token expiry or 401, navigate back to login screen
 - Session timeout: not auto-logout for personal workstations; shared kiosks → configurable idle timeout (future enhancement, stubbed as a no-op for v1)
 
 ### 4. Role-based navigation after login
 
-After successful auth, `AppShell` reads `Enum_UserRole` from the JWT claims (or from the user model returned by the login endpoint) and shows the correct flyout items:
+After successful auth, the role is persisted from the auth response. The current implementation reads and preserves role information, but all roles still land on `Dashboard` because that is the only authenticated feature page implemented today.
+
+Target landing pages once the remaining feature pages exist:
 
 | Role | Landing page |
 |---|---|
@@ -140,4 +145,4 @@ All exist in `Database/procedures/Auth/`:
 - **Project placement:** Resolved — auth lives in `Feature.Auth`.
 - **PIN vs password:** The original meeting used "badge + PIN". Current schema stores a `bcrypt` password hash. The UI should present a numeric PIN pad. The PIN is the user's password stored hashed — no separate PIN field needed in the schema.
 - **Idle timeout for kiosks:** Stubbed out as no-op in v1. A future enhancement would monitor `PointerMoved`/`Tapped` events and auto-logout shared workstations after N minutes.
-- **Server dependency:** `check-workstation` and `auto-login` must be added to `MTM_Waitlist_Server` before the full workstation-aware auth flow can replace the initial manual login slice.
+- **Role-specific destinations:** Auth now preserves role information, but non-dashboard landing pages still depend on the corresponding features being built.

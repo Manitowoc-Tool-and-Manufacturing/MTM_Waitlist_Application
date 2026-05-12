@@ -12,8 +12,10 @@ applyTo: "**/*.{cs,xaml,csproj}"
 - `Views/Login/View_Auth_Login.Windows.xaml` — centered desktop login card
 - `Views/Login/View_Auth_Login.Android.xaml` — full-screen mobile login layout
 - `Views/Login/View_Auth_Login.xaml.cs` — shared code-behind, init + authenticated handoff event only
-- Current scope is **manual username/password login** through `IService_Auth.LoginAsync`
-- Workstation detection and silent auto-login are **not yet available** because the required server endpoints are not implemented yet
+- Supports manual username/password login through `IService_Auth.LoginAsync`
+- Supports workstation detection and silent Windows auto-login through `IService_Auth.CheckWorkstationAsync()` and `IService_Auth.AutoLoginAsync()`
+- Stores access token, refresh token, expiry, and role in secure storage
+- App startup bypasses the login screen when a stored token is still valid
 
 ### Feature.Dashboard — COMPLETE
 - `ViewModels/Main/ViewModel_Dashboard_Main.cs` — `partial class`, inherits `ObservableObject`
@@ -57,8 +59,10 @@ Feature.Mobile:    (commented out — no classes yet)
 ```
 
 ### Startup Flow — Current
-- `App.CreateWindow()` resolves `View_Auth_Login` from DI and opens there first
-- Successful manual login switches the window page to `AppShell`
+- `App.CreateWindow()` opens `AppShell` immediately when a stored token is still valid
+- Otherwise startup resolves `View_Auth_Login` from DI
+- `ViewModel_Auth_Login.InitializeAsync()` checks workstation mode and attempts Windows auto-login on personal machines
+- Successful login or auto-login switches the window page to `AppShell`
 
 ### AppShell — Current Routes
 - `Dashboard` → `View_Dashboard_Main` via `ShellContent ContentTemplate`
@@ -68,9 +72,9 @@ Feature.Mobile:    (commented out — no classes yet)
 - Backend REST API is hosted by the separate `MTM_Waitlist_Server/` solution in this repository
 - Server app exists and is implemented as a separate standalone solution (`MTM_Waitlist_Server.slnx`)
 - Runtime base URL remains `http://172.16.1.104:5000` (internal LAN)
+- Health endpoint: `/health` (GET/HEAD)
 - Endpoint for waitlist: `/api/waitlist` (GET, POST, PUT, DELETE)
-- Auth controller currently exposes stubbed `/api/auth/login`, `/api/auth/refresh`, and `/api/auth/revoke`
-- `/api/auth/auto-login` and `/api/auth/check-workstation` are still pending in the server solution
+- Auth endpoints: `/api/auth/login`, `/api/auth/refresh`, `/api/auth/revoke`, `/api/auth/auto-login`, `/api/auth/check-workstation`
 
 ### Database Status
 - MySQL 5.7 at `172.16.1.104` — database name: `mtm_waitlist` (lowercase)
@@ -141,9 +145,12 @@ See `testing.instructions.md` for folder structure rules and category definition
 - Both are embedded resources loaded from assembly manifest in `UseSharedMauiApp()`
 
 ## JWT / Auth Storage
-- Token stored via `SecureStorage.SetAsync("auth_token", token)`
+- Access token stored via `SecureStorage.SetAsync("auth_token", token)`
+- Refresh token stored via `SecureStorage.SetAsync("refresh_token", refreshToken)`
+- Expiry stored via `SecureStorage.SetAsync("auth_token_expires_at", expiresAt)`
+- Role stored via `SecureStorage.SetAsync("auth_role", role)`
 - `HttpApiClient` reads token from SecureStorage and attaches as Bearer header on every request
-- `Service_Auth` handles login, logout, refresh — uses `/api/auth/login` and `/api/auth/refresh`
+- `Service_Auth` handles login, auto-login, workstation detection, logout, and refresh
 
 ## Offline Queue Pattern
 - `Entity_OfflineWriteQueue` table tracks pending writes (INSERT / UPDATE / DELETE)
