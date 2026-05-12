@@ -90,6 +90,7 @@
   </Folder>
   <Folder Name="/Modules/">
     <Project Path="Modules/MTM_Waitlist_Server.Module.Backup/MTM_Waitlist_Server.Module.Backup.csproj" />
+    <Project Path="Modules/MTM_Waitlist_Server.Module.ConnectedUsers/MTM_Waitlist_Server.Module.ConnectedUsers.csproj" Id="5752a78f-09cb-4449-8b93-6964f2a4e4ce" />
     <Project Path="Modules/MTM_Waitlist_Server.Module.Dashboard/MTM_Waitlist_Server.Module.Dashboard.csproj" />
     <Project Path="Modules/MTM_Waitlist_Server.Module.KillSwitch/MTM_Waitlist_Server.Module.KillSwitch.csproj" />
     <Project Path="Modules/MTM_Waitlist_Server.Module.Migrations/MTM_Waitlist_Server.Module.Migrations.csproj" />

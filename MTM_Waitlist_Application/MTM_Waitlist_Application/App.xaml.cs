@@ -9,6 +9,8 @@ namespace MTM_Waitlist_Application
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<App> _logger;
         private Window? _window;
+        private View_Auth_Login? _loginPage;
+        private int _shellSwapped; // 0 = not yet swapped, 1 = swapped; Interlocked guard against double swap
 
         public App(IServiceProvider serviceProvider, ILogger<App> logger)
         {
@@ -25,9 +27,9 @@ namespace MTM_Waitlist_Application
 
             // Show login immediately — session validation runs asynchronously after
             // the window is open to avoid blocking the UI thread with WinRT calls.
-            var loginPage = _serviceProvider.GetRequiredService<View_Auth_Login>();
-            loginPage.Authenticated += OnAuthenticated;
-            _window = new Window(loginPage);
+            _loginPage = _serviceProvider.GetRequiredService<View_Auth_Login>();
+            _loginPage.Authenticated += OnAuthenticated;
+            _window = new Window(_loginPage);
 
             _logger.LogInformation("[STARTUP] CreateWindow — login window created, starting session check");
 
@@ -42,14 +44,7 @@ namespace MTM_Waitlist_Application
                 if (hasSession)
                 {
                     _logger.LogInformation("[STARTUP] Session valid — swapping to shell on main thread");
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        if (_window is not null)
-                        {
-                            _window.Page = CreateShellForCurrentRole();
-                            _logger.LogInformation("[STARTUP] Shell swapped — app ready");
-                        }
-                    });
+                    MainThread.BeginInvokeOnMainThread(() => SwapToShell("[STARTUP] Shell swapped — app ready (session)"));
                 }
                 else
                 {
@@ -63,10 +58,34 @@ namespace MTM_Waitlist_Application
         private void OnAuthenticated(object? sender, EventArgs e)
         {
             _logger.LogInformation("[STARTUP] OnAuthenticated — swapping to shell");
+            SwapToShell("[STARTUP] OnAuthenticated — shell active");
+        }
+
+        /// <summary>
+        /// Swaps the window page to the authenticated shell exactly once.
+        /// Uses an Interlocked flag to prevent a double swap when both the stored-session
+        /// check and the login-page InitializeCommand fire in parallel.
+        /// Must be called on the main thread.
+        /// </summary>
+        private void SwapToShell(string logMessage)
+        {
+            if (Interlocked.CompareExchange(ref _shellSwapped, 1, 0) != 0)
+            {
+                _logger.LogInformation("[STARTUP] SwapToShell — already swapped, ignoring duplicate call");
+                return;
+            }
+
+            // Unsubscribe so the login page cannot trigger a second swap after the shell is active.
+            if (_loginPage is not null)
+            {
+                _loginPage.Authenticated -= OnAuthenticated;
+                _loginPage = null;
+            }
+
             if (_window is not null)
             {
                 _window.Page = CreateShellForCurrentRole();
-                _logger.LogInformation("[STARTUP] OnAuthenticated — shell active");
+                _logger.LogInformation("{LogMessage}", logMessage);
             }
         }
 
