@@ -1,61 +1,102 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>MTM_Waitlist_Application.WinUI</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
-    <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseMaui>true</UseMaui>
-    <!-- We do not want XAML files to be processed as .NET MAUI XAML, but rather WinUI XAML. -->
-    <EnableDefaultMauiItems>false</EnableDefaultMauiItems>
-    <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
-    <WindowsPackageType>None</WindowsPackageType>
-    <!-- Suppresses WMC1006 false-positive caused by the Windows Metadata compiler
-         failing to resolve the shared project DLL during non-Windows target builds.
-         Safe to suppress — the app builds and runs correctly on all platforms. -->
-    <NoWarn>$(NoWarn);WMC1006</NoWarn>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+	<RootNamespace>MTM_Waitlist_Application.WinUI</RootNamespace>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<Platforms>x86;x64;ARM64</Platforms>
+	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+	<PublishProfile>win-$(Platform).pubxml</PublishProfile>
+	<!-- Standalone WinUI 3 — no MAUI dependency -->
+	<UseWinUI>true</UseWinUI>
+	<!-- Block MAUI XAML code generator from processing WinUI XAML; MAUI types
+		 still bleed in transitively via Data/Services but this prevents the
+		 MAUI XAML processor from claiming our .xaml files. -->
+	<EnableDefaultMauiItems>false</EnableDefaultMauiItems>
+	<!-- Prevent the WinUI SDK from auto-globbing .xaml as Page items;
+		 we declare them explicitly below so we can set DependentUpon metadata. -->
+	<EnableDefaultPageItems>false</EnableDefaultPageItems>
+	<EnableMsixTooling>true</EnableMsixTooling>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
-
+  <!-- WinUI XAML files: App.xaml is auto-registered as ApplicationDefinition by UseWinUI=true.
+	   We only need to register the Page items (MainWindow + views). Remove any MAUI item-type
+	   globs that VS may auto-add, then declare the WinUI pages explicitly. -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.60" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
+	<!-- Ensure MAUI's item type does not claim these files -->
+	<MauiXaml Remove="App.xaml" />
+	<MauiXaml Remove="MainWindow.xaml" />
+	<MauiXaml Remove="Views\Dashboard\DashboardPage.xaml" />
+	<MauiXaml Remove="Views\Login\LoginPage.xaml" />
+	<!-- Shell window -->
+	<Page Include="MainWindow.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Compile Update="MainWindow.xaml.cs">
+	  <DependentUpon>MainWindow.xaml</DependentUpon>
+	</Compile>
+	<!-- Views -->
+	<Page Include="Views\Login\LoginPage.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Compile Update="Views\Login\LoginPage.xaml.cs">
+	  <DependentUpon>LoginPage.xaml</DependentUpon>
+	</Compile>
+	<Page Include="Views\Dashboard\DashboardPage.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Compile Update="Views\Dashboard\DashboardPage.xaml.cs">
+	  <DependentUpon>DashboardPage.xaml</DependentUpon>
+	</Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MTM_Waitlist_Application\MTM_Waitlist_Application.csproj" />
+	<!-- Windows App SDK — WinUI 3 runtime (must match what Microsoft.Maui.Core pulls transitively) -->
+	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
+	<!-- DI + logging — pin to 10.0.7 to match Data/Services transitive floor -->
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
+	<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
+	<!-- CommunityToolkit.Mvvm for ViewModel binding support -->
+	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <!-- appsettings embedded so IConfiguration can load it from the manifest -->
+  <ItemGroup>
+	<EmbeddedResource Include="appsettings.json" />
+	<EmbeddedResource Include="appsettings.Development.json" Condition="'$(Configuration)'=='Debug'" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Make sure all image assets to be in the root of the package to match the other platforms -->
-    <Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
+	<!-- Core layer -->
+	<ProjectReference Include="..\Core\Core\Core.csproj" />
+	<ProjectReference Include="..\Core\Data\Data.csproj" />
+	<ProjectReference Include="..\Core\Services\Services.csproj" />
+	<!-- Feature ViewModels (Windows views are owned by this host) -->
+	<ProjectReference Include="..\Features\Feature.Auth\Feature.Auth.csproj" />
+	<ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Manifest Include="$(ApplicationManifest)" />
+	<Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!--
-		Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-		Tools extension to be activated for this project even if the Windows App SDK Nuget
-		package has not yet been restored.
-	-->
+  <ItemGroup>
+	<Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
+	<ProjectCapability Include="Msix" />
   </ItemGroup>
 
-  <!--
-		Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-		Explorer "Package and Publish" context menu entry to be enabled for this project even if
-		the Windows App SDK Nuget package has not yet been restored.
-	-->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 </Project>

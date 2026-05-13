@@ -26,8 +26,8 @@
 
     <!--  ── Navigation items ──────────────────────────────────────────────────────  -->
     <ShellContent
+        x:Name="DashboardContent"
         Title="Dashboard"
-        ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"
         Route="Dashboard" />
 
     <!--

@@ -19,6 +19,16 @@ public partial class ViewModel_Auth_Login : ObservableObject
     public event EventHandler? Authenticated;
 
     /// <summary>
+    /// Username returned by the most recent successful sign-in.
+    /// </summary>
+    public string AuthenticatedUsername { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Display name returned by the most recent successful sign-in.
+    /// </summary>
+    public string AuthenticatedDisplayName { get; private set; } = string.Empty;
+
+    /// <summary>
     /// The Windows domain username entered by the user.
     /// </summary>
     [ObservableProperty]
@@ -37,6 +47,17 @@ public partial class ViewModel_Auth_Login : ObservableObject
     private string _errorMessage = string.Empty;
 
     /// <summary>
+    /// Startup or connection status shown above the credential form.
+    /// </summary>
+    [ObservableProperty]
+    private string _statusMessage = string.Empty;
+
+    /// <summary>
+    /// Indicates whether there is a startup or connection status message to show.
+    /// </summary>
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    /// <summary>
     /// Indicates whether an authentication request is in progress.
     /// Drives the activity indicator on both platform layouts.
     /// </summary>
@@ -53,7 +74,13 @@ public partial class ViewModel_Auth_Login : ObservableObject
     /// Indicates whether the current machine requires manual credential entry.
     /// </summary>
     [ObservableProperty]
-    private bool _isSharedWorkstation = true;
+    private bool _isSharedWorkstation;
+
+    /// <summary>
+    /// Indicates whether startup can be retried after workstation detection or auto sign-in fails.
+    /// </summary>
+    [ObservableProperty]
+    private bool _canRetryStartup;
 
     /// <summary>
     /// Combined busy state for progress indicators.
@@ -76,11 +103,9 @@ public partial class ViewModel_Auth_Login : ObservableObject
     private async Task InitializeAsync()
     {
         ErrorMessage = string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(Username))
-        {
-            return;
-        }
+        StatusMessage = string.Empty;
+        CanRetryStartup = false;
+        IsSharedWorkstation = false;
 
 #if WINDOWS
         var windowsUsername = await Task.Run(() =>
@@ -106,7 +131,9 @@ public partial class ViewModel_Auth_Login : ObservableObject
             var loginMode = await _authService.CheckWorkstationAsync(windowsUsername);
             if (!loginMode.IsSuccess || loginMode.Data is null)
             {
-                IsSharedWorkstation = true;
+                IsSharedWorkstation = false;
+                StatusMessage = loginMode.ErrorMessage;
+                CanRetryStartup = true;
                 return;
             }
 
@@ -114,12 +141,7 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
             if (!loginMode.Data.IsSharedWorkstation)
             {
-                var autoLogin = await _authService.AutoLoginAsync(windowsUsername);
-                if (autoLogin.IsSuccess)
-                {
-                    Password = string.Empty;
-                    Authenticated?.Invoke(this, EventArgs.Empty);
-                }
+                await AttemptAutoLoginAsync(windowsUsername);
             }
         }
         finally
@@ -127,6 +149,7 @@ public partial class ViewModel_Auth_Login : ObservableObject
             IsCheckingWorkstation = false;
         }
 #else
+        IsSharedWorkstation = true;
         await Task.CompletedTask;
 #endif
     }
@@ -139,6 +162,8 @@ public partial class ViewModel_Auth_Login : ObservableObject
     private async Task LoginAsync()
     {
         ErrorMessage = string.Empty;
+        StatusMessage = string.Empty;
+        CanRetryStartup = false;
 
         if (string.IsNullOrWhiteSpace(Username))
         {
@@ -160,6 +185,8 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
         if (result.IsSuccess)
         {
+            AuthenticatedUsername = result.Data?.Username ?? Username;
+            AuthenticatedDisplayName = result.Data?.DisplayName ?? string.Empty;
             Password = string.Empty;
             Authenticated?.Invoke(this, EventArgs.Empty);
         }
@@ -179,6 +206,44 @@ public partial class ViewModel_Auth_Login : ObservableObject
         ErrorMessage = string.Empty;
     }
 
+    /// <summary>
+    /// Restarts workstation detection and auto sign-in after startup fails.
+    /// </summary>
+    [RelayCommand]
+    private async Task RetryStartupAsync()
+    {
+        await InitializeAsync();
+    }
+
+#if WINDOWS
+    private async Task AttemptAutoLoginAsync(string windowsUsername)
+    {
+        IsCheckingWorkstation = true;
+        CanRetryStartup = false;
+
+        try
+        {
+            var autoLogin = await _authService.AutoLoginAsync(windowsUsername);
+            if (autoLogin.IsSuccess)
+            {
+                AuthenticatedUsername = autoLogin.Data?.Username ?? windowsUsername;
+                AuthenticatedDisplayName = autoLogin.Data?.DisplayName ?? string.Empty;
+                Password = string.Empty;
+                Authenticated?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            IsSharedWorkstation = false;
+            StatusMessage = autoLogin.ErrorMessage;
+            CanRetryStartup = true;
+        }
+        finally
+        {
+            IsCheckingWorkstation = false;
+        }
+    }
+#endif
+
     partial void OnIsAuthenticatingChanged(bool value)
     {
         OnPropertyChanged(nameof(IsBusy));
@@ -187,5 +252,10 @@ public partial class ViewModel_Auth_Login : ObservableObject
     partial void OnIsCheckingWorkstationChanged(bool value)
     {
         OnPropertyChanged(nameof(IsBusy));
+    }
+
+    partial void OnStatusMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasStatusMessage));
     }
 }

@@ -36,12 +36,28 @@ public class AdminController : ControllerBase
         return Ok(signal);
     }
 
+    /// <summary>Clears the shutdown signal after a client has received it.</summary>
+    [HttpPost("shutdown-signal/acknowledge")]
+    public IActionResult AcknowledgeShutdownSignal([FromBody] AcknowledgeShutdownSignalRequest request)
+    {
+        _killSwitch.AcknowledgeSignalForClient(request.MachineName, request.Username);
+        return Ok();
+    }
+
     /// <summary>Records a client heartbeat so the admin UI knows the client is connected.</summary>
     [HttpPost("heartbeat")]
     public IActionResult PostHeartbeat([FromBody] HeartbeatRequest request)
     {
         _killSwitch.RecordHeartbeat(request.MachineName, request.Username,
             request.FullName, request.WorkstationName);
+        return Ok();
+    }
+
+    /// <summary>Removes a client heartbeat when the client disconnects normally.</summary>
+    [HttpPost("disconnect")]
+    public IActionResult PostDisconnect([FromBody] ClientDisconnectRequest request)
+    {
+        _killSwitch.RemoveHeartbeat(request.MachineName, request.Username);
         return Ok();
     }
 
@@ -89,6 +105,16 @@ public record HeartbeatRequest(
     string Username,
     string FullName,
     string? WorkstationName);
+
+/// <summary>Request body for POST /api/admin/disconnect.</summary>
+public record ClientDisconnectRequest(
+    string MachineName,
+    string Username);
+
+/// <summary>Request body for POST /api/admin/shutdown-signal/acknowledge.</summary>
+public record AcknowledgeShutdownSignalRequest(
+    string MachineName,
+    string Username);
 
 /// <summary>Request body for POST /api/admin/shutdown.</summary>
 public record SetShutdownRequest(

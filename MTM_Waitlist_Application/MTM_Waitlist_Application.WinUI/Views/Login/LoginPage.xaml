@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MTM_Waitlist_Application.WinUI.Views.Login.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MTM_Waitlist_Application.WinUI.Views.Login"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <!-- Centered login card — mirrors MAUI Windows layout -->
+        <Border
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Width="440"
+            Padding="28"
+            CornerRadius="12"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1">
+
+            <StackPanel Spacing="18">
+
+                <!-- Header -->
+                <TextBlock
+                    Text="MTM Waitlist"
+                    Style="{ThemeResource TitleLargeTextBlockStyle}" />
+                <TextBlock
+                    Text="Sign in with your Windows username and password or floor PIN."
+                    Style="{ThemeResource BodyTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
+
+                <Border
+                    Padding="12"
+                    CornerRadius="8"
+                    Background="#FFF4CE"
+                    BorderBrush="#F2C811"
+                    BorderThickness="1"
+                    Visibility="{x:Bind ViewModel.StatusMessage, Mode=OneWay,
+                                         Converter={StaticResource StringToVisibilityConverter}}">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                        Foreground="#5F4700"
+                        TextWrapping="Wrap" />
+                </Border>
+
+                <Button
+                    Content="Try Again"
+                    Command="{x:Bind ViewModel.RetryStartupCommand}"
+                    HorizontalAlignment="Stretch"
+                    MinHeight="36"
+                    Visibility="{x:Bind ViewModel.CanRetryStartup, Mode=OneWay,
+                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <!-- Auto-login progress (personal workstations) -->
+                <StackPanel
+                    Spacing="12"
+                    Visibility="{x:Bind ViewModel.IsCheckingWorkstation, Mode=OneWay,
+                                        Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ProgressRing IsActive="True" Width="32" Height="32" HorizontalAlignment="Center" />
+                    <TextBlock
+                        Text="Checking workstation..."
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <!-- Credential form (shared workstations) -->
+                <StackPanel
+                    Spacing="16"
+                    Visibility="{x:Bind ViewModel.IsSharedWorkstation, Mode=OneWay,
+                                        Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <!-- Username -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Windows Username" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                        <TextBox
+                            PlaceholderText="DOMAIN\username"
+                            Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <!-- Password -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Password / PIN" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                        <PasswordBox
+                            PlaceholderText="Enter your password or PIN"
+                            Password="{x:Bind ViewModel.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <!-- Error message -->
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                        Foreground="#B42318"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
+                                             Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <!-- Action buttons -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button
+                            Grid.Column="0"
+                            Content="Clear"
+                            Command="{x:Bind ViewModel.ClearPasswordCommand}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="36" />
+                        <Button
+                            Grid.Column="1"
+                            Content="Sign In"
+                            Command="{x:Bind ViewModel.LoginCommand}"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="36" />
+                    </Grid>
+
+                    <!-- Sign-in progress indicator -->
+                    <ProgressRing
+                        IsActive="{x:Bind ViewModel.IsAuthenticating, Mode=OneWay}"
+                        Width="28"
+                        Height="28"
+                        HorizontalAlignment="Center"
+                        Visibility="{x:Bind ViewModel.IsAuthenticating, Mode=OneWay,
+                                             Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

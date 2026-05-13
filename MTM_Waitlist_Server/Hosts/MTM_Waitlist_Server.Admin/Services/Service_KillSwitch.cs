@@ -37,6 +37,15 @@ internal sealed class Service_KillSwitch : IService_KillSwitch
     }
 
     /// <inheritdoc />
+    public void RemoveHeartbeat(string machineName, string username)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(machineName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(username);
+
+        _heartbeats.TryRemove(machineName.ToLowerInvariant(), out _);
+    }
+
+    /// <inheritdoc />
     public IReadOnlyList<ClientHeartbeat> GetConnectedClients()
     {
         var expiryCutoff = DateTime.UtcNow - HeartbeatExpiry;
@@ -99,6 +108,24 @@ internal sealed class Service_KillSwitch : IService_KillSwitch
         }
 
         return null;
+    }
+
+    /// <inheritdoc />
+    public void AcknowledgeSignalForClient(string machineName, string username)
+    {
+        if (_signals.ContainsKey("ALL"))
+        {
+            return;
+        }
+
+        var machineKey = BuildKey(ShutdownTarget.ByMachine, machineName);
+        if (_signals.TryRemove(machineKey, out _))
+        {
+            return;
+        }
+
+        var userKey = BuildKey(ShutdownTarget.ByUser, username: username);
+        _signals.TryRemove(userKey, out _);
     }
 
     // -------------------------------------------------------------------------

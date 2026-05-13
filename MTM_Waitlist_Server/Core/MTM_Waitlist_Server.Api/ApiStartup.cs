@@ -1,11 +1,16 @@
+using System.Diagnostics;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using MTM_Waitlist_Server.Api.Services;
 using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
+using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.Dashboard;
-using System.Diagnostics;
 
 namespace MTM_Waitlist_Server.Api;
 
@@ -20,13 +25,28 @@ public static class ApiStartup
     /// The caller is responsible for calling <see cref="WebApplication.RunAsync"/> on a
     /// background thread so it does not block the WinUI message loop.
     /// </summary>
-    public static WebApplication BuildApp(string listenUrl, IServiceCollection sharedServices)
+    public static WebApplication BuildApp(
+        string listenUrl,
+        IServiceCollection sharedServices,
+        IServiceProvider sharedProvider)
     {
+        ArgumentNullException.ThrowIfNull(sharedProvider);
+
         var builder = WebApplication.CreateBuilder();
 
-        // Re-register all shared services so the ASP.NET DI container shares the same singletons.
+        // Re-register all shared service types, then replace singleton services with
+        // factories that resolve from the live WinUI provider. This keeps in-memory
+        // services, such as the kill switch heartbeat store, shared by the API and UI.
         foreach (var descriptor in sharedServices)
         {
+            if (descriptor.Lifetime == ServiceLifetime.Singleton)
+            {
+                builder.Services.Replace(ServiceDescriptor.Singleton(
+                    descriptor.ServiceType,
+                    _ => sharedProvider.GetRequiredService(descriptor.ServiceType)));
+                continue;
+            }
+
             builder.Services.Add(descriptor);
         }
 
@@ -38,8 +58,25 @@ public static class ApiStartup
         builder.Services.AddControllers()
             .AddApplicationPart(typeof(ApiStartup).Assembly);
 
-        // TODO: configure JWT bearer auth once FEATURE-01 is implemented.
-        builder.Services.AddAuthentication();
+        // Resolve the JWT secret from shared settings so tokens issued by Service_ApiAuth
+        // can be validated by the same key.
+        var settingsStore = sharedProvider.GetRequiredService<IService_SettingsStore>();
+        var jwtSecret = settingsStore.Get().Api.JwtSecret;
+        var keyBytes = Encoding.UTF8.GetBytes(jwtSecret);
+
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                };
+            });
         builder.Services.AddAuthorization();
 
         builder.WebHost.UseUrls(listenUrl);

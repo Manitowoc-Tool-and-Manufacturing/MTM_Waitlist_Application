@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MTM_Waitlist_Application.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MTM_Waitlist_Application.WinUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="MTM Waitlist">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid>
+        <!-- Login overlay — shown until the user authenticates -->
+        <Grid x:Name="LoginOverlay" Visibility="Visible">
+            <Frame x:Name="LoginFrame" />
+        </Grid>
+
+        <!-- Main shell — hidden until authentication succeeds -->
+        <NavigationView
+            x:Name="ShellNav"
+            Visibility="Collapsed"
+            PaneDisplayMode="Left"
+            IsSettingsVisible="False"
+            IsPaneToggleButtonVisible="True"
+            PaneTitle="MTM Waitlist"
+            SelectionChanged="ShellNav_SelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Name="NavDashboard"
+                    Content="Dashboard"
+                    Tag="Dashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="ShellFrame" />
+        </NavigationView>
+
+        <Grid
+            x:Name="ShutdownOverlay"
+            Visibility="Collapsed"
+            Background="#B3000000">
+            <Border
+                Width="520"
+                Padding="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                BorderThickness="2"
+                CornerRadius="12">
+                <StackPanel Spacing="16">
+                    <FontIcon
+                        HorizontalAlignment="Center"
+                        FontSize="48"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        Glyph="&#xE7BA;" />
+
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="24"
+                        FontWeight="SemiBold"
+                        Text="Application Closing"
+                        TextAlignment="Center" />
+
+                    <TextBlock
+                        x:Name="ShutdownMessageText"
+                        FontSize="15"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        x:Name="ShutdownCountdownText"
+                        HorizontalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

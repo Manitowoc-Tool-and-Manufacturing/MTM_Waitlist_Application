@@ -28,6 +28,12 @@ public static class Constants_Api
     /// <summary>REST endpoint for client heartbeat POST.</summary>
     public const string HeartbeatEndpoint = "/api/admin/heartbeat";
 
+    /// <summary>REST endpoint for client disconnect notification.</summary>
+    public const string DisconnectEndpoint = "/api/admin/disconnect";
+
     /// <summary>REST endpoint for polling the shutdown signal for the calling client.</summary>
     public const string ShutdownSignalEndpoint = "/api/admin/shutdown-signal";
+
+    /// <summary>REST endpoint for acknowledging a received shutdown signal.</summary>
+    public const string ShutdownSignalAcknowledgeEndpoint = "/api/admin/shutdown-signal/acknowledge";
 }

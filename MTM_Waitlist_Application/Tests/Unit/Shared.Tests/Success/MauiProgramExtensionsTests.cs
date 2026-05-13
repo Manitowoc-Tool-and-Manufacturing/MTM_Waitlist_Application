@@ -8,7 +8,6 @@ using Data.Http;
 using Data.Local;
 using Data.Repositories.Waitlist;
 using Feature.Dashboard.ViewModels.Main;
-using Feature.Dashboard.Views.Main;
 using Services.Auth;
 using Services.Sync;
 using Services.Waitlist;
@@ -47,7 +46,7 @@ public class MauiProgramExtensionsTests
             descriptor.ServiceType == typeof(ISyncService) && descriptor.ImplementationType == typeof(SyncService) && descriptor.Lifetime == ServiceLifetime.Singleton);
         services.Should().Contain(descriptor =>
             descriptor.ServiceType == typeof(ViewModel_Dashboard_Main) && descriptor.Lifetime == ServiceLifetime.Transient);
-        services.Should().Contain(descriptor =>
-            descriptor.ServiceType == typeof(View_Dashboard_Main) && descriptor.Lifetime == ServiceLifetime.Transient);
+        // Note: View_Dashboard_Main (MAUI ContentPage) is registered for Android/iOS only.
+        // The Windows UI is owned by MTM_Waitlist_Application.WinUI (DashboardPage).
     }
 }

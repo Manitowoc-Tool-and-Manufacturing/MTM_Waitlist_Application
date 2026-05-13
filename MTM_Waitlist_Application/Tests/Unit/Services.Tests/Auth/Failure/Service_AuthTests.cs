@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using Core.Interfaces.Api;
+using Core.Interfaces.Auth;
 using Core.Models.Auth;
 using Core.Models.Shared;
 using Services.Auth;
@@ -10,12 +11,14 @@ namespace MTM_Waitlist_Application.Tests.Unit.Services.Auth.Failure;
 public class Service_AuthTests
 {
     private readonly Mock<IApiClient> _mockApiClient;
+    private readonly Mock<IService_AuthTokenStore> _mockTokenStore;
     private readonly Service_Auth _service;
 
     public Service_AuthTests()
     {
         _mockApiClient = new Mock<IApiClient>();
-        _service = new Service_Auth(_mockApiClient.Object);
+        _mockTokenStore = new Mock<IService_AuthTokenStore>();
+        _service = new Service_Auth(_mockApiClient.Object, _mockTokenStore.Object);
     }
 
     [Fact]

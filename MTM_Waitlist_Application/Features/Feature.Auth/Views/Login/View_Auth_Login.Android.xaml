@@ -21,7 +21,27 @@
                 TextColor="{AppThemeBinding Light=#666666,
                                             Dark=#B8B8B8}" />
 
-            <VerticalStackLayout Spacing="8">
+            <Border
+                Padding="12"
+                BackgroundColor="#FFF4CE"
+                Stroke="#F2C811"
+                StrokeShape="RoundRectangle 8"
+                IsVisible="{Binding HasStatusMessage, Mode=OneWay}">
+                <Label
+                    FontSize="13"
+                    Text="{Binding StatusMessage, Mode=OneWay}"
+                    TextColor="#5F4700" />
+            </Border>
+
+            <Button
+                Command="{Binding RetryStartupCommand}"
+                HeightRequest="52"
+                IsVisible="{Binding CanRetryStartup, Mode=OneWay}"
+                Text="Try Again" />
+
+            <VerticalStackLayout
+                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
+                Spacing="8">
                 <Label
                     FontAttributes="Bold"
                     FontSize="13"
@@ -32,7 +52,9 @@
                     Text="{Binding Username, Mode=TwoWay}" />
             </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="8">
+            <VerticalStackLayout
+                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
+                Spacing="8">
                 <Label
                     FontAttributes="Bold"
                     FontSize="13"
@@ -46,16 +68,19 @@
             <Label
                 FontSize="12"
                 HorizontalTextAlignment="Center"
+                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                 Text="{Binding ErrorMessage, Mode=OneWay}"
                 TextColor="#B42318" />
 
             <Button
                 Command="{Binding LoginCommand}"
                 HeightRequest="52"
+                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                 Text="Sign In" />
             <Button
                 Command="{Binding ClearPasswordCommand}"
                 HeightRequest="52"
+                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                 Text="Clear" />
 
             <ActivityIndicator

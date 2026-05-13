@@ -39,4 +39,9 @@ public interface IService_KillSwitch
     /// Called when the user logs out.
     /// </summary>
     void StopHeartbeat();
+
+    /// <summary>
+    /// Stops the background heartbeat loop and notifies the server that this client disconnected normally.
+    /// </summary>
+    Task StopHeartbeatAsync(CancellationToken cancellationToken = default);
 }

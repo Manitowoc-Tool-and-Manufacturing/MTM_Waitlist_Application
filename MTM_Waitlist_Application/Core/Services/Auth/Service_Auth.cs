@@ -1,6 +1,5 @@
 using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
-using Core.Constants.Auth;
 using Core.Models.Auth;
 using Core.Models.Shared;
 
@@ -13,14 +12,19 @@ namespace Services.Auth;
 /// </summary>
 public sealed class Service_Auth : IService_Auth
 {
+    private const string ServiceUnavailableMessage =
+        "The MTM Waitlist service is not available right now. Please try again in a moment or contact support.";
+
     private readonly IApiClient _apiClient;
+    private readonly IService_AuthTokenStore _tokenStore;
 
     /// <summary>
     /// Initialises a new instance with the supplied API client.
     /// </summary>
-    public Service_Auth(IApiClient apiClient)
+    public Service_Auth(IApiClient apiClient, IService_AuthTokenStore tokenStore)
     {
         _apiClient = apiClient;
+        _tokenStore = tokenStore;
     }
 
     /// <inheritdoc/>
@@ -34,10 +38,10 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
+            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await StoreSessionAsync(result.Data);
+        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
         return result;
     }
 
@@ -52,10 +56,10 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
+            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await StoreSessionAsync(result.Data);
+        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
         return result;
     }
 
@@ -63,10 +67,14 @@ public sealed class Service_Auth : IService_Auth
     public async Task<Model_Dao_Result<Model_Auth_LoginMode>> CheckWorkstationAsync(
         string windowsUsername, CancellationToken cancellationToken = default)
     {
-        return await _apiClient.PostAsync<Model_Auth_LoginMode>(
+        var result = await _apiClient.PostAsync<Model_Auth_LoginMode>(
             "/api/auth/check-workstation",
             new { windowsUsername },
             cancellationToken);
+
+        return result.IsSuccess
+            ? result
+            : Model_Dao_Result<Model_Auth_LoginMode>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
     }
 
     /// <inheritdoc/>
@@ -74,7 +82,7 @@ public sealed class Service_Auth : IService_Auth
     {
         try
         {
-            ClearStoredSession();
+            _ = _tokenStore.ClearSessionAsync();
             return Task.FromResult(Model_Dao_Result.Success());
         }
         catch (Exception ex)
@@ -91,9 +99,7 @@ public sealed class Service_Auth : IService_Auth
 
         try
         {
-            // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
-            refreshToken = await MainThread.InvokeOnMainThreadAsync(
-                () => SecureStorage.GetAsync(Constants_AuthStorage.RefreshTokenKey)) ?? string.Empty;
+            refreshToken = await _tokenStore.GetRefreshTokenAsync(cancellationToken);
         }
         catch
         {
@@ -107,38 +113,32 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(result.ErrorMessage);
+            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await StoreSessionAsync(result.Data);
+        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
         return result;
     }
 
-    private static async Task StoreSessionAsync(Model_AuthToken token)
+    private static string GetUserFriendlyErrorMessage(string errorMessage)
     {
-        // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
-        await MainThread.InvokeOnMainThreadAsync(async () =>
+        if (IsConnectionFailure(errorMessage))
         {
-            await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenKey, token.Token);
-            await SecureStorage.SetAsync(Constants_AuthStorage.RefreshTokenKey, token.RefreshToken);
-            await SecureStorage.SetAsync(Constants_AuthStorage.AuthTokenExpiresAtKey, token.ExpiresAt.ToString("O"));
-            await SecureStorage.SetAsync(Constants_AuthStorage.AuthRoleKey, token.Role);
-            await SecureStorage.SetAsync(Constants_AuthStorage.AuthUsernameKey, token.Username);
-            await SecureStorage.SetAsync(Constants_AuthStorage.AuthDisplayNameKey, token.DisplayName);
-        });
+            return ServiceUnavailableMessage;
+        }
+
+        return string.IsNullOrWhiteSpace(errorMessage)
+            ? "Sign in could not be completed. Please try again."
+            : errorMessage;
     }
 
-    private static void ClearStoredSession()
+    private static bool IsConnectionFailure(string errorMessage)
     {
-        // SecureStorage.Remove is synchronous but still requires the UI thread on WinUI.
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            SecureStorage.Remove(Constants_AuthStorage.AuthTokenKey);
-            SecureStorage.Remove(Constants_AuthStorage.RefreshTokenKey);
-            SecureStorage.Remove(Constants_AuthStorage.AuthTokenExpiresAtKey);
-            SecureStorage.Remove(Constants_AuthStorage.AuthRoleKey);
-            SecureStorage.Remove(Constants_AuthStorage.AuthUsernameKey);
-            SecureStorage.Remove(Constants_AuthStorage.AuthDisplayNameKey);
-        });
+        return errorMessage.Contains("connection", StringComparison.OrdinalIgnoreCase)
+            || errorMessage.Contains("actively refused", StringComparison.OrdinalIgnoreCase)
+            || errorMessage.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+            || errorMessage.Contains("No connection could be made", StringComparison.OrdinalIgnoreCase)
+            || errorMessage.Contains("Connection refused", StringComparison.OrdinalIgnoreCase)
+            || errorMessage.Contains("Network error", StringComparison.OrdinalIgnoreCase);
     }
 }

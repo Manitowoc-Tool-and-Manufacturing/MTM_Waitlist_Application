@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
 using Core.Interfaces.KillSwitch;
+using Core.Interfaces.Lifecycle;
 using Core.Interfaces.Sync;
 using Core.Interfaces.Waitlist;
 using Data.Http;
@@ -17,6 +18,9 @@ using Services.Auth;
 using Services.KillSwitch;
 using Services.Sync;
 using Services.Waitlist;
+#if ANDROID
+using MTM_Waitlist_Application.Services.Lifecycle;
+#endif
 #if DEBUG
 using Data.Mock;
 #endif
@@ -206,6 +210,7 @@ namespace MTM_Waitlist_Application
         {
             // ── Infrastructure ─────────────────────────────────────────
             services.AddSingleton<IConnectivity>(Connectivity.Current);
+            services.AddSingleton<IService_AuthTokenStore, Service_AuthTokenStore_Maui>();
 
             // ── Data layer ─────────────────────────────────────────────
             services.AddSingleton<LocalDbContext>();
@@ -218,6 +223,9 @@ namespace MTM_Waitlist_Application
             services.AddSingleton<IService_WaitlistEntry, Service_WaitlistEntry>();
             services.AddSingleton<ISyncService, SyncService>();
             services.AddSingleton<IService_KillSwitch, Service_KillSwitch>();
+#if ANDROID
+            services.AddSingleton<IService_AppLifecycle, Service_AppLifecycle_Droid>();
+#endif
 
             // ── Feature: Auth ──────────────────────────────────────────
             services.AddTransient<ViewModel_Auth_Login>();

@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- Windows TFM retained so test projects and MAUI shared host can reference this project. -->
+    <!-- Windows VIEWS are owned by MTM_Waitlist_Application.WinUI; this project provides ViewModels only on Windows. -->
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))"
-      >$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks
-    >
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
+      $(TargetFrameworks);net10.0-windows10.0.19041.0
+    </TargetFrameworks>
 
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
@@ -22,8 +24,8 @@
       Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'"
       >10.0.17763.0</TargetPlatformMinVersion
     >
-    <!-- Suppress MVVMTK0045: partial property AOT warning is WinRT-specific
-         and does not apply to MAUI WinUI. Safe to suppress. -->
+    <!-- Suppress MVVMTK0045
+         and does not apply to MAUI. Safe to suppress. -->
     <NoWarn>$(NoWarn);MVVMTK0045</NoWarn>
   </PropertyGroup>
 
@@ -37,31 +39,19 @@
     <ProjectReference Include="..\..\Core\Services\Services.csproj" />
   </ItemGroup>
 
-  <!-- Platform-specific XAML: exclude both files from the default SDK glob so
-       the MAUI source generator does not process them twice, then include only
-       the file that matches the current build target. -->
+  <!-- Android-only XAML: no Windows XAML splitting needed — Windows view is in the WinUI host -->
   <ItemGroup>
-    <MauiXaml Remove="Views\Main\View_Dashboard_Main.Windows.xaml" />
     <MauiXaml Remove="Views\Main\View_Dashboard_Main.Android.xaml" />
-    <None Remove="Views\Main\View_Dashboard_Main.Windows.xaml" />
     <None Remove="Views\Main\View_Dashboard_Main.Android.xaml" />
-    <Content Include="Views\Main\View_Dashboard_Main.Windows.xaml">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-      <Visible>true</Visible>
-    </Content>
     <Content Include="Views\Main\View_Dashboard_Main.Android.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <SubType>Designer</SubType>
       <Visible>true</Visible>
     </Content>
   </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <Content Remove="Views\Main\View_Dashboard_Main.Windows.xaml" />
-    <MauiXaml Include="Views\Main\View_Dashboard_Main.Windows.xaml" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <ItemGroup>
     <Content Remove="Views\Main\View_Dashboard_Main.Android.xaml" />
     <MauiXaml Include="Views\Main\View_Dashboard_Main.Android.xaml" />
   </ItemGroup>
 </Project>
+

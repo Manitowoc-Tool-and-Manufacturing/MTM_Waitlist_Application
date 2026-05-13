@@ -79,6 +79,8 @@
     <File Path="Documents/DATABASE-06-Intelligent-Migration-System.md" />
     <File Path="Documents/DATABASE-07-First-Run-Setup.md" />
     <File Path="Documents/DATABASE-INDEX.md" />
+    <File Path="ServerAppLogs.txt" />
+    <File Path="WaitlistLogs.txt" />
   </Folder>
   <Folder Name="/Hosts/">
     <Project Path="Hosts/MTM_Waitlist_Server.Admin/MTM_Waitlist_Server.Admin.csproj">

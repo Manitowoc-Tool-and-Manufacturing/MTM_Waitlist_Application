@@ -19,13 +19,18 @@ internal sealed class Service_ApiHost : IService_ApiHost
 {
     private readonly IService_SettingsStore _settingsStore;
     private readonly ServiceCollection _sharedServices;
+    private readonly IServiceProvider _sharedProvider;
     private WebApplication? _webApp;
     private Task? _hostTask;
 
-    public Service_ApiHost(IService_SettingsStore settingsStore, ServiceCollection sharedServices)
+    public Service_ApiHost(
+        IService_SettingsStore settingsStore,
+        ServiceCollection sharedServices,
+        IServiceProvider sharedProvider)
     {
         _settingsStore = settingsStore;
         _sharedServices = sharedServices;
+        _sharedProvider = sharedProvider;
     }
 
     /// <inheritdoc/>
@@ -38,7 +43,7 @@ internal sealed class Service_ApiHost : IService_ApiHost
     {
         var listenUrl = _settingsStore.Get().Api.ListenAddress;
         StartupLogger.Info($"ApiHost.Start: building Kestrel app bound to '{listenUrl}'.");
-        _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices);
+        _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices, _sharedProvider);
         StartupLogger.Info("ApiHost.Start: WebApplication built. Starting RunAsync on background task.");
         _hostTask = _webApp.RunAsync();
         StartupLogger.Info("ApiHost.Start: RunAsync task launched.");
@@ -75,7 +80,7 @@ internal sealed class Service_ApiHost : IService_ApiHost
         {
             var listenUrl = _settingsStore.Get().Api.ListenAddress;
             StartupLogger.Info($"ApiHost.EnsureRunningAsync: rebuilding WebApplication on '{listenUrl}'.");
-            _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices);
+            _webApp = ApiStartup.BuildApp(listenUrl, _sharedServices, _sharedProvider);
             _hostTask = _webApp.RunAsync();
             StartupLogger.Info("ApiHost.EnsureRunningAsync: restart succeeded — RunAsync task launched.");
             return true;

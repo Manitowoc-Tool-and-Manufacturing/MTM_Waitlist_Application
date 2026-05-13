@@ -11,6 +11,11 @@ namespace MTM_Waitlist_Server.Module.KillSwitch.Views;
 /// </summary>
 public sealed partial class View_KillSwitch : Page
 {
+    private readonly DispatcherTimer _refreshTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(5),
+    };
+
     /// <summary>Typed accessor used by x:Bind expressions in the XAML.</summary>
     public ViewModel_KillSwitch ViewModel { get; }
 
@@ -18,7 +23,34 @@ public sealed partial class View_KillSwitch : Page
     {
         InitializeComponent();
         ViewModel = viewModel;
-        Loaded += (_, _) => ViewModel.RefreshClientsCommand.Execute(null);
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+        _refreshTimer.Tick += OnRefreshTimerTick;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        RefreshClients();
+        _refreshTimer.Start();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        _refreshTimer.Stop();
+    }
+
+    private void OnRefreshTimerTick(object? sender, object e)
+    {
+        RefreshClients();
+    }
+
+    private void RefreshClients()
+    {
+        if (ViewModel.RefreshClientsCommand.CanExecute(null))
+        {
+            ViewModel.RefreshClientsCommand.Execute(null);
+        }
     }
 
     private void ShutDownClientButton_Click(object sender, RoutedEventArgs e)

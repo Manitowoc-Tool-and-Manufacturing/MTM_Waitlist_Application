@@ -1,6 +1,21 @@
 namespace Core.Models.KillSwitch;
 
 /// <summary>
+/// Scope of a kill-switch shutdown signal.
+/// </summary>
+public enum Enum_KillSwitch_Target
+{
+    /// <summary>Targets all connected clients.</summary>
+    All,
+
+    /// <summary>Targets a specific machine.</summary>
+    ByMachine,
+
+    /// <summary>Targets a specific user.</summary>
+    ByUser,
+}
+
+/// <summary>
 /// Represents an active shutdown signal returned by GET /api/admin/shutdown-signal.
 /// The client receives this when an admin has issued a kill-switch command targeting
 /// all clients or specifically this machine/user.
@@ -8,9 +23,9 @@ namespace Core.Models.KillSwitch;
 public sealed class Model_KillSwitch_Signal
 {
     /// <summary>
-    /// Who the signal targets — "All", a specific machine name, or a specific username.
+    /// Who the signal targets.
     /// </summary>
-    public string Target { get; init; } = string.Empty;
+    public Enum_KillSwitch_Target Target { get; init; }
 
     /// <summary>
     /// Optional machine name filter. Only populated when <see cref="Target"/> is machine-specific.

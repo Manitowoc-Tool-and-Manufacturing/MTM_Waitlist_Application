@@ -57,6 +57,17 @@ public partial class App : Application
         // --- Build the single shared DI container ---
         var sharedServices = new ServiceCollection();
         RegisterSharedServices(sharedServices);
+
+        Service_ApiHost? apiHost = null;
+        sharedServices.AddSingleton<IService_ApiHost>(sp =>
+        {
+            apiHost ??= new Service_ApiHost(
+                sp.GetRequiredService<IService_SettingsStore>(),
+                sharedServices,
+                sp);
+            return apiHost;
+        });
+
         var provider = sharedServices.BuildServiceProvider();
         Services = provider;
 
@@ -239,7 +250,7 @@ public partial class App : Application
         StartupLogger.Section("Normal Launch");
         StartupLogger.Info($"BRANCH: All checks passed → Normal launch. Starting Kestrel API host on '{settings.Api.ListenAddress}'.");
 
-        var apiHost = new Service_ApiHost(settingsStore, sharedServices);
+        apiHost = (Service_ApiHost)provider.GetRequiredService<IService_ApiHost>();
         try
         {
             apiHost.Start();
@@ -250,13 +261,9 @@ public partial class App : Application
             StartupLogger.Error("Kestrel API host failed to start — application will continue without the API.", ex);
         }
 
-        // Re-register the same singleton instance so ViewModels can inject it.
-        sharedServices.AddSingleton<IService_ApiHost>(apiHost);
-        var finalProvider = sharedServices.BuildServiceProvider();
-        Services = finalProvider;
-        StartupLogger.Info("Final DI provider built with IService_ApiHost registered.");
+        StartupLogger.Info("Single DI provider retained with IService_ApiHost registered.");
 
-        var scheduler = finalProvider.GetRequiredService<BackupSchedulerService>();
+        var scheduler = provider.GetRequiredService<BackupSchedulerService>();
         StartupLogger.Info("Starting BackupSchedulerService.");
         _ = scheduler.StartAsync(CancellationToken.None);
         StartupLogger.Info("BackupSchedulerService started on background thread.");

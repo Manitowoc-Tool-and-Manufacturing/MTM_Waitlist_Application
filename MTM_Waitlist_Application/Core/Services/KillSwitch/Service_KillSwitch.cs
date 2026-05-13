@@ -2,6 +2,7 @@ using Core.Constants.Api;
 using Core.Interfaces.Api;
 using Core.Interfaces.KillSwitch;
 using Core.Models.KillSwitch;
+using Microsoft.Extensions.Logging;
 
 namespace Services.KillSwitch;
 
@@ -25,6 +26,7 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
     private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(15);
 
     private readonly IApiClient _apiClient;
+    private readonly ILogger<Service_KillSwitch> _logger;
 
     // Guard against double-start.
     private int _started; // 0 = not started, 1 = started
@@ -44,9 +46,10 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
     /// <summary>
     /// Initialises a new instance with the supplied API client.
     /// </summary>
-    public Service_KillSwitch(IApiClient apiClient)
+    public Service_KillSwitch(IApiClient apiClient, ILogger<Service_KillSwitch> logger)
     {
         _apiClient = apiClient;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -55,6 +58,7 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
         // Prevent a second start from a re-login without an intervening logout.
         if (Interlocked.CompareExchange(ref _started, 1, 0) != 0)
         {
+            _logger.LogInformation("[KillSwitch] StartHeartbeat ignored because the heartbeat loop is already running");
             return;
         }
 
@@ -64,6 +68,9 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
 
         _cts = new CancellationTokenSource();
         _loopTask = Task.Run(() => RunLoopAsync(_cts.Token), _cts.Token);
+        _logger.LogInformation(
+            "[KillSwitch] Heartbeat loop started — machine={MachineName}, username={Username}, fullName={FullName}, workstation={Workstation}",
+            MachineName, _username, _fullName, _workstationName ?? "(none)");
     }
 
     /// <inheritdoc/>
@@ -77,6 +84,21 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
+        _logger.LogInformation("[KillSwitch] Heartbeat loop stopped");
+    }
+
+    /// <inheritdoc/>
+    public async Task StopHeartbeatAsync(CancellationToken cancellationToken = default)
+    {
+        var username = _username;
+        StopHeartbeat();
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return;
+        }
+
+        await NotifyDisconnectAsync(username, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -89,22 +111,30 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
 
     private async Task RunLoopAsync(CancellationToken ct)
     {
-        // Send the first heartbeat immediately so the admin console sees this client
-        // right away rather than waiting up to 15 seconds.
-        await TickAsync(ct);
-
-        while (!ct.IsCancellationRequested)
+        try
         {
-            try
-            {
-                await Task.Delay(HeartbeatInterval, ct);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-
+            // Send the first heartbeat immediately so the admin console sees this client
+            // right away rather than waiting up to 15 seconds.
             await TickAsync(ct);
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(HeartbeatInterval, ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                await TickAsync(ct);
+            }
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "[KillSwitch] Heartbeat loop stopped unexpectedly");
+            Interlocked.Exchange(ref _started, 0);
         }
     }
 
@@ -115,10 +145,7 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
             return;
         }
 
-        // Fire-and-forget the heartbeat POST — a failure just means the admin
-        // console will briefly show this client as disconnected; it does not
-        // need to surface as an error to the user.
-        _ = PostHeartbeatAsync(ct);
+        await PostHeartbeatAsync(ct);
 
         // Poll the shutdown signal — failures are swallowed so a transient network
         // hiccup does not prevent the next poll from running.
@@ -129,7 +156,7 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
     {
         try
         {
-            await _apiClient.PostAsync<object>(
+            var result = await _apiClient.PostAsync<object>(
                 Constants_Api.HeartbeatEndpoint,
                 new
                 {
@@ -139,10 +166,25 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
                     workstationName = _workstationName,
                 },
                 ct);
+
+            if (result.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "[KillSwitch] Heartbeat POST succeeded — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                    Constants_Api.HeartbeatEndpoint, MachineName, _username);
+                return;
+            }
+
+            _logger.LogWarning(
+                "[KillSwitch] Heartbeat POST failed — endpoint={Endpoint}, machine={MachineName}, username={Username}, error={Error}",
+                Constants_Api.HeartbeatEndpoint, MachineName, _username, result.ErrorMessage);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[KillSwitch] Heartbeat POST failed: {ex.Message}");
+            _logger.LogError(
+                ex,
+                "[KillSwitch] Heartbeat POST threw — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                Constants_Api.HeartbeatEndpoint, MachineName, _username);
         }
     }
 
@@ -154,6 +196,14 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
                 $"{Constants_Api.ShutdownSignalEndpoint}?machineName={Uri.EscapeDataString(MachineName)}&username={Uri.EscapeDataString(_username)}";
 
             var result = await _apiClient.GetAsync<Model_KillSwitch_Signal>(endpoint, ct);
+
+            if (!result.IsSuccess && result.Data is null)
+            {
+                _logger.LogWarning(
+                    "[KillSwitch] Shutdown-signal poll failed — endpoint={Endpoint}, machine={MachineName}, username={Username}, error={Error}",
+                    Constants_Api.ShutdownSignalEndpoint, MachineName, _username, result.ErrorMessage);
+                return;
+            }
 
             // Server returns 204 (no content) when there is no active signal.
             // HttpApiClient's ReadResultAsync treats a null body as a Failure, so
@@ -167,13 +217,84 @@ public sealed class Service_KillSwitch : IService_KillSwitch, IDisposable
 
             var signal = result.Data;
 
-            // Raise on the main thread so UI subscribers can show dialogs directly.
-            MainThread.BeginInvokeOnMainThread(() =>
-                ShutdownSignalReceived?.Invoke(this, signal));
+            await AcknowledgeShutdownSignalAsync(ct);
+
+            ShutdownSignalReceived?.Invoke(this, signal);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[KillSwitch] Shutdown-signal poll failed: {ex.Message}");
+            _logger.LogError(
+                ex,
+                "[KillSwitch] Shutdown-signal poll threw — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                Constants_Api.ShutdownSignalEndpoint, MachineName, _username);
+        }
+    }
+
+    private async Task AcknowledgeShutdownSignalAsync(CancellationToken ct)
+    {
+        try
+        {
+            var result = await _apiClient.PostAsync<object>(
+                Constants_Api.ShutdownSignalAcknowledgeEndpoint,
+                new
+                {
+                    machineName = MachineName,
+                    username = _username,
+                },
+                ct);
+
+            if (result.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "[KillSwitch] Shutdown signal acknowledged — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                    Constants_Api.ShutdownSignalAcknowledgeEndpoint, MachineName, _username);
+                return;
+            }
+
+            _logger.LogWarning(
+                "[KillSwitch] Shutdown signal acknowledgement failed — endpoint={Endpoint}, machine={MachineName}, username={Username}, error={Error}",
+                Constants_Api.ShutdownSignalAcknowledgeEndpoint, MachineName, _username, result.ErrorMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "[KillSwitch] Shutdown signal acknowledgement threw — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                Constants_Api.ShutdownSignalAcknowledgeEndpoint, MachineName, _username);
+        }
+    }
+
+    private async Task NotifyDisconnectAsync(string username, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _apiClient.PostAsync<object>(
+                Constants_Api.DisconnectEndpoint,
+                new
+                {
+                    machineName = MachineName,
+                    username,
+                },
+                ct);
+
+            if (result.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "[KillSwitch] Disconnect notified — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                    Constants_Api.DisconnectEndpoint, MachineName, username);
+                return;
+            }
+
+            _logger.LogWarning(
+                "[KillSwitch] Disconnect notification failed — endpoint={Endpoint}, machine={MachineName}, username={Username}, error={Error}",
+                Constants_Api.DisconnectEndpoint, MachineName, username, result.ErrorMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "[KillSwitch] Disconnect notification threw — endpoint={Endpoint}, machine={MachineName}, username={Username}",
+                Constants_Api.DisconnectEndpoint, MachineName, username);
         }
     }
 }

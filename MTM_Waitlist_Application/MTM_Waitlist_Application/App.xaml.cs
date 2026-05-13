@@ -1,6 +1,6 @@
 ﻿using Core.Constants.Auth;
-using Core.Interfaces.KillSwitch;
-using Core.Models.KillSwitch;
+using Core.Interfaces.Lifecycle;
+using Feature.Dashboard.Views.Main;
 using Feature.Auth.Views.Login;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +10,7 @@ namespace MTM_Waitlist_Application
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<App> _logger;
+        private readonly IService_AppLifecycle? _appLifecycle;
         private Window? _window;
         private View_Auth_Login? _loginPage;
         private int _shellSwapped; // 0 = not yet swapped, 1 = swapped; Interlocked guard against double swap
@@ -18,6 +19,7 @@ namespace MTM_Waitlist_Application
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _appLifecycle = serviceProvider.GetService<IService_AppLifecycle>();
             _logger.LogInformation("[STARTUP] App constructor — InitializeComponent starting");
             InitializeComponent();
             _logger.LogInformation("[STARTUP] App constructor — InitializeComponent complete");
@@ -90,70 +92,31 @@ namespace MTM_Waitlist_Application
                 _logger.LogInformation("{LogMessage}", logMessage);
             }
 
-            // Start the kill-switch heartbeat now that the user is authenticated.
+            // Start platform lifecycle work now that the user is authenticated.
             // Runs on a background thread so SecureStorage reads don't block the UI.
-            _ = Task.Run(StartKillSwitchAsync);
+            _ = Task.Run(StartAuthenticatedLifecycleAsync);
         }
 
         /// <summary>
-        /// Reads the authenticated user's credentials from SecureStorage and starts
-        /// the kill-switch heartbeat loop.
+        /// Starts platform lifecycle work after the authenticated shell is active.
         /// </summary>
-        private async Task StartKillSwitchAsync()
+        private async Task StartAuthenticatedLifecycleAsync()
         {
             try
             {
-                var username = await MainThread.InvokeOnMainThreadAsync(
-                    () => SecureStorage.GetAsync(Constants_AuthStorage.AuthUsernameKey)) ?? string.Empty;
-                var displayName = await MainThread.InvokeOnMainThreadAsync(
-                    () => SecureStorage.GetAsync(Constants_AuthStorage.AuthDisplayNameKey)) ?? string.Empty;
+                if (_appLifecycle is null)
+                {
+                    _logger.LogWarning("[STARTUP] No platform lifecycle service registered for this target");
+                    return;
+                }
 
-                // Workstation name is not stored in SecureStorage — pass null so the
-                // admin console will show the machine name from DeviceInfo.Name instead.
-                var killSwitch = _serviceProvider.GetRequiredService<IService_KillSwitch>();
-                killSwitch.ShutdownSignalReceived += OnShutdownSignalReceived;
-                killSwitch.StartHeartbeat(username, displayName, workstationName: null);
-
-                _logger.LogInformation("[KillSwitch] Heartbeat started — username={Username}", username);
+                await _appLifecycle.StartAuthenticatedSessionAsync();
+                _logger.LogInformation("[STARTUP] Authenticated lifecycle active — app idle on Dashboard");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[KillSwitch] Failed to start heartbeat");
+                _logger.LogError(ex, "[STARTUP] Failed to start authenticated lifecycle");
             }
-        }
-
-        /// <summary>
-        /// Handles a shutdown signal from the admin console.
-        /// Displays a countdown dialog and closes the application when the warning expires.
-        /// Guaranteed to run on the main thread (raised by the kill-switch service).
-        /// </summary>
-        private async void OnShutdownSignalReceived(object? sender, Model_KillSwitch_Signal signal)
-        {
-            _logger.LogWarning(
-                "[KillSwitch] Shutdown signal received — target={Target}, warningSeconds={Warning}, message={Msg}",
-                signal.Target, signal.WarningSeconds, signal.Message);
-
-            // Stop sending further heartbeats — the session is ending.
-            if (sender is IService_KillSwitch ks)
-            {
-                ks.ShutdownSignalReceived -= OnShutdownSignalReceived;
-                ks.StopHeartbeat();
-            }
-
-            if (signal.WarningSeconds > 0 && _window?.Page is not null)
-            {
-                // Show a non-cancellable countdown alert for the warning period.
-                // Blocks the UI intentionally — the user should not be able to continue working.
-                await _window.Page.DisplayAlertAsync(
-                    "⚠️  Application Closing",
-                    $"{signal.Message}\n\nThis application will close in {signal.WarningSeconds} seconds.",
-                    "OK");
-
-                await Task.Delay(TimeSpan.FromSeconds(signal.WarningSeconds));
-            }
-
-            _logger.LogInformation("[KillSwitch] Closing application per admin signal");
-            Application.Current?.Quit();
         }
 
         private async Task<bool> HasValidStoredSessionAsync()
@@ -200,7 +163,7 @@ namespace MTM_Waitlist_Application
             _logger.LogInformation("[STARTUP] CreateShellForCurrentRole — creating AppShell");
             // All currently implemented roles land on Dashboard because it is the only
             // authenticated feature surface available today.
-            return new AppShell();
+            return new AppShell(_serviceProvider.GetRequiredService<View_Dashboard_Main>());
         }
     }
 }

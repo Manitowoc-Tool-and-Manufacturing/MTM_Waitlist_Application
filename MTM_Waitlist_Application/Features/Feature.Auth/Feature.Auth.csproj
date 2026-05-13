@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- Windows TFM retained so test projects and MAUI shared host can reference this project. -->
+    <!-- Windows VIEWS are owned by MTM_Waitlist_Application.WinUI; this project provides ViewModels only on Windows. -->
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))"
-      >$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks
-    >
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
+      $(TargetFrameworks);net10.0-windows10.0.19041.0
+    </TargetFrameworks>
 
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
@@ -43,27 +45,17 @@
     <ProjectReference Include="..\..\Core\Services\Services.csproj" />
   </ItemGroup>
 
+  <!-- Android-only XAML: no Windows XAML splitting needed — Windows view is in the WinUI host -->
   <ItemGroup>
-    <MauiXaml Remove="Views\Login\View_Auth_Login.Windows.xaml" />
     <MauiXaml Remove="Views\Login\View_Auth_Login.Android.xaml" />
-    <None Remove="Views\Login\View_Auth_Login.Windows.xaml" />
     <None Remove="Views\Login\View_Auth_Login.Android.xaml" />
-    <Content Include="Views\Login\View_Auth_Login.Windows.xaml">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-      <Visible>true</Visible>
-    </Content>
     <Content Include="Views\Login\View_Auth_Login.Android.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <SubType>Designer</SubType>
       <Visible>true</Visible>
     </Content>
   </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <Content Remove="Views\Login\View_Auth_Login.Windows.xaml" />
-    <MauiXaml Include="Views\Login\View_Auth_Login.Windows.xaml" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <ItemGroup>
     <Content Remove="Views\Login\View_Auth_Login.Android.xaml" />
     <MauiXaml Include="Views\Login\View_Auth_Login.Android.xaml" />
   </ItemGroup>

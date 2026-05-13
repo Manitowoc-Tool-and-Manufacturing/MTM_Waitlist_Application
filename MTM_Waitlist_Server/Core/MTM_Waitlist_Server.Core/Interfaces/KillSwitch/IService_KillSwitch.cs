@@ -11,6 +11,9 @@ public interface IService_KillSwitch
     /// <summary>Registers or refreshes a client heartbeat.</summary>
     void RecordHeartbeat(string machineName, string username, string fullName, string? workstationName);
 
+    /// <summary>Removes a client heartbeat when the client disconnects normally.</summary>
+    void RemoveHeartbeat(string machineName, string username);
+
     /// <summary>Returns all clients whose last heartbeat is within the expiry window.</summary>
     IReadOnlyList<ClientHeartbeat> GetConnectedClients();
 
@@ -26,4 +29,7 @@ public interface IService_KillSwitch
 
     /// <summary>Returns the shutdown signal applicable to the caller, or null if none.</summary>
     ActiveShutdownSignal? GetSignalForClient(string machineName, string username);
+
+    /// <summary>Clears the shutdown signal that applies to a client after the client receives it.</summary>
+    void AcknowledgeSignalForClient(string machineName, string username);
 }

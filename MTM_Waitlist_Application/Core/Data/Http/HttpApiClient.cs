@@ -1,9 +1,11 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Core.Constants.Auth;
 using Core.Constants.Api;
 using Core.Interfaces.Api;
+using Core.Interfaces.Auth;
 using Core.Models.Shared;
 
 namespace Data.Http;
@@ -34,6 +36,7 @@ namespace Data.Http;
 public sealed class HttpApiClient : IApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IService_AuthTokenStore _tokenStore;
     private readonly string _primaryUrl;
     private readonly string _fallbackUrl;
 
@@ -62,9 +65,13 @@ public sealed class HttpApiClient : IApiClient
     /// Initialises a new instance using URL values from <paramref name="configuration"/>.
     /// Falls back to compile-time constants if the configuration keys are absent.
     /// </summary>
-    public HttpApiClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public HttpApiClient(
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
+        IService_AuthTokenStore tokenStore)
     {
         _httpClientFactory = httpClientFactory;
+        _tokenStore = tokenStore;
         _primaryUrl = configuration["Api:PrimaryBaseUrl"] ?? Constants_Api.PrimaryBaseUrl;
         _fallbackUrl = configuration["Api:FallbackBaseUrl"] ?? Constants_Api.FallbackBaseUrl;
 
@@ -83,7 +90,7 @@ public sealed class HttpApiClient : IApiClient
         var (url, client) = await ResolveBaseUrlAsync(cancellationToken);
         try
         {
-            using var request = await BuildRequestAsync(HttpMethod.Get, url, endpoint);
+            using var request = await BuildRequestAsync(HttpMethod.Get, url, endpoint, cancellationToken);
             using var response = await client.SendAsync(request, cancellationToken);
             return await ReadResultAsync<T>(response, cancellationToken);
         }
@@ -98,7 +105,7 @@ public sealed class HttpApiClient : IApiClient
         var (url, client) = await ResolveBaseUrlAsync(cancellationToken);
         try
         {
-            using var request = await BuildRequestAsync(HttpMethod.Post, url, endpoint);
+            using var request = await BuildRequestAsync(HttpMethod.Post, url, endpoint, cancellationToken);
             request.Content = JsonContent.Create(payload);
             using var response = await client.SendAsync(request, cancellationToken);
             return await ReadResultAsync<T>(response, cancellationToken);
@@ -114,7 +121,7 @@ public sealed class HttpApiClient : IApiClient
         var (url, client) = await ResolveBaseUrlAsync(cancellationToken);
         try
         {
-            using var request = await BuildRequestAsync(HttpMethod.Put, url, endpoint);
+            using var request = await BuildRequestAsync(HttpMethod.Put, url, endpoint, cancellationToken);
             request.Content = JsonContent.Create(payload);
             using var response = await client.SendAsync(request, cancellationToken);
             return await ReadResultAsync<T>(response, cancellationToken);
@@ -130,7 +137,7 @@ public sealed class HttpApiClient : IApiClient
         var (url, client) = await ResolveBaseUrlAsync(cancellationToken);
         try
         {
-            using var request = await BuildRequestAsync(HttpMethod.Delete, url, endpoint);
+            using var request = await BuildRequestAsync(HttpMethod.Delete, url, endpoint, cancellationToken);
             using var response = await client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
             return Model_Dao_Result.Success();
@@ -201,15 +208,15 @@ public sealed class HttpApiClient : IApiClient
     /// Creates an <see cref="HttpRequestMessage"/>, attaching the JWT from
     /// <c>SecureStorage</c> as a Bearer header when present.
     /// </summary>
-    private static async Task<HttpRequestMessage> BuildRequestAsync(
-        HttpMethod method, string baseUrl, string endpoint)
+    private async Task<HttpRequestMessage> BuildRequestAsync(
+        HttpMethod method,
+        string baseUrl,
+        string endpoint,
+        CancellationToken cancellationToken)
     {
         var request = new HttpRequestMessage(method, $"{baseUrl}{endpoint}");
 
-        // SecureStorage on WinUI requires the UI thread (WinRT PasswordVault).
-        // Marshal to the main thread to avoid InvalidOperationException.
-        var token = await MainThread.InvokeOnMainThreadAsync(
-            () => SecureStorage.GetAsync(Constants_AuthStorage.AuthTokenKey));
+        var token = await _tokenStore.GetAccessTokenAsync(cancellationToken);
         if (!string.IsNullOrWhiteSpace(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -227,8 +234,33 @@ public sealed class HttpApiClient : IApiClient
     {
         try
         {
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content is null
+                    ? string.Empty
+                    : await response.Content.ReadAsStringAsync(cancellationToken);
+
+                return Model_Dao_Result<T>.Failure(BuildHttpErrorMessage(response.StatusCode, errorContent));
+            }
+
             response.EnsureSuccessStatusCode();
-            var data = await response.Content.ReadFromJsonAsync<T>(cancellationToken);
+
+            if (response.StatusCode == HttpStatusCode.NoContent || response.Content.Headers.ContentLength == 0)
+            {
+                return Model_Dao_Result<T>.Success(default!);
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return Model_Dao_Result<T>.Success(default!);
+            }
+
+            var data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            });
+
             return data is not null
                 ? Model_Dao_Result<T>.Success(data)
                 : Model_Dao_Result<T>.Failure("The server returned no data.");
@@ -239,6 +271,46 @@ public sealed class HttpApiClient : IApiClient
         { return Model_Dao_Result<T>.Failure("The request timed out."); }
         catch (Exception ex)
         { return Model_Dao_Result<T>.Failure($"Unexpected error: {ex.Message}"); }
+    }
+
+    private static string BuildHttpErrorMessage(HttpStatusCode statusCode, string errorContent)
+    {
+        var serverMessage = NormalizeServerError(errorContent);
+        if (!string.IsNullOrWhiteSpace(serverMessage))
+        {
+            return serverMessage;
+        }
+
+        return statusCode switch
+        {
+            HttpStatusCode.Unauthorized => "Invalid username or password.",
+            HttpStatusCode.Forbidden => "You do not have permission to perform this action.",
+            HttpStatusCode.BadRequest => "The request could not be completed. Please check the information and try again.",
+            _ => $"The server returned {(int)statusCode} {statusCode}.",
+        };
+    }
+
+    private static string NormalizeServerError(string errorContent)
+    {
+        if (string.IsNullOrWhiteSpace(errorContent))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = errorContent.Trim();
+        if (trimmed.Length >= 2 && trimmed[0] == '"' && trimmed[^1] == '"')
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<string>(trimmed) ?? string.Empty;
+            }
+            catch (JsonException)
+            {
+                return trimmed.Trim('"');
+            }
+        }
+
+        return trimmed;
     }
 
     private static Model_Dao_Result<T> Fail<T>(Exception ex) =>
