@@ -8,7 +8,7 @@
 |---|---|---|
 | 1 | Who can change settings? | **Windows Authentication** gates the entire admin app (DATABASE-01 Q5). No additional passphrase needed inside settings |
 | 2 | Can the API port be changed while running? | **Yes — kill-switch countdown is triggered automatically** before any restart-required setting is applied. The banner offers "Restart Now" or "Restart in 5 min (notify clients)" |
-| 3 | How do MAUI clients get updated connection settings? | **Discovery endpoint** `GET /api/server-info/waitlist` — MAUI apps query this on startup to get the current API host/port before any other call |
+| 3 | How do client apps get updated connection settings? | **Discovery endpoint** `GET /api/server-info/waitlist` — client apps query this on startup to get the current API host/port before any other call |
 | 4 | Which MySQL users does the admin app use? | **Two named users:** `waitlist_admin_dbappuser` (REST API — SELECT/EXECUTE only) and `waitlist_admin_dbupdater` (admin operations — dashboard, backup, migrations — elevated privileges) |
 | 5 | Should Visual SQL queries be proxied? | **Yes.** All Infor Visual SQL queries are proxied through this API. The Visual connection string is stored here, served at `GET /api/server-info/visual`, and uses credentials `SHOP2` / `SHOP` (configurable, DPAPI-encrypted) |
 
@@ -320,11 +320,11 @@ public class MigrationsSettings
 
 ## Discovery Endpoints
 
-These read-only endpoints are served by the API and called by MAUI clients on startup. They require a valid JWT.
+These read-only endpoints are served by the API and called by client apps on startup. They require a valid JWT.
 
 ### `GET /api/server-info/waitlist`
 
-Returns the current Waitlist API host and port. MAUI clients call this first to resolve the API base URL dynamically, so a port change in Settings does not require redeploying the MAUI app.
+Returns the current Waitlist API host and port. Client apps call this first to resolve the API base URL dynamically, so a port change in Settings does not require redeploying the client apps.
 
 ```json
 {
@@ -336,9 +336,9 @@ Returns the current Waitlist API host and port. MAUI clients call this first to 
 
 ### `GET /api/server-info/visual`
 
-Returns the Infor Visual SQL Server connection info for the API's proxy service. **This endpoint is server-internal only** — called by the API's `IService_VisualProxy` to build its connection string. It is not exposed to MAUI clients directly; clients call Visual-specific endpoints (e.g., `GET /api/visual/workcenter/{id}`) and the API proxies the SQL query.
+Returns the Infor Visual SQL Server connection info for the API's proxy service. **This endpoint is server-internal only** — called by the API's `IService_VisualProxy` to build its connection string. It is not exposed to client apps directly; clients call Visual-specific endpoints (e.g., `GET /api/visual/workcenter/{id}`) and the API proxies the SQL query.
 
-The Visual credentials (`SHOP2` / `SHOP`) are never transmitted to MAUI clients. They are stored encrypted in `server-settings.json` and only used server-side.
+The Visual credentials (`SHOP2` / `SHOP`) are never transmitted to client apps. They are stored encrypted in `server-settings.json` and only used server-side.
 
 ---
 

@@ -12,8 +12,8 @@ Use these steps before starting the database admin application work. They are wr
 These instructions were checked against `DATABASE-01` through `DATABASE-06`, the current MAUI project rules, the database rules, and the test rules. The important guardrails are:
 
 - The server admin application is a **separate server solution** named `MTM_Waitlist_Server.slnx`.
-- The existing MAUI client solution stays separate and continues to use `MTM_Waitlist_Application.slnx`.
-- The MAUI client must talk to the server through REST API endpoints only.
+- The existing client solution (WinUI 3 + Android) stays separate and continues to use `MTM_Waitlist_Application.slnx`.
+- The client apps must talk to the server through REST API endpoints only.
 - Server modules may reference `MTM_Waitlist_Server.Core` only.
 - Server modules must not reference each other directly.
 - The API project may reference `MTM_Waitlist_Server.Core` only.
@@ -44,7 +44,7 @@ These instructions were checked against `DATABASE-01` through `DATABASE-06`, the
    - `tables`
    - `admin`
 
-The server admin application is a new standalone solution, not a set of projects added directly into the MAUI client solution.
+The server admin application is a new standalone solution, not a set of projects added directly into the client solution.
 
 ### 2. Create the New Server Solution in Visual Studio
 
@@ -183,11 +183,11 @@ Do not reference one module from another module. Cross-module behavior must go t
 3. Wait for the build to finish.
 4. If Visual Studio shows errors, fix those before starting `DATABASE-01`.
 
-### 11. Keep the MAUI Client Solution Separate
+### 11. Keep the Client Solution Separate
 
-The existing MAUI client solution remains at `C:\Users\johnk\source\repos\MTM_Waitlist_Application\MTM_Waitlist_Application.slnx`.
+The existing client solution (WinUI 3 + Android) remains at `C:\Users\johnk\source\repos\MTM_Waitlist_Application\MTM_Waitlist_Application\MTM_Waitlist_Application.slnx`.
 
-Do not move the MAUI projects into the server solution. The MAUI app connects to the server through REST API endpoints only.
+Do not move client projects into the server solution. The client apps connect to the server through REST API endpoints only.
 
 ### 12. Start Implementation in the Correct Order
 
@@ -207,10 +207,10 @@ All seven DATABASE documents are now implemented. Refer to individual docs for i
 
 A new WinUI desktop application (`MTM_Waitlist_Server.Admin`) that:
 
-1. **Hosts the REST API** (ASP.NET/Kestrel, in-process) that all MAUI Waitlist Application clients connect to.
+1. **Hosts the REST API** (ASP.NET/Kestrel, in-process) that all Waitlist client apps (WinUI 3 on Windows, MAUI on Android) connect to.
 2. **Provides an admin dashboard** for managing the MySQL database, migrations, backups, and client sessions.
 
-In production, the MAUI app **cannot function** unless this admin app is running on the server (`172.16.1.104`). During local debugging, the same admin app can run on a developer workstation, with both the API listener and the first-run MySQL host defaulting to `localhost` unless `server-settings.json` already has saved values.
+In production, the client apps **cannot function** unless this admin app is running on the server (`172.16.1.104`). During local debugging, the same admin app can run on a developer workstation, with both the API listener and the first-run MySQL host defaulting to `localhost` unless `server-settings.json` already has saved values.
 
 ---
 
@@ -240,7 +240,7 @@ DATABASE-05  Client Kill Switch                                 ← Depends on A
 | [02](DATABASE-02-MySQL-Status-Dashboard.md) | Status Dashboard | Live DB stats, table sizes, active connections, in-process request log |
 | [03](DATABASE-03-Settings-Management.md) | Settings | DB host/port/credentials, API port/JWT, backup config — DPAPI-encrypted storage |
 | [04](DATABASE-04-Backup-and-Restore.md) | Backup & Restore | `mysqldump` automation, scheduled nightly backup, restore wizard with client kill |
-| [05](DATABASE-05-Client-Kill-Switch.md) | Kill Switch | Remote shutdown of MAUI clients — individual or all, instant or countdown |
+| [05](DATABASE-05-Client-Kill-Switch.md) | Kill Switch | Remote shutdown of client apps — individual or all, instant or countdown |
 | [06](DATABASE-06-Intelligent-Migration-System.md) | Migration System | Incremental migrations, `SchemaVersions` table, procedure/trigger always-rerun |
 | [07](DATABASE-07-First-Run-Setup.md) | First-Run Setup | Fresh-install detection probe, auth gate fallback, 3-step wizard, degraded mode |
 
@@ -252,7 +252,7 @@ DATABASE-05  Client Kill Switch                                 ← Depends on A
 
 The admin app hosts the REST API inside the same process using ASP.NET `WebApplication`. One executable serves both:
 - The WinUI admin window (for IT use on the server)
-- The Kestrel HTTP listener on `:5000` (for MAUI clients on the LAN)
+- The Kestrel HTTP listener on `:5000` (for client apps on the LAN)
 
 ### `SchemaVersions` Table (Migration Tracking)
 
@@ -271,7 +271,7 @@ A new `SchemaVersions` table tracks which migration files have been applied. Mig
 
 ### Kill Switch Protocol
 
-MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of their normal session keepalive. The admin app sets an in-memory signal that clients detect on next poll. No real-time push (no SignalR) in v1 — the polling lag is acceptable for maintenance windows.
+Client apps (WinUI 3 on Windows, MAUI on Android) poll `GET /api/admin/shutdown-signal` every 15 seconds as part of their normal session keepalive. The admin app sets an in-memory signal that clients detect on next poll. No real-time push (no SignalR) in v1 — the polling lag is acceptable for maintenance windows.
 
 ---
 
@@ -341,7 +341,7 @@ MAUI clients poll `GET /api/admin/shutdown-signal` every 15 seconds as part of t
 | DATABASE-02 Q2 | Table stat granularity? | Dynamic query of `information_schema.TABLES` filtered to `mtm_waitlist` |
 | DATABASE-02 Q3 | Auto-refresh or button? | **Auto-refresh every 30 seconds** using `SHOW GLOBAL STATUS`; `information_schema` always filtered by `TABLE_SCHEMA` |
 | DATABASE-03 Q2 | API port change — kill switch? | **Yes — kill-switch countdown mandatory.** Minimum 60-second warning |
-| DATABASE-03 Q3 | How do MAUI clients get updated API settings? | **`GET /api/server-info/waitlist`** discovery endpoint on startup |
+| DATABASE-03 Q3 | How do client apps get updated API settings? | **`GET /api/server-info/waitlist`** discovery endpoint on startup |
 | DATABASE-03 Q4 | MySQL user naming | **`waitlist_admin_dbappuser`** (API) and **`waitlist_admin_dbupdater`** (admin/backup/migration) |
 | DATABASE-03 Q5 | Infor Visual SQL proxying | **Yes** — proxied through this API. Credentials DPAPI-encrypted; served internally at `GET /api/server-info/visual` |
 | DATABASE-04 Q1 | Backup format | **`mysqldump`** — user-configurable folder, default `C:\MTM\WaitlistBackups\` |

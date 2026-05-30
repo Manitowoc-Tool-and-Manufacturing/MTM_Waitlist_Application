@@ -11,7 +11,7 @@
 
 The server and database foundations now exist in the separate `MTM_Waitlist_Server/` solution, and the core auth API surface is now implemented there: `login`, `refresh`, `revoke`, `check-workstation`, `auto-login`, and `/health`.
 
-On the MAUI client side, `Feature.Auth` now provides the initial login experience, secure token persistence, stored-session startup bypass, shared-workstation detection, and silent Windows auto-login on personal workstations.
+On the client side (WinUI 3 for Windows, .NET MAUI for Android), `Feature.Auth` now provides the initial login experience, secure token persistence, stored-session startup bypass, shared-workstation detection, and silent Windows auto-login on personal workstations.
 
 ---
 
@@ -67,7 +67,7 @@ Two login modes were confirmed during schema finalization (May 10, 2026):
 ```
 App.CreateWindow()
   → if a stored token exists and is not expired:
-      open AppShell directly
+      navigate to the main shell (WinUI 3 `NavigationView` on Windows / MAUI `AppShell` on Android)
   → else:
       open View_Auth_Login
 
@@ -76,14 +76,14 @@ InitializeAsync()
   → Service_Auth.CheckWorkstationAsync(windowsUsername)
   → if IsSharedWorkstation == false:
       Service_Auth.AutoLoginAsync(windowsUsername)
-      → success → navigate to AppShell
+      → success → navigate to main shell
       → failure → fall back to credential screen
   → if IsSharedWorkstation == true:
       show credential screen
 
 LoginAsync()
   → Service_Auth.LoginAsync(username, password)
-  → success → navigate to AppShell
+  → success → navigate to main shell
   → failure → show error banner
 ```
 

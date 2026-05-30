@@ -12,7 +12,7 @@ by describing the task — Copilot will apply the relevant agent behavior.
 **When to use:** You need to add a new screen or workflow (e.g., "I need a reports page").
 
 **What it produces:**
-- `MTM_Waitlist_Application.Feature.<Name>/` project (MAUI Class Library)
+- `MTM_Waitlist_Application.Feature.<Name>/` project (class library — Windows Views use WinUI 3 `Page`, Android Views use MAUI `ContentPage`)
 - `Views/<Screen>/View_<Feature>_<Screen>.Windows.xaml` + `.Android.xaml` + `.xaml.cs` (ONE shared code-behind)
 - `ViewModels/<Screen>/ViewModel_<Feature>_<Screen>.cs`
 - `Core/Models/<Domain>/Model_<Entity>.cs`
@@ -186,10 +186,12 @@ Tests/Unit/Feature.Dashboard.Tests/ViewModels/Main/Properties/ViewModel_Dashboar
 
 **Rules enforced:**
 - Both XAML files bind to the same ViewModel — zero duplication of logic
-- `x:DataType` present on both files
+- Windows XAML uses `x:Bind ViewModel.Property` against a typed ViewModel property on the `Page` code-behind
+- Android XAML uses `x:DataType` compiled bindings on `ContentPage`
 - Android minimum tap targets: 48px
 - `OnIdiom` used only for minor property tweaks, not layout sections
-- Navigation uses `FlyoutBehavior={OnPlatform WinUI=Locked, Android=Flyout}` in AppShell
+- Windows navigation: `Frame.Navigate(typeof(Page))` / `Frame.GoBack()` — **not** Shell
+- Android navigation: `Shell.Current.GoToAsync()` in `AppShell.xaml`
 
 **Conversation starters:**
 - "Split View_Waitlist_Entry into Windows and Android layouts"

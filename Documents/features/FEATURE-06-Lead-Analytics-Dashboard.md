@@ -184,7 +184,7 @@ This gives leads a single screen to see the connection between Visual work order
 
 ## Open Decisions
 
-- **Chart library:** MAUI does not have a built-in chart control. For the analytics drill-down screen, options include: `Microcharts` (simple, MIT), `LiveCharts2.SkiaSharp.Maui` (rich, commercial), or simple table views with no charts for v1. Recommendation: v1 uses data tables only. Charts are a v2 enhancement.
+- **Chart library:** Neither WinUI 3 nor .NET MAUI include a built-in chart control. For the analytics drill-down screen, options include: `LiveCharts2.WinUI` (Windows, rich, commercial), `LiveCharts2.Maui` (Android), `Microcharts` (simple, MIT, both platforms), or simple `ListView`/table views for v1. Recommendation: v1 uses data tables only. Charts are a v2 enhancement.
 - **Analytics date range:** Default to today. Should also support last 7 days and last 30 days. A date picker control is needed on Windows; a simpler "Today / Week / Month" segmented control on Android.
 - **Who sees analytics:** `ProductionSupervisor` and `ProductionManager` see full analytics. `SetupTech` and `Quality` see their own queue metrics only (how long requests in their category take). `MaterialHandler` does NOT see analytics — only their own completed task history.
 - **Export:** Leads asked about data export (implied in the meeting: "data trail for project management"). For v1, no export. For v2, CSV export of the analytics tables.

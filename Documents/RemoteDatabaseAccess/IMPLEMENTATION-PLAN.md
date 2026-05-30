@@ -16,7 +16,7 @@ WinUI / Android (on work LAN — wired or wireless)
 
 ## Codebase Context
 
-- .NET MAUI solution, WinUI + Android hosts
+- WinUI 3 (Windows) + .NET MAUI (Android) dual-host solution
 - No backend API exists yet — all HTTP implementations are stubs until API is defined
 - All projects contain only `Class1.cs` stubs
 - `MauiProgramExtensions.cs` DI framework exists (all registrations commented out)
@@ -135,7 +135,7 @@ WinUI / Android (on work LAN — wired or wireless)
 
 | Interface | Implementation | Lifetime |
 |-----------|---------------|----------|
-| `IConnectivity` | `Connectivity.Current` (MAUI built-in) | Singleton |
+| `IConnectivity` | `Connectivity.Current` (MAUI built-in — used by shared Services layer; resolves on both Android and Windows via MAUI NuGet reference in `Services.csproj`) | Singleton |
 | `IApiClient` | `HttpApiClient` | Singleton |
 | `LocalDbContext` | `LocalDbContext` | Singleton |
 | `IRepository_WaitlistEntry` | `Repository_WaitlistEntry` | Singleton |

@@ -1,8 +1,10 @@
-# UI Design Differences — Windows vs Android in .NET MAUI
+# UI Design Differences — Windows (WinUI 3) vs Android (.NET MAUI)
 
 > **Solution:** MTM_Waitlist_Application  
-> **Applies to:** `MTM_Waitlist_Application.WinUI` vs `MTM_Waitlist_Application.Droid`  
+> **Applies to:** `MTM_Waitlist_Application.WinUI` (WinUI 3) vs `MTM_Waitlist_Application.Droid` (.NET MAUI)  
 > **Shared UI lives in:** `MTM_Waitlist_Application` (shared project)
+
+> ⚠️ **Platform distinction:** The **Windows host** is a standalone **WinUI 3** application (`Microsoft.UI.Xaml`). It does **not** use MAUI `ContentPage`, `Shell`, `FlyoutItem`, `TabBar`, `CollectionView`, or `AppThemeBinding`. The **Android host** is a full **.NET MAUI** application and retains all MAUI patterns. ViewModels (CommunityToolkit.Mvvm) are shared across both platforms.
 
 ---
 
@@ -23,57 +25,70 @@ Both XAML files bind to the **exact same ViewModel** — zero logic duplication.
 
 ## 1. 📐 Layout Philosophy
 
-### Windows — Data Dense, Space Rich
+### Windows — Data Dense, Space Rich (WinUI 3)
+
+Windows Views are WinUI 3 **Pages** (`Microsoft.UI.Xaml.Controls.Page`). Use WinUI 3 controls: `StackPanel`, `ListView` / `ItemsRepeater`, `TextBlock`, `TextBox`, `Button` (with `Content=` not `Text=`). Sidebar navigation lives in `MainWindow.xaml` via `NavigationView` — individual pages do not need to recreate it.
 
 ```xml
-<!-- MTM_Waitlist_Application / Views / WaitlistPage.Windows.xaml -->
-<Grid ColumnDefinitions="260,*,300" RowDefinitions="Auto,*">
+<!-- Feature.Waitlist / Views / WaitlistEntry / View_Waitlist_Entry.Windows.xaml -->
+<!-- WinUI 3 Page — Microsoft.UI.Xaml namespace -->
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:models="using:Core.Models.Waitlist"
+      x:Class="Feature.Waitlist.Views.WaitlistEntry.View_Waitlist_Entry">
 
-    <!-- Header bar -->
-    <Label Grid.ColumnSpan="3" Text="MTM Waitlist Manager"
-           FontSize="24" Margin="16,12"/>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
 
-    <!-- Sidebar navigation -->
-    <StackLayout Grid.Row="1" Grid.Column="0"
-                 BackgroundColor="{AppThemeBinding Light=#F3F3F3, Dark=#1E1E1E}"
-                 Padding="12">
-        <Button Text="Dashboard" StyleClass="NavButton"/>
-        <Button Text="Waitlist"  StyleClass="NavButton"/>
-        <Button Text="Reports"   StyleClass="NavButton"/>
-    </StackLayout>
+        <!-- Main data list -->
+        <ListView Grid.Column="0"
+                  ItemsSource="{x:Bind ViewModel.WaitlistEntries, Mode=OneWay}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:Model_WaitlistEntry">
+                    <Grid Padding="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{x:Bind Name}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Date}" />
+                        <TextBlock Grid.Column="2" Text="{x:Bind Status}" />
+                        <Button Grid.Column="3" Content="Approve"
+                                Command="{x:Bind ViewModel.ApproveCommand, Mode=OneWay}"
+                                CommandParameter="{x:Bind}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
-    <!-- Main data table -->
-    <CollectionView Grid.Row="1" Grid.Column="1"
-                    ItemsSource="{Binding WaitlistEntries}">
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Grid ColumnDefinitions="*,*,*,120" Padding="8">
-                    <Label Grid.Column="0" Text="{Binding Name}"/>
-                    <Label Grid.Column="1" Text="{Binding Date}"/>
-                    <Label Grid.Column="2" Text="{Binding Status}"/>
-                    <Button Grid.Column="3" Text="Approve"
-                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WaitlistViewModel}},
-                                              Path=ApproveCommand}"
-                            CommandParameter="{Binding .}"/>
-                </Grid>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+        <!-- Detail panel -->
+        <StackPanel Grid.Column="1" Padding="16" Spacing="8">
+            <TextBlock Text="Selected Entry" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="{x:Bind ViewModel.SelectedEntry.Name, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind ViewModel.SelectedEntry.Notes, Mode=OneWay}" />
+        </StackPanel>
+    </Grid>
 
-    <!-- Detail panel -->
-    <StackLayout Grid.Row="1" Grid.Column="2" Padding="16">
-        <Label Text="Selected Entry" FontSize="18" FontAttributes="Bold"/>
-        <Label Text="{Binding SelectedEntry.Name}"/>
-        <Label Text="{Binding SelectedEntry.Notes}"/>
-    </StackLayout>
-
-</Grid>
+</Page>
 ```
 
-### Android — Single Column, Thumb Friendly
+> Note: The typed `ViewModel` property is exposed by the code-behind — see Section 5.
+
+### Android — Single Column, Thumb Friendly (.NET MAUI)
 
 ```xml
-<!-- MTM_Waitlist_Application / Views / WaitlistPage.Mobile.xaml -->
+<!-- Feature.Waitlist / Views / WaitlistEntry / View_Waitlist_Entry.Android.xaml -->
+<!-- .NET MAUI ContentPage — Android host only -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels"
+             x:DataType="vm:ViewModel_Waitlist_Entry">
+
 <Shell>
     <TabBar>
         <Tab Title="Waitlist" Icon="list.png">
@@ -109,46 +124,80 @@ Both XAML files bind to the **exact same ViewModel** — zero logic duplication.
         </Tab>
     </TabBar>
 </Shell>
+
+</ContentPage>
 ```
 
 ---
 
 ## 2. 🧭 Navigation Patterns
 
-| | Windows (WinUI) | Android (Droid) |
+| | Windows — WinUI 3 | Android — .NET MAUI |
 |---|---|---|
-| **Pattern** | Flyout sidebar | Bottom `TabBar` |
-| **Shell tag** | `<FlyoutItem>` | `<Tab>` inside `<TabBar>` |
-| **Depth** | Multi-level menus OK | Max 2–3 levels |
-| **Back button** | Rarely needed | Always present (hardware + soft) |
+| **Pattern** | `NavigationView` sidebar in `MainWindow.xaml` | Bottom `TabBar` in `AppShell.xaml` |
+| **Framework tag** | `<NavigationViewItem>` | `<Tab>` inside `<TabBar>` |
+| **Navigate to page** | `Frame.Navigate(typeof(View_X))` | `Shell.Current.GoToAsync("route")` |
+| **Go back** | `Frame.GoBack()` | `Shell.Current.GoToAsync("..")` |
+| **Depth** | Multi-level `NavigationViewItem` OK | Max 2–3 levels |
+| **Back button** | `NavigationView` back button (`IsBackEnabled`) | Always present (hardware + soft) |
 | **Context menus** | `MenuFlyout` on right-click | `SwipeView` for swipe actions |
 
-### Windows Shell (AppShell.xaml — WinUI)
+### Windows Navigation (MainWindow.xaml — WinUI 3)
+
+The Windows host does **not** use `AppShell.xaml` or MAUI `Shell`. Navigation is handled by a `NavigationView` in `MainWindow.xaml` with a `Frame` that hosts WinUI 3 `Page` instances.
+
 ```xml
-<Shell FlyoutDisplayOptions="AsMultipleItems"
-       FlyoutWidth="260">
+<!-- MTM_Waitlist_Application.WinUI / MainWindow.xaml -->
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MTM_Waitlist_Application.WinUI.MainWindow">
 
-    <FlyoutItem Title="Dashboard" Icon="dashboard.png">
-        <ShellContent Route="dashboard"
-                      ContentTemplate="{DataTemplate views:DashboardPage}"/>
-    </FlyoutItem>
+    <NavigationView x:Name="NavView"
+                    PaneDisplayMode="Left"
+                    IsBackButtonVisible="Collapsed"
+                    SelectionChanged="NavView_SelectionChanged">
 
-    <FlyoutItem Title="Waitlist" Icon="list.png">
-        <ShellContent Route="waitlist"
-                      ContentTemplate="{DataTemplate views:WaitlistPage}"/>
-    </FlyoutItem>
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Dashboard" Icon="&#xE80F;" Tag="dashboard"/>
+            <NavigationViewItem Content="Waitlist"  Icon="&#xE8FD;" Tag="waitlist"/>
+            <NavigationViewItem Content="Reports"   Icon="&#xE9D2;" Tag="reports"/>
+        </NavigationView.MenuItems>
 
-    <FlyoutItem Title="Reports" Icon="reports.png">
-        <ShellContent Route="reports"
-                      ContentTemplate="{DataTemplate views:ReportsPage}"/>
-    </FlyoutItem>
+        <!-- Host frame — WinUI 3 pages are loaded here via Frame.Navigate() -->
+        <Frame x:Name="ShellFrame"/>
 
-</Shell>
+    </NavigationView>
+</Window>
 ```
 
-### Android Shell (AppShell.xaml — Droid)
+```csharp
+// MainWindow.xaml.cs — navigate on item selection
+private void NavView_SelectionChanged(NavigationView sender,
+    NavigationViewSelectionChangedEventArgs args)
+{
+    if (args.SelectedItem is NavigationViewItem item)
+    {
+        Type? page = item.Tag?.ToString() switch
+        {
+            "dashboard" => typeof(View_Dashboard_Main),
+            "waitlist"  => typeof(View_Waitlist_Entry),
+            "reports"   => typeof(View_Reports_Main),
+            _           => null
+        };
+        if (page is not null)
+            ShellFrame.Navigate(page);
+    }
+}
+```
+
+### Android Shell (AppShell.xaml — .NET MAUI)
+
+Android uses the standard MAUI `AppShell.xaml` with `TabBar` bottom navigation. `AppShell.xaml` is **Android-only** — the Windows host uses `NavigationView` in `MainWindow.xaml` instead.
+
 ```xml
-<Shell>
+<!-- MTM_Waitlist_Application / AppShell.xaml — Android MAUI only -->
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
     <TabBar>
 
         <Tab Title="Home" Icon="home.png">
@@ -170,23 +219,23 @@ Both XAML files bind to the **exact same ViewModel** — zero logic duplication.
 </Shell>
 ```
 
-> ⚠️ **The route names (`waitlist`, `dashboard`) must match** between both Shell
-> files so shared navigation commands work identically.
+> ⚠️ `Shell.Current.GoToAsync()` and `Shell.Current.GoToAsync("..")` are **Android (MAUI) only**.
+> On Windows, navigate via `Frame.Navigate(typeof(Page))` and `Frame.GoBack()`.
 
 ---
 
 ## 3. 🎛️ Control Comparison
 
-| Task | Windows Control | Android Control |
+| Task | Windows Control (WinUI 3) | Android Control (.NET MAUI) |
 |------|----------------|----------------|
-| Show list of records | `CollectionView` multi-column grid | `CollectionView` single-column cards |
-| Navigation | `FlyoutItem` sidebar | `TabBar` bottom tabs |
-| Actions on items | Toolbar buttons + right-click `MenuFlyout` | `SwipeView` left/right swipe |
-| Form input | Side-by-side `Label` + `Entry` | Stacked `Label` above `Entry` |
-| Date selection | `DatePicker` inline in form | `DatePicker` (triggers native bottom sheet) |
-| Confirmation dialog | `DisplayAlert()` | `DisplayAlert()` (renders natively per platform) |
-| Loading indicator | `ActivityIndicator` in corner | `ActivityIndicator` full-screen overlay |
-| Search | `SearchBar` in toolbar | `SearchBar` pinned top of scroll view |
+| Show list of records | `ListView` or `ItemsRepeater` multi-column | `CollectionView` single-column cards |
+| Navigation | `NavigationView` + `Frame.Navigate()` in `MainWindow` | `TabBar` bottom tabs in `AppShell` |
+| Actions on items | Toolbar `CommandBar` buttons + right-click `MenuFlyout` | `SwipeView` left/right swipe |
+| Form input | Side-by-side `TextBlock` + `TextBox` | Stacked `Label` above `Entry` |
+| Date selection | `CalendarDatePicker` or WinUI `DatePicker` | `DatePicker` (triggers native bottom sheet) |
+| Confirmation dialog | `ContentDialog` | `DisplayAlert()` (renders natively) |
+| Loading indicator | `ProgressRing` in corner | `ActivityIndicator` full-screen overlay |
+| Search | `AutoSuggestBox` in toolbar | `SearchBar` pinned top of scroll view |
 
 ---
 
@@ -265,16 +314,36 @@ public partial class WaitlistViewModel : ObservableObject
 ```
 
 ```xml
-<!-- Windows XAML — binds to same ViewModel -->
-<ContentPage xmlns:vm="clr-namespace:MTM_Waitlist_Application.ViewModels"
-             x:DataType="vm:WaitlistViewModel">
-    <!-- Rich desktop layout -->
-</ContentPage>
+<!-- Windows XAML — WinUI 3 Page, uses x:Bind against typed ViewModel property -->
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      x:Class="Feature.Waitlist.Views.WaitlistEntry.View_Waitlist_Entry">
+    <!-- Rich desktop layout using {x:Bind ViewModel.Property, Mode=OneWay} -->
+    <ListView ItemsSource="{x:Bind ViewModel.WaitlistEntries, Mode=OneWay}" />
+</Page>
+```
 
-<!-- Android XAML — binds to same ViewModel -->
-<ContentPage xmlns:vm="clr-namespace:MTM_Waitlist_Application.ViewModels"
-             x:DataType="vm:WaitlistViewModel">
-    <!-- Simplified mobile layout -->
+```csharp
+// Windows code-behind — expose typed ViewModel for x:Bind
+public sealed partial class View_Waitlist_Entry : Page
+{
+    public ViewModel_Waitlist_Entry ViewModel { get; }
+
+    public View_Waitlist_Entry(ViewModel_Waitlist_Entry viewModel)
+    {
+        ViewModel = viewModel;
+        InitializeComponent();
+    }
+}
+```
+
+```xml
+<!-- Android XAML — MAUI ContentPage with compiled x:DataType bindings -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels"
+             x:DataType="vm:ViewModel_Waitlist_Entry">
+    <!-- Simplified mobile layout using {Binding Property, Mode=OneWay} -->
 </ContentPage>
 ```
 
@@ -294,52 +363,82 @@ public partial class WaitlistViewModel : ObservableObject
 
 ---
 
-## 7. 🎨 Theming — Works the Same Way on Both
+## 7. 🎨 Theming — Platform-Specific Approach
+
+Theming is **not shared** between the two hosts. WinUI 3 and MAUI have different resource systems.
+
+### Windows (WinUI 3) — ThemeDictionaries
 
 ```xml
-<!-- App.xaml in the shared project — applies to both platforms -->
+<!-- MTM_Waitlist_Application.WinUI / App.xaml -->
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.ThemeDictionaries>
+            <ResourceDictionary x:Key="Light">
+                <SolidColorBrush x:Key="BackgroundBrush" Color="White"/>
+                <SolidColorBrush x:Key="SurfaceBrush"   Color="#F3F3F3"/>
+            </ResourceDictionary>
+            <ResourceDictionary x:Key="Dark">
+                <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1E1E"/>
+                <SolidColorBrush x:Key="SurfaceBrush"   Color="#2D2D2D"/>
+            </ResourceDictionary>
+        </ResourceDictionary.ThemeDictionaries>
+
+        <!-- Brand colours — shared across themes -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#0078D4"/>
+
+        <!-- Shared button style -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background"    Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground"    Value="White"/>
+            <Setter Property="CornerRadius"  Value="6"/>
+            <Setter Property="Height"        Value="44"/>
+        </Style>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+> Use `{ThemeResource BackgroundBrush}` in WinUI 3 XAML to automatically switch between Light/Dark.
+
+### Android (.NET MAUI) — AppThemeBinding
+
+```xml
+<!-- MTM_Waitlist_Application / App.xaml (Shared or Droid) — Android MAUI only -->
 <Application.Resources>
     <ResourceDictionary>
 
-        <!-- Colours -->
-        <Color x:Key="PrimaryColor">#0078D4</Color>
-        <Color x:Key="SecondaryColor">#F3F3F3</Color>
-
-        <!-- Platform-aware colours -->
+        <!-- Platform-aware colours via AppThemeBinding -->
         <Color x:Key="BackgroundColor">
             <AppThemeBinding Light="White" Dark="#1E1E1E"/>
         </Color>
+        <Color x:Key="PrimaryColor">#0078D4</Color>
 
-        <!-- Shared button style — renders natively on each platform -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}"/>
-            <Setter Property="TextColor" Value="White"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="TextColor"       Value="White"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="HeightRequest"   Value="44"/>
         </Style>
 
     </ResourceDictionary>
 </Application.Resources>
 ```
 
-> Styles defined in the shared `App.xaml` apply automatically to both
-> Windows and Android — no duplication needed.
-
 ---
 
 ## 8. 📋 Quick Reference Cheat Sheet
 
 ```
-WINDOWS UI RULES                    ANDROID UI RULES
-─────────────────────               ─────────────────────
+WINDOWS UI RULES (WinUI 3)          ANDROID UI RULES (.NET MAUI)
+──────────────────────────          ─────────────────────────────
 ✅ Multi-column Grid layouts        ✅ Single-column StackLayout
-✅ Sidebar flyout navigation        ✅ Bottom TabBar navigation
-✅ Dense data tables                ✅ Card-based CollectionView
+✅ NavigationView sidebar           ✅ Bottom TabBar navigation
+✅ ListView / ItemsRepeater tables  ✅ Card-based CollectionView
 ✅ Right-click MenuFlyout           ✅ SwipeView for actions
-✅ Inline toolbars with icons       ✅ Floating Action Button (FAB)
-✅ Side-by-side label+input forms   ✅ Stacked label-above-input forms
+✅ CommandBar with icons            ✅ Floating Action Button (FAB)
+✅ Side-by-side TextBlock+TextBox   ✅ Stacked label-above-input forms
 ✅ Smaller tap targets OK           ✅ Min 48px tap targets ALWAYS
-✅ Hover states matter              ✅ No hover — touch only
+✅ Hover states (VisualState)       ✅ No hover — touch only
 ✅ Keyboard shortcuts (Ctrl+S etc.) ✅ Hardware back button support
 ✅ Resizable window layouts         ✅ Fixed portrait-first layouts
 ```
@@ -348,9 +447,20 @@ WINDOWS UI RULES                    ANDROID UI RULES
 
 ## 📚 Further Reading
 
+### WinUI 3 (Windows Host)
+- [WinUI 3 Overview](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/)
+- [NavigationView control](https://learn.microsoft.com/en-us/windows/apps/design/controls/navigationview)
+- [WinUI 3 Controls Gallery](https://learn.microsoft.com/en-us/windows/apps/design/controls/)
+- [x:Bind — Compiled Bindings (WinUI 3)](https://learn.microsoft.com/en-us/windows/uwp/data-binding/data-binding-in-depth)
+- [ThemeResource and ResourceDictionary](https://learn.microsoft.com/en-us/windows/apps/design/style/xaml-resource-dictionary)
+- [Frame.Navigate — WinUI 3 page navigation](https://learn.microsoft.com/en-us/windows/apps/design/basics/navigate-between-two-pages)
+
+### .NET MAUI (Android Host)
 - [MAUI Shell Navigation](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/)
 - [OnPlatform / OnIdiom](https://learn.microsoft.com/en-us/dotnet/maui/xaml/markup-extensions/consume#onidiom-markup-extension)
-- [MVVM Community Toolkit](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 - [MAUI Layouts Guide](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/layouts/)
 - [CollectionView](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/)
 - [SwipeView](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/swipeview)
+
+### Shared (Both Platforms)
+- [MVVM Community Toolkit](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)

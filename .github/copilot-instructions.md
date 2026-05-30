@@ -386,8 +386,29 @@ public sealed class Repository_WaitlistEntryLocal : IRepository_WaitlistEntryLoc
 
 ### XAML Binding Pattern
 
+#### Windows (WinUI 3) — `Page` with `x:Bind`
+
 ```xml
-<!-- ✅ CORRECT — compiled bindings with x:DataType -->
+<!-- ✅ CORRECT — WinUI 3 Page with typed ViewModel property and x:Bind -->
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      x:Class="Feature.Waitlist.Views.WaitlistEntry.View_Waitlist_Entry">
+
+    <ListView ItemsSource="{x:Bind ViewModel.Entries, Mode=OneWay}">
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="models:Model_WaitlistEntry">
+                <TextBlock Text="{x:Bind Name}" />
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+
+</Page>
+```
+
+#### Android (.NET MAUI) — `ContentPage` with `x:DataType`
+
+```xml
+<!-- ✅ CORRECT — MAUI ContentPage with compiled bindings (Android only) -->
 <ContentPage
     xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels"
     x:DataType="vm:ViewModel_Waitlist_Entry">
@@ -407,7 +428,7 @@ public sealed class Repository_WaitlistEntryLocal : IRepository_WaitlistEntryLoc
 <!-- ❌ FORBIDDEN — runtime reflection binding -->
 <Label Text="{Binding Name}" />
 
-<!-- ✅ CORRECT — compiled binding -->
+<!-- ✅ CORRECT — compiled binding (with explicit Mode) -->
 <Label Text="{Binding Name, Mode=OneWay}" />
 ```
 
@@ -443,11 +464,12 @@ internal static IServiceCollection AddSharedServices(this IServiceCollection ser
 
 ### Windows Layout Rules
 - Multi-column `Grid` layouts — use available screen space
-- Flyout navigation in `AppShell.xaml` with `FlyoutBehavior` locked on WinUI
-- Data-dense `CollectionView` with multiple columns
+- `NavigationView` sidebar in `MainWindow.xaml` — **not** `AppShell.xaml` (Windows does not use MAUI Shell)
+- Data-dense `ListView` or `ItemsRepeater` with multiple columns
 - `MenuFlyout` for right-click context menus
-- Side-by-side `Label` + input control forms
+- Side-by-side `TextBlock` + `TextBox` forms
 - Minimum button height: 36px
+- Navigate via `Frame.Navigate(typeof(Page))` / `Frame.GoBack()` — **never** `Shell.Current.GoToAsync()`
 
 ### Android Layout Rules
 - Single-column `StackLayout` — one task per screen
@@ -457,9 +479,10 @@ internal static IServiceCollection AddSharedServices(this IServiceCollection ser
 - Stacked `Label` above input control forms
 - Minimum tap target: **48px height always**
 
-### AppShell Navigation Pattern (verified)
+### Android Shell Navigation Pattern (verified — Android MAUI only)
 ```xml
-<Shell FlyoutBehavior="{OnPlatform WinUI=Locked, Android=Flyout}">
+<!-- AppShell.xaml — Android MAUI host only — Windows does NOT use Shell -->
+<Shell FlyoutBehavior="Flyout">
     <ShellContent
         Title="Dashboard"
         ContentTemplate="{DataTemplate dashboard:View_Dashboard_Main}"

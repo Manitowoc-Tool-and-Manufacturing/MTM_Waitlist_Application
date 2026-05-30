@@ -80,7 +80,7 @@ This document records the current startup behavior for the MTM Waitlist client a
 |---|---|---|
 | Stored token exists but is expired | App must show login instead of shell | Stored-session validation checks the expiry timestamp. |
 | Stored token exists but username/display name are missing | Kill-switch heartbeat cannot identify the user | Lifecycle service validates identity before starting heartbeat. |
-| Auto-login and stored-session checks complete at similar times | Shell may be swapped twice | Existing MAUI path uses an interlocked guard; WinUI lifecycle start is idempotent. |
+| Auto-login and stored-session checks complete at similar times | Shell may be swapped twice | Android MAUI path uses an interlocked guard; WinUI lifecycle start is idempotent. |
 | Authentication succeeds but lifecycle startup fails | User reaches dashboard but server does not see the client | Lifecycle services log failures and start kill-switch only after identity is available. |
 
 ### Kill switch and connected clients
@@ -100,7 +100,7 @@ This document records the current startup behavior for the MTM Waitlist client a
 | Edge case | Impact | Fix |
 |---|---|---|
 | Configuration resource missing | App fails before first screen | Startup docs identify embedded config as required. |
-| Local database is used before initialization | Sync or debug seeding can fail | Shared MAUI startup initializes `LocalDbContext` before early sync/seeding. |
+| Local database is used before initialization | Sync or debug seeding can fail | Android MAUI startup initializes `LocalDbContext` before early sync/seeding. |
 | Debug mock seeding masks server problems | Developers may confuse mock data with live data | Debug seeding remains background-only and logged. |
 | Android activity is relaunched while app is active | Duplicate lifecycle work could occur | Android uses single-top launch and lifecycle start is idempotent. |
 | WinUI window is activated before page graph is ready | Blank or partial startup UI | WinUI constructs login page before window activation completes. |

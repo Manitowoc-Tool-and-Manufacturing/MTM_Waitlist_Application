@@ -214,7 +214,7 @@ Core/Models/Dashboard/
 The **Kill** button in each expanded thread row calls `KILL <thread_id>` directly on MySQL. This is a MySQL-level kill (terminates the query/connection) — not the same as the app-level client kill switch in DATABASE-05. Both are needed:
 
 - **MySQL KILL** (this feature): terminates a hung query or orphaned connection at the database level. Used by IT to clean up stale connections.
-- **App-level kill switch** (DATABASE-05): sends a graceful-shutdown command to the MAUI client application. The app warns the user and closes cleanly.
+- **App-level kill switch** (DATABASE-05): sends a graceful-shutdown command to connected client apps (WinUI 3 on Windows, MAUI on Android). The app warns the user and closes cleanly.
 
 ### Critical Connection Protection
 

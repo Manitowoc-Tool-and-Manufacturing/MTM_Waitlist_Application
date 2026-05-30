@@ -142,13 +142,13 @@ Default behavior when `server-settings.json` does not exist yet:
 
 ## Backup & Restore
 
-Nightly backups are created using `mysqldump` and stored in a configurable folder (default `C:\MTM\WaitlistBackups\`). Backups older than 30 days are pruned automatically. Restoring requires a kill-switch countdown (minimum 60 seconds) to gracefully disconnect MAUI clients before the restore begins. See [DATABASE-04](Documents/DATABASE-04-Backup-and-Restore.md).
+Nightly backups are created using `mysqldump` and stored in a configurable folder (default `C:\MTM\WaitlistBackups\`). Backups older than 30 days are pruned automatically. Restoring requires a kill-switch countdown (minimum 60 seconds) to gracefully disconnect client apps before the restore begins. See [DATABASE-04](Documents/DATABASE-04-Backup-and-Restore.md).
 
 ---
 
 ## Client Kill Switch
 
-The Kill Switch module lets IT remotely shut down connected MAUI clients — individually (by machine or user) or globally. Clients poll `GET /api/admin/shutdown-signal` every 15 seconds. When a signal is active, clients receive a non-dismissable 15-second countdown overlay before closing. See [DATABASE-05](Documents/DATABASE-05-Client-Kill-Switch.md).
+The Kill Switch module lets IT remotely shut down connected client apps (WinUI 3 on Windows, MAUI on Android) — individually (by machine or user) or globally. Clients poll `GET /api/admin/shutdown-signal` every 15 seconds. When a signal is active, clients receive a non-dismissable 15-second countdown overlay before closing. See [DATABASE-05](Documents/DATABASE-05-Client-Kill-Switch.md).
 
 ---
 
@@ -179,7 +179,7 @@ Full specification documents are in `Documents/`:
 | [DATABASE-02](Documents/DATABASE-02-MySQL-Status-Dashboard.md) | Status dashboard, active connections, kill-connection safety |
 | [DATABASE-03](Documents/DATABASE-03-Settings-Management.md) | Settings management, DPAPI encryption |
 | [DATABASE-04](Documents/DATABASE-04-Backup-and-Restore.md) | Backup and restore with `mysqldump` |
-| [DATABASE-05](Documents/DATABASE-05-Client-Kill-Switch.md) | Remote MAUI client shutdown |
+| [DATABASE-05](Documents/DATABASE-05-Client-Kill-Switch.md) | Remote client (WinUI 3 + Android) shutdown |
 | [DATABASE-06](Documents/DATABASE-06-Intelligent-Migration-System.md) | Incremental migration runner |
 | [DATABASE-07](Documents/DATABASE-07-First-Run-Setup.md) | First-run wizard, degraded mode, window sizing |
 | [DATABASE-INDEX](Documents/DATABASE-INDEX.md) | Index, setup instructions, resolved decisions |

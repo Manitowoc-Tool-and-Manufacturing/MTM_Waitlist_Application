@@ -1,5 +1,7 @@
 # Android Startup Workflow and Edge Case Review
 
+> \u26a0\ufe0f **Android-only document.** This document describes the Android (.NET MAUI) host startup path exclusively. The Windows host uses a standalone WinUI 3 process with its own startup sequence (see `AppStartupLifecycle.md`).
+
 ## Purpose
 
 This document explains what happens when the Android version of the MTM Waitlist app starts, what alternate paths may happen during startup, and what edge cases could affect the user experience.

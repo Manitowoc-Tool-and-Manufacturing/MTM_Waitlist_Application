@@ -22,7 +22,7 @@ The Kill Switch module allows an IT admin to remotely shut down the MAUI Waitlis
 - **Misbehaving device** — disconnect a specific workstation that is stuck or causing errors.
 - **End of shift** — optional mass shutdown at shift end (not likely needed but requested).
 
-The mechanism is simple: the API exposes an in-memory "shutdown signal" endpoint. MAUI clients poll this endpoint every 15 seconds as part of their normal session keepalive. When a shutdown signal is present for their device or is global, the client displays a countdown overlay and then closes.
+The mechanism is simple: the API exposes an in-memory “shutdown signal” endpoint. Client apps (WinUI 3 on Windows, MAUI on Android) poll this endpoint every 15 seconds as part of their normal session keepalive. When a shutdown signal is present for their device or is global, the client displays a countdown overlay and then closes.
 
 ---
 
@@ -70,7 +70,7 @@ The in-memory store uses `ConcurrentDictionary` — no database persistence. The
 GET /api/admin/shutdown-signal
 ```
 
-**Authentication:** Same JWT as all other endpoints. The MAUI client calls this endpoint as part of its normal 15-second session poll.
+**Authentication:** Same JWT as all other endpoints. The client app calls this endpoint as part of its normal 15-second session poll.
 
 **Response when no signal applies:**
 ```json
@@ -185,7 +185,7 @@ Warning time: [5 minutes ▼]
 
 ## How "Connected Clients" Are Tracked
 
-The API uses the in-memory `IService_KillSwitch` service and the same `GET /api/admin/shutdown-signal` endpoint to infer connected clients. Every MAUI client that successfully calls this endpoint within the last 30 seconds is considered "connected."
+The API uses the in-memory `IService_KillSwitch` service and the same `GET /api/admin/shutdown-signal` endpoint to infer connected clients. Every client app that successfully calls this endpoint within the last 30 seconds is considered “connected.”
 
 The API logs each call's `MachineName` + `Username` (from JWT) + `DateTime.UtcNow` to a `ConcurrentDictionary<string, ClientHeartbeat>`. The admin Kill Switch module reads this dictionary:
 
@@ -199,12 +199,14 @@ A client is shown as "connected" if `DateTime.UtcNow - LastSeenUtc < 30 seconds`
 
 ---
 
-## Changes to MAUI App Required
+## Changes to Client App Required
 
 1. **Login request:** Add `MachineName = Environment.MachineName` to the login request payload. The API stores this in the JWT as a claim.
 2. **SyncService:** Add `GET /api/admin/shutdown-signal` to the 15-second polling loop.
 3. **New service:** `IService_ClientShutdown` with `BeginCountdownAsync(int seconds, string message)`. Registered in `AddSharedServices()`.
-4. **Shutdown overlay:** A non-dismissable `ContentPage` overlay pushed onto the navigation stack when countdown begins. No back-button escape.
+4. **Shutdown overlay:**
+   - **Windows (WinUI 3):** A non-dismissable `ContentDialog` (or a full-cover overlay `Grid` in `MainWindow`) displayed when countdown begins. No escape route.
+   - **Android (MAUI):** A non-dismissable `ContentPage` overlay pushed onto the MAUI navigation stack when countdown begins. No back-button escape.
 
 ---
 
@@ -216,7 +218,7 @@ A client is shown as "connected" if `DateTime.UtcNow - LastSeenUtc < 30 seconds`
 [Authorize]  // requires any valid JWT
 public class AdminController : ControllerBase
 {
-    // GET api/admin/shutdown-signal — called by MAUI clients every 15 sec
+    // GET api/admin/shutdown-signal — called by client apps every 15 sec
     [HttpGet("shutdown-signal")]
     public IActionResult GetShutdownSignal()
 

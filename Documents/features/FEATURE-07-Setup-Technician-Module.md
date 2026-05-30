@@ -163,7 +163,7 @@ Dunnage master data lives in the `mtm_receiving_application` MySQL database. The
 | `type_id` | INT FK → `dunnage_types.id` | |
 | `spec_values` | JSON NULL | Dynamic attributes (dimensions, capacity, material, etc.) |
 | `image_path` | VARCHAR(255) NULL | |
-| `quantity_type` | VARCHAR(100) | Label header used on printed dunnage labels |
+| `quantity_type` | VARCHAR(100) DEFAULT 'Quantity' | Label header used on printed dunnage labels |
 | `home_location` | VARCHAR(100) NULL | Default storage location |
 | `created_by` | VARCHAR(50) | |
 | `created_date` | DATETIME | |
@@ -174,9 +174,15 @@ Dunnage master data lives in the `mtm_receiving_application` MySQL database. The
 | Column | Type | Notes |
 |---|---|---|
 | `id` | INT AUTO_INCREMENT PK | |
-| `type_id` | INT FK → `dunnage_types.id` CASCADE DELETE | |
-| `spec_key` | VARCHAR(100) | Attribute name (length, width, material, etc.) |
+| `type_id` | INT NOT NULL FK → `dunnage_types.id` ON DELETE CASCADE | |
+| `spec_key` | VARCHAR(100) NOT NULL | Attribute name (length, width, material, etc.) |
 | `spec_value` | JSON NULL | Flexible value for the spec |
+| `created_by` | VARCHAR(50) NOT NULL | |
+| `created_date` | DATETIME NOT NULL | |
+| `modified_by` | VARCHAR(50) NULL | |
+| `modified_date` | DATETIME NULL | |
+
+**Unique constraint:** `UK_dunnage_specs_type_key (type_id, spec_key)`
 
 ### UI Type Filtering — `SetupTechDunnageTypeConfig`
 
@@ -231,9 +237,9 @@ CREATE TABLE WorkOrderDunnageAssignments (
     Id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
     WorkOrderId     VARCHAR(50)  NOT NULL,
     SequenceNo      INT          NOT NULL,
-    DunnagePartId   INT UNSIGNED NOT NULL,      -- references mtm_receiving_application.dunnage_parts.Id
+    DunnagePartId   INT NOT NULL,               -- references mtm_receiving_application.dunnage_parts.id (INT, not UNSIGNED)
     DunnagePartName VARCHAR(200) NOT NULL,      -- denormalized for offline display
-    DunnageTypeId   INT UNSIGNED NOT NULL,
+    DunnageTypeId   INT NOT NULL,               -- references mtm_receiving_application.dunnage_types.id (INT, not UNSIGNED)
     DunnageTypeName VARCHAR(100) NOT NULL,      -- denormalized
     LastModifiedByUserId INT UNSIGNED NOT NULL,
     CreatedAt       DATETIME     NOT NULL DEFAULT UTC_TIMESTAMP(),
@@ -250,7 +256,7 @@ CREATE TABLE WorkOrderDunnageAssignments (
 --   Returnable Totes, Returnable Baskets); all others disabled by default.
 CREATE TABLE SetupTechDunnageTypeConfig (
     Id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    DunnageTypeId   INT UNSIGNED NOT NULL,          -- mirrors mtm_receiving_application.dunnage_types.id
+    DunnageTypeId   INT NOT NULL,                   -- mirrors mtm_receiving_application.dunnage_types.id (INT, not UNSIGNED)
     DunnageTypeName VARCHAR(100) NOT NULL,          -- denormalized; refreshed via API sync
     IsEnabled       TINYINT(1)   NOT NULL DEFAULT 1,  -- 1 = shown in UI, 0 = hidden
     DisplayOrder    INT UNSIGNED NOT NULL DEFAULT 99, -- sort order of category tabs in Step 4
@@ -468,15 +474,21 @@ Key commands:
 This feature's entry point must verify the user's role before rendering. If the authenticated user is not `SetupTech`, `Admin`, or `Developer`, navigate back and show an access-denied message.
 
 ```csharp
-// In ViewModel_Waitlist_SetupTech constructor or OnAppearingAsync
+// In ViewModel_Waitlist_SetupTech constructor or OnNavigatedToAsync
+// Windows (WinUI 3): raise an event or use a navigation service — not Shell.Current
 if (!_authService.CurrentUser.HasRole(Enum_UserRole.SetupTech) &&
     !_authService.CurrentUser.HasRole(Enum_UserRole.Admin) &&
     !_authService.CurrentUser.HasRole(Enum_UserRole.Developer))
 {
-    await Shell.Current.GoToAsync("..");
+    // WinUI 3 — navigate back via the MainWindow ShellFrame
+    // Option A: inject INavigationService and call NavigateBack()
+    // Option B: raise a NavigateBackRequested event the Page subscribes to
+    _navigationService.GoBack();
     return;
 }
 ```
+
+> \u26a0\ufe0f `Shell.Current.GoToAsync("..")` is **Android (MAUI) only**. On Windows (WinUI 3), navigation is handled by `Frame.GoBack()` called from the Page, or via an injected `INavigationService`. The ViewModel raises a navigation event; the Page handles it.
 
 ---
 
