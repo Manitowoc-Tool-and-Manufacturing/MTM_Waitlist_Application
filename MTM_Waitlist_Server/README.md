@@ -1,11 +1,13 @@
 # MTM Waitlist Server Admin
 
-The **MTM Waitlist Server Admin** is a WinUI 3 desktop application that runs on the server machine (`172.16.1.104`). It serves two purposes:
+The **MTM Waitlist Server Admin** is a WinUI 3 desktop application that normally runs on the server machine (`172.16.1.104`). During local development it can also be launched on a developer workstation for debugging against a user-configured database host.
 
 1. **Hosts the REST API** — an ASP.NET Core / Kestrel listener (`:5000`) that the MAUI Waitlist Application clients connect to over the LAN.
 2. **Provides an admin dashboard** — live MySQL status, active connections, backup/restore, migration management, and a client kill switch.
 
 The MAUI application **cannot function** unless this admin app is running on the server.
+
+During debug sessions, the in-process API defaults to `http://localhost:5000` and the first-run database host default is also `localhost`, so a developer can run the full stack on one machine without editing settings first. Persisted values in `server-settings.json` still win. When no settings file exists in a non-debug deployment, the database host default remains `172.16.1.104`.
 
 ---
 
@@ -127,6 +129,14 @@ Runtime settings (connection strings, API port, backup path) are stored at:
 ```
 
 This path survives application updates. Sensitive values (MySQL passwords, JWT secret) are DPAPI-encrypted at rest. See [DATABASE-03](Documents/DATABASE-03-Settings-Management.md) for the full settings schema.
+
+Default behavior when `server-settings.json` does not exist yet:
+
+- Debug builds default the database host to `localhost`
+- Non-debug builds default the database host to `172.16.1.104`
+- Database port defaults to `3306`
+- Debug builds bind the API to `http://localhost:5000`
+- Non-debug builds keep the broader default listen address
 
 ---
 

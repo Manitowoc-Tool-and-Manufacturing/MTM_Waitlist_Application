@@ -1,0 +1,238 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="App8.MainWindow" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" d:DesignWidth="1360" d:DesignHeight="768" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" CharacterSpacing="6">
+    <Window.Background>
+        <SolidColorBrush Color="{DynamicResource Theme_BackgroundColor}" />
+    </Window.Background>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ── Page title ──────────────────────────────────────────── -->
+        <TextBlock
+            Grid.Row="0"
+            Margin="0,0,0,14"
+            FontSize="20"
+            FontWeight="Bold"
+            Text="Setup Technician — New Job Setup" />
+
+        <!-- ── Step indicator ──────────────────────────────────────── -->
+        <Border
+            Grid.Row="1"
+            Margin="0,0,0,14"
+            Padding="16,12"
+            Background="White"
+            BorderBrush="#E0E0E0"
+            BorderThickness="1"
+            CornerRadius="8">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+
+                <!-- Step 1 — Completed -->
+                <Border Width="30" Height="30" Background="#388E3C" CornerRadius="15">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="White" Text="✔" />
+                </Border>
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="#388E3C" Text="Workstation" />
+                <Rectangle Width="36" Height="2" Margin="8,0" VerticalAlignment="Center" Fill="#388E3C" />
+
+                <!-- Step 2 — Completed -->
+                <Border Width="30" Height="30" Background="#388E3C" CornerRadius="15">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="White" Text="✔" />
+                </Border>
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="#388E3C" Text="Work Order" />
+                <Rectangle Width="36" Height="2" Margin="8,0" VerticalAlignment="Center" Fill="#388E3C" />
+
+                <!-- Step 3 — Completed -->
+                <Border Width="30" Height="30" Background="#388E3C" CornerRadius="15">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="White" Text="✔" />
+                </Border>
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="#388E3C" Text="Validate" />
+                <Rectangle Width="36" Height="2" Margin="8,0" VerticalAlignment="Center" Fill="#388E3C" />
+
+                <!-- Step 4 — Active -->
+                <Border Width="30" Height="30" Background="#1565C0" CornerRadius="15">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="White" Text="4" />
+                </Border>
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12" FontWeight="Bold" Foreground="#1565C0" Text="Dunnage" />
+
+            </StackPanel>
+        </Border>
+
+        <!-- ── Body: two panels ──────────────────────────────────── -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: current dunnage assignment -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Margin="0,0,0,6" FontSize="14" FontWeight="Bold" Text="Current Assignment" />
+                <TextBlock Grid.Row="1" Margin="0,0,0,10" FontSize="11" Foreground="#555555" Text="WO-123456 / Seq 20  ·  Cached from previous run" />
+
+                <Border Grid.Row="2" Padding="16" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" VerticalAlignment="Stretch">
+                    <StackPanel>
+
+                        <!-- Assigned item 1 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="40" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="Bold" Text="Skid Pallet — Wood" />
+                                <TextBlock FontSize="11" Foreground="#555555" Text="Category: Skids" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Height="32" Width="32" Background="#FFEBEE" Content="✕" FontSize="11" Foreground="#C62828" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <Rectangle Height="1" Fill="#F0F0F0" Margin="0,0,0,10" />
+
+                        <!-- Assigned item 2 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="40" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="Bold" Text="Gaylord Box — Standard" />
+                                <TextBlock FontSize="11" Foreground="#555555" Text="Category: Containers" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Height="32" Width="32" Background="#FFEBEE" Content="✕" FontSize="11" Foreground="#C62828" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <Rectangle Height="1" Fill="#F0F0F0" Margin="0,0,0,10" />
+
+                        <!-- Assigned item 3 -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="40" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="Bold" Text="Cardboard Slip Sheet" />
+                                <TextBlock FontSize="11" Foreground="#555555" Text="Category: Flat Stock" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Height="32" Width="32" Background="#FFEBEE" Content="✕" FontSize="11" Foreground="#C62828" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+            <!-- Right: catalog picker -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Margin="0,0,0,10" FontSize="14" FontWeight="Bold" Text="Add Dunnage" />
+
+                <!-- Category tabs -->
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- Active tab -->
+                    <Border Grid.Column="0" Height="36" Background="#1565C0" BorderBrush="#1565C0" BorderThickness="1" CornerRadius="6">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="Bold" Foreground="White" Text="Containers" />
+                    </Border>
+                    <Border Grid.Column="2" Height="36" Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#555555" Text="Skids" />
+                    </Border>
+                    <Border Grid.Column="4" Height="36" Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#555555" Text="Coils" />
+                    </Border>
+                    <Border Grid.Column="6" Height="36" Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#555555" Text="Flat Stock" />
+                    </Border>
+                </Grid>
+
+                <!-- Instruction text -->
+                <TextBlock Grid.Row="3" Margin="0,10,0,10" VerticalAlignment="Center"  FontSize="12" Foreground="#555555" Text="Select an item from the list below, then click Add." TextWrapping="Wrap" />
+
+                <!-- Catalog items -->
+                <Border Grid.Row="2" Padding="12" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" VerticalAlignment="Stretch">
+                    <StackPanel>
+
+
+                        <Border Margin="0,0,0,6" Padding="10,8" Background="#E3F2FD" BorderBrush="#1565C0" BorderThickness="2" CornerRadius="6">
+                            <TextBlock FontSize="13" FontWeight="Bold" Text="Gaylord Box — Standard" />
+                        </Border>
+                        <Border Margin="0,0,0,6" Padding="10,8" Background="White" BorderBrush="#E8E8E8" BorderThickness="1" CornerRadius="6">
+                            <TextBlock FontSize="13" Text="Gaylord Box — Half Height" />
+                        </Border>
+                        <Border Margin="0,0,0,6" Padding="10,8" Background="White" BorderBrush="#E8E8E8" BorderThickness="1" CornerRadius="6">
+                            <TextBlock FontSize="13" Text="Parts Tote — Large" />
+                        </Border>
+                        <Border Margin="0,0,0,6" Padding="10,8" Background="White" BorderBrush="#E8E8E8" BorderThickness="1" CornerRadius="6">
+                            <TextBlock FontSize="13" Text="Parts Tote — Small" />
+                        </Border>
+                        <Border Margin="0,0,0,6" Padding="10,8" Background="White" BorderBrush="#E8E8E8" BorderThickness="1" CornerRadius="6">
+                            <TextBlock FontSize="13" Text="Corrugate Box — 18×12×10" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Add item button — below catalog list -->
+                <Button
+                    Grid.Row="4"
+                    Margin="0,0,0,0"
+                    Height="40"
+                    Background="#1565C0"
+                    Content="+ Add Item"
+                    FontSize="13"
+                    Foreground="White" />
+
+            </Grid>
+
+        </Grid>
+
+        <!-- ── Footer: save ──────────────────────────────────────── -->
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="0"
+                Width="160"
+                Height="44"
+                Background="#EEEEEE"
+                Content="← Back to Validate"
+                FontSize="13"
+                Foreground="#333333" />
+            <Button
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                Height="44"
+                Background="#388E3C"
+                Content="✔  Save &amp; Complete Setup"
+                FontSize="15"
+                FontWeight="Bold"
+                Foreground="White" />
+        </Grid>
+
+    </Grid>
+
+</Window>

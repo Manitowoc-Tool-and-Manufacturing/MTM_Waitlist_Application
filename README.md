@@ -173,27 +173,53 @@ These files are embedded resources so MAUI can load them consistently across Win
 
 ## Build and Run
 
-### Build the solution
+The repository now supports the same solution-first workflow in both Visual Studio 2026 and VS Code.
+
+### Shared prerequisites
+
+- .NET 10 SDK available on the machine and resolved through `global.json`
+- .NET MAUI workload installed for command-line and VS Code builds
+- Android SDK/emulator installed if you want to run the Android host
+- In VS Code, install the recommended extensions from `.vscode/extensions.json`
+
+The repo keeps `MTM_Waitlist_Application.slnx` as the single solution source of truth. The .NET 10 CLI supports `.slnx`, so Visual Studio 2026 and VS Code can build the same solution file.
+
+### Build the solution from the CLI
 
 ```powershell
+dotnet restore MTM_Waitlist_Application.slnx
 dotnet build MTM_Waitlist_Application.slnx
+dotnet test MTM_Waitlist_Application.slnx --no-build
 ```
 
-### Run on Windows
+### Visual Studio 2026
 
-Open the solution in Visual Studio 2026 and:
+Open `MTM_Waitlist_Application.slnx`, then:
 
 - set startup project to `MTM_Waitlist_Application.WinUI`
 - choose `Windows Machine`
 - press `F5`
 
+### Visual Studio Code
+
+Open the repository root in VS Code. Install `C# Dev Kit` and `.NET MAUI` when prompted. The repo includes `.vscode/tasks.json`, so `Terminal > Run Task` can restore, build, test, or build a specific host project without needing Visual Studio.
+
+The repo also includes checked-in launch profiles in `.vscode/launch.json` for the WinUI and Android host projects. In VS Code, choose `C#: MTM Waitlist WinUI` or `C#: MTM Waitlist Android`, then press `F5`.
+
 ### Run on Android
 
-Open the solution in Visual Studio 2026 and:
+Use either editor after the MAUI workload and Android SDK are installed:
 
 - set startup project to `MTM_Waitlist_Application.Droid`
 - choose an Android emulator
 - press `F5`
+
+### Verify or install MAUI workloads
+
+```powershell
+dotnet workload list
+dotnet workload install maui
+```
 
 ---
 
@@ -254,7 +280,7 @@ If present in the repository, the following `.github` files also support future 
 - [`.github/copilot-agents.json`](./.github/copilot-agents.json)  
   Copilot agent registry for specialized development tasks.
 
-- [`.github/instructions/maui-architecture.instructions.md`](./.github/instructions/maui-architecture.instructions.md)  
+- [`.github/instructions/winui3-architecture.instructions.md`](./.github/instructions/winui3-architecture.instructions.md)  
   Focused MAUI architecture rules and layer responsibilities.
 
 - [`.github/instructions/testing.instructions.md`](./.github/instructions/testing.instructions.md)  

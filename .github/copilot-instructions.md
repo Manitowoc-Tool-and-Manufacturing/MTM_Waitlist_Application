@@ -619,7 +619,7 @@ See `testing.instructions.md` for the full path mapping table and category defin
 - Agent definitions: `AGENTS.md`
 - Assumption files: `.github/assumptions/`
 - Instruction files: `.github/instructions/`
-  - `maui-architecture.instructions.md` — layer rules, naming, DI lifetimes
+  - `winui3-architecture.instructions.md` — layer rules, naming, DI lifetimes
   - `platform-xaml.instructions.md` — exact .csproj MSBuild pattern for XAML splitting
   - `codebase-state.instructions.md` — what is actually built vs. stubbed
   - `database.instructions.md` — MySQL naming conventions, folder structure, procedure/trigger patterns

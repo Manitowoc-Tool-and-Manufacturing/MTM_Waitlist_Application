@@ -16,7 +16,11 @@ public class ServerSettings_Tests
     public void DatabaseSettings_Defaults_AreCorrect()
     {
         var s = new DatabaseSettings();
+#if DEBUG
         s.Host.Should().Be("localhost");
+#else
+        s.Host.Should().Be("172.16.1.104");
+#endif
         s.Port.Should().Be(3306);
         s.DatabaseName.Should().Be("mtm_waitlist");
         s.AppUsername.Should().Be("waitlist_admin_dbappuser");
@@ -29,7 +33,11 @@ public class ServerSettings_Tests
     public void ApiSettings_Defaults_AreCorrect()
     {
         var s = new ApiSettings();
+#if DEBUG
+        s.ListenAddress.Should().Be("http://localhost:5000");
+#else
         s.ListenAddress.Should().Be("http://0.0.0.0:5000");
+#endif
         s.JwtExpiryMinutes.Should().Be(60);
         s.RefreshTokenExpiryDays.Should().Be(30);
     }
@@ -93,7 +101,7 @@ public class ServerSettings_Tests
 
         var original = new ServerSettings
         {
-            Api = new ApiSettings { ListenAddress = "http://0.0.0.0:5000", JwtExpiryMinutes = 90 },
+            Api = new ApiSettings { ListenAddress = "http://localhost:5000", JwtExpiryMinutes = 90 },
             Admin = new AdminSettings { RequiredWindowsGroup = @"BUILTIN\Users" },
             Database = new DatabaseSettings { Host = "192.168.1.10", Port = 3306 }
         };
@@ -101,7 +109,7 @@ public class ServerSettings_Tests
         var json = JsonSerializer.Serialize(original, options);
         var restored = JsonSerializer.Deserialize<ServerSettings>(json, options)!;
 
-        restored.Api.ListenAddress.Should().Be("http://0.0.0.0:5000");
+        restored.Api.ListenAddress.Should().Be("http://localhost:5000");
         restored.Api.JwtExpiryMinutes.Should().Be(90);
         restored.Admin.RequiredWindowsGroup.Should().Be(@"BUILTIN\Users");
         restored.Database.Host.Should().Be("192.168.1.10");

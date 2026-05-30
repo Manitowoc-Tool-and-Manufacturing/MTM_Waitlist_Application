@@ -1,6 +1,6 @@
 # MTM Waitlist Application — Feature Index
 
-**Last Updated:** May 10, 2026  
+**Last Updated:** May 30, 2026  
 **Branch:** master  
 
 ---
@@ -29,7 +29,7 @@ FEATURE-03  Operator Request Wizard            ← Core MVP screen (operator-fac
 FEATURE-04  Live Waitlist Queue View           ← Core MVP screen (all roles)
     ↓
 FEATURE-05  Material Handler / Zone Mgmt       ← Handler claiming + zone routing
-FEATURE-07  Setup Tech Module                  ← Press-to-WO assignment (parallel with 05)
+FEATURE-07  Setup Tech Module                  ← WO/Seq scan → Visual lookup → dunnage assignment → active job save (parallel with 05)
     ↓
 FEATURE-06  Lead Analytics & Dashboard         ← Analytics (replaces placeholder)
 FEATURE-08  Quality Control Queue              ← Quality-filtered view (parallel with 06)
@@ -47,7 +47,7 @@ FEATURE-08  Quality Control Queue              ← Quality-filtered view (parall
 | [04](FEATURE-04-Live-Queue-View.md) | Live Waitlist Queue View | High | Ready to Design | 01, 03 |
 | [05](FEATURE-05-Material-Handler-Zone-Task-Management.md) | Material Handler Zone & Task Mgmt | Medium-High | Design Required | 01, 04 |
 | [06](FEATURE-06-Lead-Analytics-Dashboard.md) | Lead Analytics & Dashboard | Medium | Design Required | 01–05 |
-| [07](FEATURE-07-Setup-Technician-Module.md) | Setup Technician Module | Medium | Design Required | 01, 02, 04 |
+| [07](FEATURE-07-Setup-Technician-Module.md) | Setup Technician Module | Medium | Ready to Design | 01, 02, 04 |
 | [08](FEATURE-08-Quality-Control-Queue.md) | Quality Control Queue | Medium | Stakeholder Input Needed | 01, 04 |
 
 ---

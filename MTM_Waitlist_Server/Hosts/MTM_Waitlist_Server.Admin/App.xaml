@@ -12,8 +12,11 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolNegationConverter x:Key="BoolNegationConverter" />
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
             <conv:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <conv:StepStateToGlyphConverter x:Key="StepStateToGlyphConverter" />
+            <conv:StepStateToColorConverter x:Key="StepStateToColorConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

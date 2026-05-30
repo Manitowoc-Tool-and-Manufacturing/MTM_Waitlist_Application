@@ -13,13 +13,18 @@ internal sealed class Service_WindowSizer : IService_WindowSizer
 {
     // Measured from the rendered Step 1 panel — tall enough to show all fields
     // plus the button row without requiring the user to scroll immediately.
-    private const int FirstRunWidth  = 700;
+    private const int FirstRunWidth = 700;
     private const int FirstRunHeight = 900;
 
     // Comfortable default for the normal admin shell — wide enough to show
     // the dashboard tables without horizontal scrolling.
-    private const int NormalWidth  = 1200;
+    private const int NormalWidth = 1200;
     private const int NormalHeight = 750;
+
+    // Compact size for the startup splash screen — just enough to show the
+    // step list and status message without wasting screen space.
+    private const int SplashWidth = 480;
+    private const int SplashHeight = 380;
 
     private readonly AppWindow _appWindow;
 
@@ -29,9 +34,9 @@ internal sealed class Service_WindowSizer : IService_WindowSizer
     /// </summary>
     public Service_WindowSizer(Window window)
     {
-        var hWnd     = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-        _appWindow   = AppWindow.GetFromWindowId(windowId);
+        _appWindow = AppWindow.GetFromWindowId(windowId);
     }
 
     /// <inheritdoc/>
@@ -49,14 +54,21 @@ internal sealed class Service_WindowSizer : IService_WindowSizer
     }
 
     /// <inheritdoc/>
+    public void ApplySplashSize()
+    {
+        _appWindow.Resize(new SizeInt32(SplashWidth, SplashHeight));
+        CenterOnMonitor();
+    }
+
+    /// <inheritdoc/>
     public void CenterOnMonitor()
     {
         // Retrieve the work area (excludes taskbar) of the monitor the window is on.
         var displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Nearest);
-        var workArea    = displayArea.WorkArea;
-        var size        = _appWindow.Size;
+        var workArea = displayArea.WorkArea;
+        var size = _appWindow.Size;
 
-        var x = workArea.X + (workArea.Width  - size.Width)  / 2;
+        var x = workArea.X + (workArea.Width - size.Width) / 2;
         var y = workArea.Y + (workArea.Height - size.Height) / 2;
 
         _appWindow.Move(new PointInt32(x, y));

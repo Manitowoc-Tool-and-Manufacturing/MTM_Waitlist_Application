@@ -1,0 +1,8 @@
+{
+  "sdk": {
+    "version": "10.0.100",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false,
+    "errorMessage": "Install the .NET 10 SDK and the .NET MAUI workload before building this repository. Run 'dotnet workload install maui' if the MAUI workload is missing."
+  }
+}

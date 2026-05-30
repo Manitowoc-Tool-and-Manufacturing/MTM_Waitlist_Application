@@ -9,7 +9,7 @@
   <Folder Name="/.github/instructions/">
     <File Path=".github/instructions/codebase-state.instructions.md" />
     <File Path=".github/instructions/database.instructions.md" />
-    <File Path=".github/instructions/maui-architecture.instructions.md" />
+    <File Path=".github/instructions/winui3-architecture.instructions.md" />
     <File Path=".github/instructions/platform-xaml.instructions.md" />
     <File Path=".github/instructions/testing.instructions.md" />
   </Folder>
@@ -42,26 +42,15 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="AGENTS.md" />
-    <File Path="Build Log.txt" />
-    <File Path="Chat.md" />
-    <File Path="Errors.txt" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Solution Items/Documents/">
     <File Path="Documents/AndroidStartupWorkflowEdgeCases.md" />
   </Folder>
   <Folder Name="/Solution Items/Documents/ApplicationSetup/">
-    <File Path="Documents/ApplicationSetup/MAUI-SETUP.md" />
     <File Path="Documents/ApplicationSetup/UI-DESIGN-DIFFERENCES.md" />
   </Folder>
   <Folder Name="/Solution Items/Documents/features/">
-    <File Path="Documents/features/DATABASE-INDEX.md" />
-    <File Path="Documents/features/DATABASE-01-API-Server-Admin-Architecture.md" />
-    <File Path="Documents/features/DATABASE-02-MySQL-Status-Dashboard.md" />
-    <File Path="Documents/features/DATABASE-03-Settings-Management.md" />
-    <File Path="Documents/features/DATABASE-04-Backup-and-Restore.md" />
-    <File Path="Documents/features/DATABASE-05-Client-Kill-Switch.md" />
-    <File Path="Documents/features/DATABASE-06-Intelligent-Migration-System.md" />
     <File Path="Documents/features/FEATURE-INDEX.md" />
     <File Path="Documents/features/FEATURE-01-Authentication-Login.md" />
     <File Path="Documents/features/FEATURE-02-InforVisual-ERP-Integration.md" />
@@ -69,7 +58,6 @@
     <File Path="Documents/features/FEATURE-04-Live-Queue-View.md" />
     <File Path="Documents/features/FEATURE-05-Material-Handler-Zone-Task-Management.md" />
     <File Path="Documents/features/FEATURE-06-Lead-Analytics-Dashboard.md" />
-    <File Path="Documents/features/FEATURE-07-Setup-Technician-Module.md" />
     <File Path="Documents/features/FEATURE-08-Quality-Control-Queue.md" />
   </Folder>
   <Folder Name="/Solution Items/Documents/RemoteDatabaseAccess/">
@@ -80,8 +68,6 @@
   <Folder Name="/Database/">
     <File Path="Database/README.md" />
     <File Path="Database/migrations/V001__Initial_Schema.sql" />
-    <File Path="ServerLogs.md" />
-    <File Path="WaitlistLogs.md" />
   </Folder>
   <Folder Name="/Database/schema/">
     <File Path="Database/schema/00_Database.sql" />

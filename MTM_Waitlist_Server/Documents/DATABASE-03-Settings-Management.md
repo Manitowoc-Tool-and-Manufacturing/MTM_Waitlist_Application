@@ -33,7 +33,7 @@ The file is read at app startup, validated, and stored in a singleton `ServerSet
 
 | Setting | Default | Description |
 |---|---|---|
-| `Database:Host` | `localhost` | MySQL server hostname or IP |
+| `Database:Host` | `localhost` in Debug, `172.16.1.104` otherwise | MySQL server hostname or IP |
 | `Database:Port` | `3306` | MySQL port |
 | `Database:DatabaseName` | `mtm_waitlist` | Target database name (must be lowercase) |
 | `Database:AppUsername` | `waitlist_admin_dbappuser` | MySQL user for the REST API (SELECT/EXECUTE only) |
@@ -278,7 +278,11 @@ public class ServerSettings
 // Core/Models/Settings/DatabaseSettings.cs
 public class DatabaseSettings
 {
+#if DEBUG
     public string Host { get; set; } = "localhost";
+#else
+    public string Host { get; set; } = "172.16.1.104";
+#endif
     public int Port { get; set; } = 3306;
     public string DatabaseName { get; set; } = "mtm_waitlist";
     public string AppUsername { get; set; } = "waitlist_admin_dbappuser";

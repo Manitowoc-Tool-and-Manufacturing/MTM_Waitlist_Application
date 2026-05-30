@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C#: MTM Waitlist WinUI",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/MTM_Waitlist_Application/MTM_Waitlist_Application.WinUI/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64/MTM_Waitlist_Application.WinUI.exe",
+      "cwd": "${workspaceFolder}/MTM_Waitlist_Application/MTM_Waitlist_Application.WinUI/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64",
+      "preLaunchTask": "dotnet: build WinUI host"
+    },
+    {
+      "name": "C#: MTM Waitlist Server Admin",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64/AppX/MTM_Waitlist_Server.Admin.exe",
+      "cwd": "${workspaceFolder}/MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64/AppX",
+      "preLaunchTask": "dotnet: build server admin host"
+    },
+    {
+      "name": "C#: MTM Waitlist Android",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/MTM_Waitlist_Application/MTM_Waitlist_Application.Droid/MTM_Waitlist_Application.Droid.csproj",
+      "preLaunchTask": "dotnet: build Android host"
+    }
+  ]
+}

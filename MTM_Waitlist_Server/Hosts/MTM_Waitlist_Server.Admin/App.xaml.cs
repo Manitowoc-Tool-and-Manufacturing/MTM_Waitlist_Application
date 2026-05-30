@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using MTM_Waitlist_Server.Admin.Logging;
 using MTM_Waitlist_Server.Admin.Services;
 using MTM_Waitlist_Server.Admin.ViewModels;
 using MTM_Waitlist_Server.Admin.Views;
+using MTM_Waitlist_Server.Core.Interfaces.Splash;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MTM_Waitlist_Server.Api.Services;
 using MTM_Waitlist_Server.Core.Interfaces.Api;
 using MTM_Waitlist_Server.Core.Interfaces.Auth;
@@ -38,7 +40,7 @@ namespace MTM_Waitlist_Server.Admin;
 /// </summary>
 public partial class App : Application
 {
-    private MainWindow? _window;
+    private Window? _window;
 
     /// <summary>Shared DI provider — accessible by module ViewModels and API controllers.</summary>
     internal static IServiceProvider? Services { get; private set; }
@@ -73,14 +75,33 @@ public partial class App : Application
 
         StartupLogger.Info("DI container built successfully.");
 
-        // ── Probe ────────────────────────────────────────────────────────────
+        // Capture UI dispatcher now (must be called on the UI thread before going async).
+        var dq = DispatcherQueue.GetForCurrentThread();
+
+        // Activate the splash window — gives the user immediate visual feedback.
+        var splash = provider.GetRequiredService<SplashWindow>();
+        _window = splash;
+        splash.ViewModel.SetDispatcherQueue(dq);
+        splash.MainWindowCreated += w => _window = w;
+        splash.Activate();
+        StartupLogger.Info("SplashWindow activated. Handing off to startup coordinator.");
+
+        // Fire-and-forget: coordinator runs on a background thread and raises
+        // OutcomeReady on the UI thread when done; SplashWindow handles the transition.
+        _ = splash.ViewModel.StartAsync();
+        return;
+
+        // ── Legacy synchronous startup path kept below for reference ─────────
+        // This block is unreachable after the return above. It will be removed
+        // once the splash feature is verified stable in production.
+#pragma warning disable CS0162 // Unreachable code
         // Run before any decision. The probe uses whatever credentials are in the
         // settings store; if the file does not exist the store returns defaults
         // (empty password) and the probe will return MySqlUnreachable.
         StartupLogger.Section("Settings Load");
         var firstRunService = provider.GetRequiredService<IService_FirstRun>();
-        var settingsStore   = provider.GetRequiredService<IService_SettingsStore>();
-        var settings        = settingsStore.Get();
+        var settingsStore = provider.GetRequiredService<IService_SettingsStore>();
+        var settings = settingsStore.Get();
 
         StartupLogger.Info($"Settings loaded. FirstRunComplete={settings.FirstRunComplete}, " +
             $"Host={settings.Database.Host}, Port={settings.Database.Port}, " +
@@ -127,6 +148,7 @@ public partial class App : Application
         // NEVER_CONFIGURED + MySqlUnreachable              → wizard (step 1: enter credentials)
         // NEVER_CONFIGURED + SchemaMissing                 → wizard (step 2: run schema)
         // NEVER_CONFIGURED + NoAdminUser                   → wizard (step 3: create admin)
+        // NEVER_CONFIGURED + Ready                         → Windows auth gate (DB accessible despite empty password)
         //
         // WAS_CONFIGURED   + MySqlUnreachable              → degraded (DB is down / wrong host)
         // WAS_CONFIGURED   + SchemaMissing                 → degraded (schema was dropped)
@@ -148,12 +170,23 @@ public partial class App : Application
 
         if (neverConfigured)
         {
-            // Nothing has been set up at all — go straight to the wizard.
-            StartupLogger.Info("BRANCH: NeverConfigured=true → opening First-Run Wizard at step determined by probe status.");
-            _window = new MainWindow(firstRunStatus: probeResult.Status, probeResult: probeResult);
-            _window.Activate();
-            StartupLogger.Info($"MainWindow activated in FirstRun-Wizard mode (probe status: {probeResult.Status}).");
-            return;
+            if (probeResult.Status == FirstRunStatus.Ready)
+            {
+                // Empty password but the DB responds successfully (e.g. MySQL allows anonymous
+                // connections or credentials were wiped from settings).  The database is fully
+                // operational, so bypass the wizard and proceed to the Windows auth gate.
+                // Treat this as an adopted / already-configured database.
+                StartupLogger.Info("BRANCH: NeverConfigured=true but probe=Ready → DB accessible despite empty password. Bypassing wizard; proceeding to Windows auth.");
+            }
+            else
+            {
+                // Nothing has been set up at all — go straight to the wizard.
+                StartupLogger.Info("BRANCH: NeverConfigured=true → opening First-Run Wizard at step determined by probe status.");
+                _window = new MainWindow(firstRunStatus: probeResult.Status, probeResult: probeResult);
+                _window.Activate();
+                StartupLogger.Info($"MainWindow activated in FirstRun-Wizard mode (probe status: {probeResult.Status}).");
+                return;
+            }
         }
 
         if (probeResult.Status == FirstRunStatus.MySqlUnreachable)
@@ -226,15 +259,25 @@ public partial class App : Application
         if (!settings.FirstRunComplete)
         {
             StartupLogger.Warn("FirstRunComplete=false but probe is Ready (adopted existing DB or inconsistent state). Self-healing: marking FirstRunComplete=true.");
-            Task.Run(() => firstRunService.MarkCompleteAsync()).GetAwaiter().GetResult();
-            StartupLogger.Info("FirstRunComplete self-heal write succeeded.");
+            try
+            {
+                Task.Run(() => firstRunService.MarkCompleteAsync()).GetAwaiter().GetResult();
+                StartupLogger.Info("FirstRunComplete self-heal write succeeded.");
+            }
+            catch (Exception ex)
+            {
+                // Non-fatal: settings file may be read-only or %ProgramData% inaccessible.
+                // Log and continue — the app is fully functional; state will self-heal on
+                // the next launch once the file becomes writable.
+                StartupLogger.Warn($"FirstRunComplete self-heal write failed (non-fatal): {ex.Message}. Continuing to normal launch.");
+            }
         }
 
-        var adminAuth     = provider.GetRequiredService<IService_AdminAuth>();
-        var windowsUser   = Service_AdminAuth.GetCurrentWindowsUsername();
+        var adminAuth = provider.GetRequiredService<IService_AdminAuth>();
+        var windowsUser = Service_AdminAuth.GetCurrentWindowsUsername();
         StartupLogger.Info($"Current Windows user: '{windowsUser}'. Checking authorisation against database role table.");
 
-        var isAuthorised  = Task.Run(() => adminAuth.IsAuthorisedAsync(windowsUser)).GetAwaiter().GetResult();
+        var isAuthorised = Task.Run(() => adminAuth.IsAuthorisedAsync(windowsUser)).GetAwaiter().GetResult();
         StartupLogger.Info($"Windows authorisation result for '{windowsUser}': isAuthorised={isAuthorised}");
 
         if (!isAuthorised)
@@ -253,7 +296,7 @@ public partial class App : Application
         apiHost = (Service_ApiHost)provider.GetRequiredService<IService_ApiHost>();
         try
         {
-            apiHost.Start();
+            Task.Run(() => apiHost.EnsureRunningAsync()).GetAwaiter().GetResult();
             StartupLogger.Info("Kestrel API host started successfully.");
         }
         catch (Exception ex)
@@ -272,6 +315,7 @@ public partial class App : Application
         _window = new MainWindow();
         _window.Activate();
         StartupLogger.Info("MainWindow activated in Normal mode.");
+#pragma warning restore CS0162
     }
 
     /// <summary>
@@ -304,5 +348,9 @@ public partial class App : Application
         services.AddTransient<View_KillSwitch>();
         services.AddTransient<ViewModel_Migrations>();
         services.AddTransient<View_Migrations>();
+        // Splash screen
+        services.AddSingleton<IService_StartupCoordinator, Service_StartupCoordinator>();
+        services.AddTransient<ViewModel_Splash>();
+        services.AddTransient<SplashWindow>();
     }
 }

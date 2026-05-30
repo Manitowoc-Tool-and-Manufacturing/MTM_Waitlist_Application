@@ -19,4 +19,9 @@ public interface IService_WindowSizer
     /// Moves the window to the centre of the monitor it currently occupies.
     /// </summary>
     void CenterOnMonitor();
+
+    /// <summary>
+    /// Applies the compact window size for the startup splash screen.
+    /// </summary>
+    void ApplySplashSize();
 }

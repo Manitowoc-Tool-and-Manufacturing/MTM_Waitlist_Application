@@ -110,8 +110,8 @@ public partial class ViewModel_Auth_Login : ObservableObject
 #if WINDOWS
         var windowsUsername = await Task.Run(() =>
         {
-            var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
-            return identity.Name;
+            using var identity = WindowsIdentity.GetCurrent();
+            return identity?.Name ?? string.Empty;
         });
 
         if (!string.IsNullOrWhiteSpace(windowsUsername) && string.IsNullOrWhiteSpace(Username))
@@ -128,7 +128,24 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
         try
         {
-            var loginMode = await _authService.CheckWorkstationAsync(windowsUsername);
+            var loginModeTask = _authService.CheckWorkstationAsync(windowsUsername);
+            if (loginModeTask is null)
+            {
+                IsSharedWorkstation = false;
+                StatusMessage = "Unable to determine workstation mode.";
+                CanRetryStartup = true;
+                return;
+            }
+
+            var loginMode = await loginModeTask;
+            if (loginMode is null)
+            {
+                IsSharedWorkstation = false;
+                StatusMessage = "Unable to determine workstation mode.";
+                CanRetryStartup = true;
+                return;
+            }
+
             if (!loginMode.IsSuccess || loginMode.Data is null)
             {
                 IsSharedWorkstation = false;
@@ -179,7 +196,21 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
         IsAuthenticating = true;
 
-        var result = await _authService.LoginAsync(Username, Password);
+        var loginTask = _authService.LoginAsync(Username, Password);
+        if (loginTask is null)
+        {
+            IsAuthenticating = false;
+            ErrorMessage = "Login is currently unavailable.";
+            return;
+        }
+
+        var result = await loginTask;
+        if (result is null)
+        {
+            IsAuthenticating = false;
+            ErrorMessage = "Login is currently unavailable.";
+            return;
+        }
 
         IsAuthenticating = false;
 
@@ -223,7 +254,24 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
         try
         {
-            var autoLogin = await _authService.AutoLoginAsync(windowsUsername);
+            var autoLoginTask = _authService.AutoLoginAsync(windowsUsername);
+            if (autoLoginTask is null)
+            {
+                IsSharedWorkstation = false;
+                StatusMessage = "Auto-login is currently unavailable.";
+                CanRetryStartup = true;
+                return;
+            }
+
+            var autoLogin = await autoLoginTask;
+            if (autoLogin is null)
+            {
+                IsSharedWorkstation = false;
+                StatusMessage = "Auto-login is currently unavailable.";
+                CanRetryStartup = true;
+                return;
+            }
+
             if (autoLogin.IsSuccess)
             {
                 AuthenticatedUsername = autoLogin.Data?.Username ?? windowsUsername;

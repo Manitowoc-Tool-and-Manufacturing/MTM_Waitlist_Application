@@ -210,7 +210,7 @@ A new WinUI desktop application (`MTM_Waitlist_Server.Admin`) that:
 1. **Hosts the REST API** (ASP.NET/Kestrel, in-process) that all MAUI Waitlist Application clients connect to.
 2. **Provides an admin dashboard** for managing the MySQL database, migrations, backups, and client sessions.
 
-The MAUI app **cannot function** unless this admin app is running on the server (`172.16.1.104`).
+In production, the MAUI app **cannot function** unless this admin app is running on the server (`172.16.1.104`). During local debugging, the same admin app can run on a developer workstation, with both the API listener and the first-run MySQL host defaulting to `localhost` unless `server-settings.json` already has saved values.
 
 ---
 

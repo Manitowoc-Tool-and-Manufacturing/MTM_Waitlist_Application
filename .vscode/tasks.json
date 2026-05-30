@@ -1,0 +1,97 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "dotnet: restore solution",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "restore",
+                "MTM_Waitlist_Application.slnx"
+            ]
+        },
+        {
+            "label": "dotnet: build solution",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "MTM_Waitlist_Application.slnx",
+                "-v",
+                "minimal"
+            ],
+            "dependsOn": "dotnet: restore solution",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: test solution",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "MTM_Waitlist_Application.slnx",
+                "--no-build",
+                "-v",
+                "minimal"
+            ],
+            "dependsOn": "dotnet: build solution",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "dotnet: build WinUI host",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "MTM_Waitlist_Application/MTM_Waitlist_Application.WinUI/MTM_Waitlist_Application.WinUI.csproj",
+                "-f",
+                "net10.0-windows10.0.19041.0",
+                "-p:Platform=x64",
+                "-v",
+                "minimal"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: build server admin host",
+            "type": "process",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "$project = 'MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/MTM_Waitlist_Server.Admin.csproj'; $outputRoot = 'MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64'; $appxRoot = Join-Path $outputRoot 'AppX'; for ($attempt = 1; $attempt -le 3; $attempt++) { & dotnet build $project -f net10.0-windows10.0.19041.0 -p:Platform=x64 -v minimal; if ($LASTEXITCODE -eq 0) { New-Item -ItemType Directory -Force -Path $appxRoot | Out-Null; robocopy $outputRoot $appxRoot 'MTM_Waitlist_Server.Admin.exe' 'MTM_Waitlist_Server.Admin.dll' 'MTM_Waitlist_Server.Admin.pdb' 'MTM_Waitlist_Server.Admin.deps.json' 'MTM_Waitlist_Server.Admin.runtimeconfig.json' /R:1 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null; if ($LASTEXITCODE -gt 7) { exit $LASTEXITCODE }; exit 0 }; if ($attempt -eq 3) { exit $LASTEXITCODE }; Get-Process XamlCompiler -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Retrying server admin build after a transient WinUI XAML compiler lock...'; }"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: build Android host",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "MTM_Waitlist_Application/MTM_Waitlist_Application.Droid/MTM_Waitlist_Application.Droid.csproj",
+                "-f",
+                "net10.0-android",
+                "-v",
+                "minimal"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: list workloads",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "workload",
+                "list"
+            ]
+        }
+    ]
+}

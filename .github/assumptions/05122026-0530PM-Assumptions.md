@@ -83,7 +83,7 @@ Every affected instruction file, agent definition, prompt, and documentation gui
 |------|---------------|
 | `.github\copilot-instructions.md` | Update dependency table (WinUI host rule), host layer description, DI section, Current Feature State table, build commands, XAML guidelines section |
 | `.github\instructions\codebase-state.instructions.md` | Update DI registrations (WinUI now has its own DI), Startup Flow section, Feature.Auth + Feature.Dashboard view file list (remove `*.Windows.xaml` entries, note they are in the WinUI host) |
-| `.github\instructions\maui-architecture.instructions.md` | Update layer table (WinUI host is no longer thin MAUI launcher; now owns views and DI root), note WinUI host references Feature projects for ViewModels only |
+| `.github\instructions\winui3-architecture.instructions.md` | Update layer table (WinUI host is no longer thin MAUI launcher; now owns views and DI root), note WinUI host references Feature projects for ViewModels only |
 | `.github\instructions\platform-xaml.instructions.md` | Add explicit note that Windows XAML splitting is no longer used in Feature projects; Windows target removed; Windows views live in WinUI host |
 | `.github\instructions\testing.instructions.md` | Note that `UITests.WinUI` now targets the standalone WinUI 3 app; no MAUI dependency on that test project |
 
