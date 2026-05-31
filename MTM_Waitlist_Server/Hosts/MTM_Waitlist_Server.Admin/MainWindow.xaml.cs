@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MTM_Waitlist_Server.Admin.Services;
+using MTM_Waitlist_Server.Core.Interfaces.Api;
 using MTM_Waitlist_Server.Admin.Views;
 using MTM_Waitlist_Server.Core.Interfaces.Window;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
@@ -24,6 +25,7 @@ public sealed partial class MainWindow : Window
     private readonly bool _degraded;
     private readonly string? _degradedReason;
     private readonly Model_FirstRunProbeResult? _probeResult;
+    private readonly IService_ApiHost _apiHost;
     private readonly IService_WindowSizer _windowSizer;
 
     /// <summary>
@@ -35,11 +37,14 @@ public sealed partial class MainWindow : Window
         Model_FirstRunProbeResult? probeResult = null)
     {
         InitializeComponent();
-        _accessDenied  = accessDenied;
-        _degraded      = degraded;
+        _accessDenied = accessDenied;
+        _degraded = degraded;
         _degradedReason = degradedReason;
-        _probeResult   = probeResult;
+        _probeResult = probeResult;
         Title = "MTM Waitlist Server Admin";
+
+        _apiHost = App.Services?.GetService(typeof(IService_ApiHost)) as IService_ApiHost
+            ?? throw new InvalidOperationException("IService_ApiHost is not registered in DI.");
 
         // Construct the window sizer now that we have a valid HWND.
         _windowSizer = new Service_WindowSizer(this);
@@ -171,10 +176,10 @@ public sealed partial class MainWindow : Window
         // ── Centre card ──────────────────────────────────────────────────────
         var card = new Border
         {
-            CornerRadius    = new CornerRadius(12),
-            Padding         = new Thickness(48, 40, 48, 40),
-            MaxWidth        = 600,
-            VerticalAlignment   = VerticalAlignment.Center,
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(48, 40, 48, 40),
+            MaxWidth = 600,
+            VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
             BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -188,10 +193,10 @@ public sealed partial class MainWindow : Window
         // Warning icon
         var iconText = new TextBlock
         {
-            Text              = "\uE7BA", // Warning glyph
-            FontFamily        = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons,Segoe MDL2 Assets"),
-            FontSize          = 48,
-            Foreground        = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+            Text = "\uE7BA", // Warning glyph
+            FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons,Segoe MDL2 Assets"),
+            FontSize = 48,
+            Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Windows.UI.Color.FromArgb(0xFF, 0xFF, 0xB9, 0x00)),
             HorizontalAlignment = HorizontalAlignment.Center,
         };
@@ -199,49 +204,49 @@ public sealed partial class MainWindow : Window
         // Title
         var title = new TextBlock
         {
-            Text                = "Database Unavailable",
-            FontSize            = 24,
-            FontWeight          = Microsoft.UI.Text.FontWeights.SemiBold,
+            Text = "Database Unavailable",
+            FontSize = 24,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
             HorizontalAlignment = HorizontalAlignment.Center,
         };
 
         // Divider
         var divider = new Border
         {
-            Height          = 1,
-            Background      = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+            Height = 1,
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Windows.UI.Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)),
-            Margin          = new Thickness(0, 4, 0, 4),
+            Margin = new Thickness(0, 4, 0, 4),
         };
 
         // Reason text — specific per callsite
         var reasonText = new TextBlock
         {
-            Text            = _degradedReason ?? "MySQL could not be reached with the current settings.",
-            TextWrapping    = Microsoft.UI.Xaml.TextWrapping.Wrap,
-            FontSize        = 14,
-            Opacity         = 0.9,
+            Text = _degradedReason ?? "MySQL could not be reached with the current settings.",
+            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+            FontSize = 14,
+            Opacity = 0.9,
             HorizontalAlignment = HorizontalAlignment.Center,
-            TextAlignment   = Microsoft.UI.Xaml.TextAlignment.Center,
+            TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
         };
 
         // Action hint
         var hint = new TextBlock
         {
-            Text            = "You can update the connection settings below. Other modules remain accessible but database features will not work until the connection is restored.",
-            TextWrapping    = Microsoft.UI.Xaml.TextWrapping.Wrap,
-            FontSize        = 12,
-            Opacity         = 0.6,
+            Text = "You can update the connection settings below. Other modules remain accessible but database features will not work until the connection is restored.",
+            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+            FontSize = 12,
+            Opacity = 0.6,
             HorizontalAlignment = HorizontalAlignment.Center,
-            TextAlignment   = Microsoft.UI.Xaml.TextAlignment.Center,
+            TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
         };
 
         // Open Settings button
         var btnSettings = new Button
         {
-            Content             = "Open Settings",
+            Content = "Open Settings",
             HorizontalAlignment = HorizontalAlignment.Center,
-            Margin              = new Thickness(0, 8, 0, 0),
+            Margin = new Thickness(0, 8, 0, 0),
         };
         btnSettings.Click += (_, _) =>
         {
@@ -257,10 +262,10 @@ public sealed partial class MainWindow : Window
         cardStack.Children.Add(hint);
         cardStack.Children.Add(btnSettings);
 
-card.Child = cardStack;
-root.Children.Add(card);
+        card.Child = cardStack;
+        root.Children.Add(card);
 
-ContentFrame.Content = root;
+        ContentFrame.Content = root;
         NavView.SelectedItem = NavView.MenuItems[0];
     }
 
@@ -306,19 +311,20 @@ ContentFrame.Content = root;
         }
     }
 
-    private void BtnStartApi_Click(object sender, RoutedEventArgs e)
+    private async void BtnStartApi_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: call API host start via a shared IService_ApiHost.
+        await _apiHost.EnsureRunningAsync();
     }
 
-    private void BtnStopApi_Click(object sender, RoutedEventArgs e)
+    private async void BtnStopApi_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: call API host stop via a shared IService_ApiHost.
+        await _apiHost.StopAsync();
     }
 
-    private void BtnRestartApi_Click(object sender, RoutedEventArgs e)
+    private async void BtnRestartApi_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: call API host restart via a shared IService_ApiHost.
+        await _apiHost.StopAsync();
+        await _apiHost.EnsureRunningAsync();
     }
 
 #if DEBUG
@@ -337,11 +343,11 @@ ContentFrame.Content = root;
         {
             var btn = new Button
             {
-                Content     = label,
-                FontSize    = 11,
-                Padding     = new Thickness(10, 4, 10, 4),
-                Margin      = new Thickness(4, 0, 0, 0),
-                Background  = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Content = label,
+                FontSize = 11,
+                Padding = new Thickness(10, 4, 10, 4),
+                Margin = new Thickness(4, 0, 0, 0),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Windows.UI.Color.FromArgb(0x28, accent.R, accent.G, accent.B)),
             };
             btn.Click += handler;
@@ -350,12 +356,12 @@ ContentFrame.Content = root;
 
         var strip = new Border
         {
-            Background      = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Windows.UI.Color.FromArgb(0xCC, 0x1A, 0x1A, 0x2E)),
-            BorderBrush     = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+            BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Windows.UI.Color.FromArgb(0x60, 0x80, 0x00, 0xFF)),
             BorderThickness = new Thickness(0, 1, 0, 0),
-            Padding         = new Thickness(12, 6, 12, 6),
+            Padding = new Thickness(12, 6, 12, 6),
         };
 
         var panel = new StackPanel
@@ -366,11 +372,11 @@ ContentFrame.Content = root;
 
         panel.Children.Add(new TextBlock
         {
-            Text              = "🛠 DEBUG MODES:",
-            FontSize          = 11,
-            Opacity           = 0.7,
+            Text = "🛠 DEBUG MODES:",
+            FontSize = 11,
+            Opacity = 0.7,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin            = new Thickness(0, 0, 8, 0),
+            Margin = new Thickness(0, 0, 8, 0),
         });
 
         panel.Children.Add(MakeBtn("Normal Launch",
@@ -426,10 +432,10 @@ ContentFrame.Content = root;
 
         var card = new Border
         {
-            CornerRadius        = new CornerRadius(12),
-            Padding             = new Thickness(48, 40, 48, 40),
-            MaxWidth            = 600,
-            VerticalAlignment   = VerticalAlignment.Center,
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(48, 40, 48, 40),
+            MaxWidth = 600,
+            VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
             BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -489,10 +495,10 @@ ContentFrame.Content = root;
 
         var card = new Border
         {
-            CornerRadius        = new CornerRadius(12),
-            Padding             = new Thickness(48, 40, 48, 40),
-            MaxWidth            = 500,
-            VerticalAlignment   = VerticalAlignment.Center,
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(48, 40, 48, 40),
+            MaxWidth = 500,
+            VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
             BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0x40, 0xAA, 0x00, 0xFF)),
@@ -532,5 +538,5 @@ ContentFrame.Content = root;
         ContentFrame.Content = root;
     }
 
-    #endif
-    }
+#endif
+}

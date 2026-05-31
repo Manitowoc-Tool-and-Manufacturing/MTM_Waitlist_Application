@@ -51,6 +51,7 @@ public static class ApiStartup
         }
 
         builder.Services.AddSingleton<Service_ApiAuth>();
+        builder.Services.AddSingleton<Service_ApiWaitlist>();
 
         // Explicitly register this assembly as an application part so that MVC
         // discovers the controllers defined here even when the WebApplication host

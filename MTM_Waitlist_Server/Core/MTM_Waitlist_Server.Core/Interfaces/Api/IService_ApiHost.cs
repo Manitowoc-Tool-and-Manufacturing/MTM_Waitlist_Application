@@ -18,4 +18,10 @@ public interface IService_ApiHost
     /// Returns true when the host is confirmed running after the call.
     /// </summary>
     Task<bool> EnsureRunningAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Stops the API host when it is currently running.
+    /// Returns true when the host is confirmed stopped after the call.
+    /// </summary>
+    Task<bool> StopAsync(CancellationToken ct = default);
 }

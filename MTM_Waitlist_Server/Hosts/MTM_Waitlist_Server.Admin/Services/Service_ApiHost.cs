@@ -91,4 +91,30 @@ internal sealed class Service_ApiHost : IService_ApiHost
             return false;
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<bool> StopAsync(CancellationToken ct = default)
+    {
+        if (_webApp is null)
+        {
+            StartupLogger.Info("ApiHost.StopAsync: no WebApplication instance exists — already stopped.");
+            _hostTask = null;
+            return true;
+        }
+
+        try
+        {
+            StartupLogger.Info("ApiHost.StopAsync: stopping WebApplication.");
+            await _webApp.StopAsync(ct);
+            StartupLogger.Info("ApiHost.StopAsync: WebApplication stopped successfully.");
+            _hostTask = null;
+            _webApp = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StartupLogger.Error("ApiHost.StopAsync: stop FAILED.", ex);
+            return false;
+        }
+    }
 }

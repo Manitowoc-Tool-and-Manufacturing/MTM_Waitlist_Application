@@ -534,3 +534,33 @@ These are unresolved and must be confirmed with Dan/Nick before implementing the
 | Domain-joined vs. non-domain-joined kiosk SQL auth | `Server=VISUAL` connection string |
 | Dunnage assignments — global per WO/Seq or per-user? (Current spec: global) | `WorkOrderDunnageAssignments` FK |
 | Subordinate part cache invalidation — time-based or on next setup? | `Repository_SetupTechActiveJobLocal` eviction logic |
+
+---
+
+## 24. Required Test Expansion
+
+The implementation scope now explicitly includes automated coverage for both the server SQL assets and the client-to-server communication path.
+
+### Server-side SQL test home
+
+| Area | Project | Suggested path |
+|------|---------|----------------|
+| SetupTech migration/schema/procedure/seed tests | `MTM_Waitlist_Server.Api.Tests` | `MTM_Waitlist_Server/Tests/MTM_Waitlist_Server.Api.Tests/Database/SetupTech/` |
+| InforVisual query-file and DAO query coverage | `MTM_Waitlist_Server.Api.Tests` | `MTM_Waitlist_Server/Tests/MTM_Waitlist_Server.Api.Tests/Database/InforVisual/` |
+
+Every SQL file created for FEATURE-07 in `MTM_Waitlist_Server/Database/` must have at least one corresponding automated test in the server API test project.
+
+### Waitlist app talking to the server app
+
+| Platform | Project | Suggested path |
+|----------|---------|----------------|
+| WinUI | `MTM_Waitlist_Application.UITests.WinUI` | `MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.WinUI/Flows/` |
+| Droid | `MTM_Waitlist_Application.UITests.Droid` | `MTM_Waitlist_Application/Tests/UI/MTM_Waitlist_Application.UITests.Droid/Flows/` |
+
+Minimum required platform coverage:
+- successful authentication against the running server app
+- workcenter lookup from the server-side InforVisual endpoint
+- work-order + sequence lookup from the server app
+- dunnage configuration/catalog retrieval from the server app
+- active-job save posted successfully to the server app
+- graceful failure messaging when the server app is unavailable

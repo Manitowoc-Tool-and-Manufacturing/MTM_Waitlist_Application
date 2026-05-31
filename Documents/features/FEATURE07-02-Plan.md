@@ -576,6 +576,44 @@ Key test scenarios:
 
 ---
 
+## Phase 17 — Server SQL + Client/Server Integration Tests
+
+These are required additions to the implementation scope. FEATURE-07 is not complete until the server SQL assets and the app-to-server communication paths are covered by automated tests.
+
+### 17.1 Server SQL coverage (`MTM_Waitlist_Server/Tests/MTM_Waitlist_Server.Api.Tests/`)
+
+Every SQL file created for FEATURE-07 in the server solution must have at least one automated test. Use a disposable MySQL test schema or container database — never the shared development database.
+
+| SQL file group | Test file | Coverage expectation |
+|-------------|-----------|----------------------|
+| `Database/migrations/V002__SetupTech_Schema.sql` | `Database/Migrations/SetupTechMigrationTests.cs` | Apply the migration and assert all SetupTech objects are created in dependency order. |
+| `Database/schema/tables/SetupTech/*.sql` | `Database/SetupTech/Schema/SetupTechTableTests.cs` | Assert tables, PKs, UNIQUE constraints, FKs, and required columns exist with the correct types. |
+| `Database/indexes/SetupTech/*.sql` | `Database/SetupTech/Schema/SetupTechIndexTests.cs` | Assert every required index exists with the expected key columns and order. |
+| `Database/triggers/SetupTech/*.sql` | `Database/SetupTech/Schema/SetupTechTriggerTests.cs` | Assert each trigger exists and updates `UpdatedAt` correctly on row modification. |
+| `Database/procedures/SetupTech/*.sql` | `Database/SetupTech/Procedures/SetupTechProcedureTests.cs` | Assert each procedure exists and performs the documented CRUD/archive behavior. |
+| `Database/seed/03_Seed_SetupTechDunnageTypeConfig.sql` | `Database/SetupTech/Seed/SetupTechSeedTests.cs` | Assert 13 rows are inserted and the enabled/disabled type split matches the feature spec. |
+| `Database/infor_visual/queries/WL_01` through `WL_05` | `Database/InforVisual/QueryFileTests.cs` and DAO-focused API tests | Assert all query files exist, load successfully, and are exercised by the matching DAO methods. |
+
+### 17.2 Waitlist app talking to the server (`MTM_Waitlist_Application/Tests/UI/`)
+
+The client-side implementation must include platform tests that prove the WinUI host and the Droid host can successfully talk to the running server app.
+
+| Test project | Test file | Coverage expectation |
+|-------------|-----------|----------------------|
+| `MTM_Waitlist_Application.UITests.WinUI` | `Flows/SetupTechServerFlowTests.cs` | Log in, load workcenters from the server, look up a work order, load dunnage types, and save an active job through the server API. |
+| `MTM_Waitlist_Application.UITests.WinUI` | `Flows/ServerFailureHandlingTests.cs` | Server unavailable or unreachable → WinUI shows the expected error state instead of hanging or crashing. |
+| `MTM_Waitlist_Application.UITests.Droid` | `Flows/SetupTechServerFlowTests.cs` | Android performs the same end-to-end SetupTech server flow against the live server API. |
+| `MTM_Waitlist_Application.UITests.Droid` | `Flows/ServerFailureHandlingTests.cs` | Server unavailable or unreachable → Android shows the expected offline / failure message. |
+
+Minimum server-communication assertions for both platforms:
+- auth/login handshake reaches the server app successfully
+- SetupTech workcenter lookup hits the server InforVisual endpoint
+- dunnage type/config retrieval hits the server SetupTech endpoint
+- active job save posts successfully to the server app
+- unreachable server path surfaces a user-visible failure message
+
+---
+
 ## Implementation Order Summary
 
 ```
@@ -610,6 +648,8 @@ Phase 14 ── DI registration in MauiProgramExtensions.cs
 Phase 15 ── Build verification
     ↓
 Phase 16 ── Unit tests
+    ↓
+Phase 17 ── Server SQL + client/server integration tests
 ```
 
 > **Dependency note:** Phases 4–10 are independent of the server (Phase 3) once the interface contracts are defined. Client development can proceed in parallel with server development as long as the API endpoint signatures match Research §7.

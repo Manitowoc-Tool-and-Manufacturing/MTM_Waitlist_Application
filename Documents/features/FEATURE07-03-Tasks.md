@@ -435,6 +435,58 @@ Check off items as you complete them. All items start unchecked. Reference [FEAT
 
 ---
 
+## Phase 17 — Server SQL Tests (`MTM_Waitlist_Server/Tests/MTM_Waitlist_Server.Api.Tests/`)
+
+### SetupTech migration and schema tests
+
+| Done | Phase | Task | Subtask |
+|------|-------|------|---------|
+| [ ] | 17 | Create `Database/Migrations/SetupTechMigrationTests.cs` | Apply `V002__SetupTech_Schema.sql` to a disposable MySQL test schema and assert all SetupTech objects are created |
+| [ ] | 17 | Create `Database/SetupTech/Schema/SetupTechTableTests.cs` | Assert all 5 SetupTech tables exist with required columns, PKs, UNIQUE constraints, and FKs |
+| [ ] | 17 | Create `Database/SetupTech/Schema/SetupTechIndexTests.cs` | Assert all created index files result in the expected indexes and column order |
+| [ ] | 17 | Create `Database/SetupTech/Schema/SetupTechTriggerTests.cs` | Assert each `BEFORE UPDATE` trigger exists and refreshes `UpdatedAt` |
+| [ ] | 17 | Create `Database/SetupTech/Procedures/SetupTechProcedureTests.cs` | Assert active-job archive/replace, dunnage upsert/delete, subordinate-part upsert, history lookup, and enabled-type lookup procedures all behave as documented |
+| [ ] | 17 | Create `Database/SetupTech/Seed/SetupTechSeedTests.cs` | Assert `03_Seed_SetupTechDunnageTypeConfig.sql` inserts 13 rows and the enabled/disabled split matches the spec |
+
+### InforVisual SQL query file tests
+
+| Done | Phase | Task | Subtask |
+|------|-------|------|---------|
+| [ ] | 17 | Create `Database/InforVisual/QueryFileTests.cs` | Assert `WL_01` through `WL_05` all exist in the server app SQL folder and load successfully |
+| [ ] | 17 | Test — `WL_01_GetWorkOrderHeader.sql` is exercised by the matching DAO method | Assert parameterized execution path for work-order header lookup |
+| [ ] | 17 | Test — `WL_02_GetWorkOrderSequences.sql` is exercised by the matching DAO method | Assert sequence lookup path |
+| [ ] | 17 | Test — `WL_03_GetActiveWorkOrdersForResource.sql` is exercised by the matching DAO method | Assert active-WO-by-resource path |
+| [ ] | 17 | Test — `WL_04_GetAllWorkcenters.sql` is exercised by the matching DAO method | Assert workcenter list path |
+| [ ] | 17 | Test — `WL_05_GetSubordinatePartsForWorkOrder.sql` is exercised by the matching DAO method | Assert subordinate-parts path |
+
+---
+
+## Phase 18 — Waitlist App ↔ Server Tests (`MTM_Waitlist_Application/Tests/UI/`)
+
+### WinUI (`MTM_Waitlist_Application.UITests.WinUI/`)
+
+| Done | Phase | Task | Subtask |
+|------|-------|------|---------|
+| [ ] | 18 | Create `Flows/SetupTechServerFlowTests.cs` | WinUI logs in and successfully talks to the running server app for the full SetupTech happy path |
+| [ ] | 18 | Test — workcenter list loads from the server app | Assert server-backed InforVisual workcenters appear in the UI |
+| [ ] | 18 | Test — work order lookup and sequence lookup hit the server app | Assert validation screen loads with server-returned data |
+| [ ] | 18 | Test — dunnage type/config and catalog requests hit the server app | Assert dunnage step populates from server responses |
+| [ ] | 18 | Test — active job save posts successfully to the server app | Assert confirmation completes and success state is shown |
+| [ ] | 18 | Create `Flows/ServerFailureHandlingTests.cs` | Server unavailable → WinUI shows the expected error / offline state |
+
+### Droid (`MTM_Waitlist_Application.UITests.Droid/`)
+
+| Done | Phase | Task | Subtask |
+|------|-------|------|---------|
+| [ ] | 18 | Create `Flows/SetupTechServerFlowTests.cs` | Android logs in and successfully talks to the running server app for the full SetupTech happy path |
+| [ ] | 18 | Test — workcenter list loads from the server app | Assert server-backed InforVisual workcenters appear in the Android UI |
+| [ ] | 18 | Test — work order lookup and sequence lookup hit the server app | Assert validation screen loads with server-returned data |
+| [ ] | 18 | Test — dunnage type/config and catalog requests hit the server app | Assert dunnage step populates from server responses |
+| [ ] | 18 | Test — active job save posts successfully to the server app | Assert confirmation completes and success state is shown |
+| [ ] | 18 | Create `Flows/ServerFailureHandlingTests.cs` | Server unavailable → Android shows the expected error / offline state |
+
+---
+
 ## Architecture Checklist — Before Submitting
 
 | Done | Rule | Check |
