@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml.Controls;
 using MTM_Waitlist_Server.Core.Models.Migration;
 using MTM_Waitlist_Server.Module.Migrations.ViewModels;
+using System;
+using System.Threading.Tasks;
 
 namespace MTM_Waitlist_Server.Module.Migrations.Views;
 
@@ -26,5 +28,61 @@ public sealed partial class View_Migrations : Page
         {
             ViewModel.PreviewMigrationCommand.Execute(migration);
         }
+    }
+
+    private async void WipeDatabaseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var confirmationTextBox = new TextBox
+        {
+            PlaceholderText = "Type WIPE DATABASE to confirm"
+        };
+
+        var content = new StackPanel
+        {
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "This will permanently drop and recreate the configured MySQL database. All data, migrations, procedures, triggers, and indexes will be deleted.",
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                },
+                new TextBlock
+                {
+                    Text = "Type WIPE DATABASE to continue.",
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                },
+                confirmationTextBox
+            }
+        };
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = "Wipe Entire Database",
+            PrimaryButtonText = "Wipe Database",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            Content = content
+        };
+
+        ContentDialogResult result;
+        do
+        {
+            result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            if (!string.Equals(confirmationTextBox.Text?.Trim(), "WIPE DATABASE", StringComparison.Ordinal))
+            {
+                dialog.Title = "Confirmation Text Did Not Match";
+            }
+        }
+        while (!string.Equals(confirmationTextBox.Text?.Trim(), "WIPE DATABASE", StringComparison.Ordinal));
+
+        await ViewModel.WipeDatabaseCommand.ExecuteAsync(null);
     }
 }

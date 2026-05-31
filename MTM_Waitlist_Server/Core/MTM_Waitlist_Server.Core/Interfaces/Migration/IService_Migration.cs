@@ -25,6 +25,11 @@ public interface IService_Migration
     /// <summary>Re-runs all stored procedures, triggers, and indexes (always idempotent).</summary>
     Task<RerunResult> RerunIdempotentObjectsAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
 
+    /// <summary>
+    /// Drops and recreates the configured application database, leaving it empty so migrations can run from a clean state.
+    /// </summary>
+    Task ResetDatabaseAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
+
     /// <summary>Returns the list of migrations recorded in the SchemaVersions table.</summary>
     Task<IReadOnlyList<AppliedMigration>> GetAppliedMigrationsAsync(CancellationToken ct = default);
 

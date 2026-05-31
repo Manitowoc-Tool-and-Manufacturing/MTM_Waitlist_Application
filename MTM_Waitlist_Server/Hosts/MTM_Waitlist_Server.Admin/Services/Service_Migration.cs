@@ -211,6 +211,32 @@ internal sealed class Service_Migration : IService_Migration
     }
 
     /// <inheritdoc />
+    public async Task ResetDatabaseAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default)
+    {
+        var db = _settingsStore.Get().Database;
+
+        progress.Report(new MigrationProgress("RESET", $"Connecting to MySQL server {db.Host}:{db.Port}…", false));
+
+        await using var conn = OpenServerConnection();
+        await conn.OpenAsync(ct);
+
+        progress.Report(new MigrationProgress("RESET", $"Dropping database `{db.DatabaseName}`…", false));
+        await ExecuteNonQueryAsync(conn, $"DROP DATABASE IF EXISTS {EscapeIdentifier(db.DatabaseName)}", ct);
+
+        progress.Report(new MigrationProgress("RESET", $"Recreating database `{db.DatabaseName}`…", false));
+        await ExecuteNonQueryAsync(
+            conn,
+            $"CREATE DATABASE {EscapeIdentifier(db.DatabaseName)} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+            ct);
+
+        var settings = _settingsStore.Get();
+        settings.FirstRunComplete = false;
+        await _settingsStore.SaveAsync(settings);
+
+        progress.Report(new MigrationProgress("RESET", "Database reset completed. First-run setup has been re-enabled.", true));
+    }
+
+    /// <inheritdoc />
     public string PreviewMigrationSql(string version)
     {
         var folder = ResolvePath(_settingsStore.Get().Migrations.MigrationFolder);
@@ -265,21 +291,21 @@ internal sealed class Service_Migration : IService_Migration
         var folder = ResolvePath(_settingsStore.Get().Migrations.MigrationFolder);
 
         await BackfillIfAppliedAsync(conn, folder,
-            version:     "V001",
+            version: "V001",
             description: "Initial_Schema",
-            script:      "V001__Initial_Schema.sql",
+            script: "V001__Initial_Schema.sql",
             // V001 creates the Users table — if it exists, V001 is already applied.
-            probeQuery:  "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users'",
+            probeQuery: "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users'",
             ct);
 
         await BackfillIfAppliedAsync(conn, folder,
-            version:     "V002",
+            version: "V002",
             description: "Add_SchemaVersions_Table",
-            script:      "V002__Add_SchemaVersions_Table.sql",
+            script: "V002__Add_SchemaVersions_Table.sql",
             // V002 creates SchemaVersions — if it already had rows OR we just created it
             // above (empty), treat it as applied only when the Users table also exists
             // (meaning V001 ran), which is always true here because we checked V001 first.
-            probeQuery:  "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'SchemaVersions'",
+            probeQuery: "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'SchemaVersions'",
             ct);
     }
 
@@ -340,16 +366,40 @@ internal sealed class Service_Migration : IService_Migration
 
         var csb = new MySqlConnectionStringBuilder
         {
-            Server                  = db.Host,
-            Port                    = (uint)db.Port,
-            Database                = db.DatabaseName,
-            UserID                  = db.UpdaterUsername,
-            Password                = db.UpdaterPassword ?? string.Empty,
-            ConnectionTimeout       = (uint)db.ConnectionTimeout,
-            DefaultCommandTimeout   = (uint)db.CommandTimeout,
+            Server = db.Host,
+            Port = (uint)db.Port,
+            Database = db.DatabaseName,
+            UserID = db.UpdaterUsername,
+            Password = db.UpdaterPassword ?? string.Empty,
+            ConnectionTimeout = (uint)db.ConnectionTimeout,
+            DefaultCommandTimeout = (uint)db.CommandTimeout,
             AllowPublicKeyRetrieval = true,
-            SslMode                 = MySqlSslMode.Preferred,
+            SslMode = MySqlSslMode.Preferred,
         };
+        return new MySqlConnection(csb.ConnectionString);
+    }
+
+    private MySqlConnection OpenServerConnection()
+    {
+        var db = _settingsStore.Get().Database;
+
+        if (string.IsNullOrWhiteSpace(db.Host))
+            throw new InvalidOperationException("Database host is not configured. Open Settings and save a valid connection.");
+        if (string.IsNullOrWhiteSpace(db.UpdaterUsername))
+            throw new InvalidOperationException("Database username is not configured. Open Settings and save a valid connection.");
+
+        var csb = new MySqlConnectionStringBuilder
+        {
+            Server = db.Host,
+            Port = (uint)db.Port,
+            UserID = db.UpdaterUsername,
+            Password = db.UpdaterPassword ?? string.Empty,
+            ConnectionTimeout = (uint)db.ConnectionTimeout,
+            DefaultCommandTimeout = (uint)db.CommandTimeout,
+            AllowPublicKeyRetrieval = true,
+            SslMode = MySqlSslMode.Preferred,
+        };
+
         return new MySqlConnection(csb.ConnectionString);
     }
 
@@ -369,7 +419,7 @@ internal sealed class Service_Migration : IService_Migration
         using var conn = OpenConnection();
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Version FROM SchemaVersions";
+        cmd.CommandText = "SELECT Version FROM SchemaVersions WHERE Success = 1";
         using var reader = cmd.ExecuteReader();
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (reader.Read())
@@ -392,7 +442,16 @@ internal sealed class Service_Migration : IService_Migration
         cmd.CommandText =
             "INSERT INTO SchemaVersions " +
             "(Version, Description, Script, Checksum, AppliedAt, AppliedBy, ExecutionMs, Success, ErrorMessage) " +
-            "VALUES (@v, @d, @s, @c, @at, @by, @ms, @ok, @err)";
+            "VALUES (@v, @d, @s, @c, @at, @by, @ms, @ok, @err) " +
+            "ON DUPLICATE KEY UPDATE " +
+            "Description = VALUES(Description), " +
+            "Script = VALUES(Script), " +
+            "Checksum = VALUES(Checksum), " +
+            "AppliedAt = VALUES(AppliedAt), " +
+            "AppliedBy = VALUES(AppliedBy), " +
+            "ExecutionMs = VALUES(ExecutionMs), " +
+            "Success = VALUES(Success), " +
+            "ErrorMessage = VALUES(ErrorMessage)";
         cmd.Parameters.AddWithValue("@v", migration.Version);
         cmd.Parameters.AddWithValue("@d", migration.Description);
         cmd.Parameters.AddWithValue("@s", migration.Script);
@@ -403,6 +462,23 @@ internal sealed class Service_Migration : IService_Migration
         cmd.Parameters.AddWithValue("@ok", success ? 1 : 0);
         cmd.Parameters.AddWithValue("@err", (object?)error ?? DBNull.Value);
         await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    private static async Task ExecuteNonQueryAsync(MySqlConnection conn, string sql, CancellationToken ct)
+    {
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    private static string EscapeIdentifier(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            throw new InvalidOperationException("Database identifier cannot be empty.");
+        }
+
+        return $"`{identifier.Replace("`", "``", StringComparison.Ordinal)}`";
     }
 
     private static async Task<int> RunFolderAsync(

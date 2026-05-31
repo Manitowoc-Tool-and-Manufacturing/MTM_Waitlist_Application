@@ -45,6 +45,15 @@
     />
   </ItemGroup>
   <ItemGroup>
+    <!-- Runtime SQL folders for the migration runner and idempotent object re-runner -->
+    <Content
+      Include="..\..\Database\**\*.sql"
+      Exclude="..\..\Database\migrations\V001__Initial_Schema.sql"
+      Link="database\%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />

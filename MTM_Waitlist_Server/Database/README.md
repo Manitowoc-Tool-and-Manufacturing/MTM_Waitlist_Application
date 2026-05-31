@@ -50,6 +50,16 @@ Database/
 │   │   ├── usp_Auth_GetRefreshToken.sql
 │   │   ├── usp_Auth_RevokeRefreshToken.sql
 │   │   └── usp_Auth_RevokeAllUserTokens.sql
+│   ├── SetupTech/
+│   │   ├── usp_SetupTech_GetActiveJob.sql
+│   │   ├── usp_SetupTech_SetActiveJob.sql
+│   │   ├── usp_SetupTech_GetDunnageAssignment.sql
+│   │   ├── usp_SetupTech_UpsertDunnageAssignment.sql
+│   │   ├── usp_SetupTech_DeleteDunnageAssignment.sql
+│   │   ├── usp_SetupTech_UpsertSubordinateParts.sql
+│   │   ├── usp_SetupTech_GetJobHistory.sql
+│   │   ├── usp_SetupTech_GetEnabledDunnageTypes.sql
+│   │   └── usp_SetupTech_UpsertDunnageTypeConfig.sql
 │   └── Waitlist/
 │       ├── usp_Waitlist_GetAll.sql
 │       ├── usp_Waitlist_GetById.sql
@@ -62,15 +72,34 @@ Database/
 │   │   ├── trg_Users_BeforeUpdate.sql
 │   │   ├── trg_SharedWorkstations_BeforeInsert.sql
 │   │   └── trg_SharedWorkstations_BeforeUpdate.sql
+│   ├── SetupTech/
+│   │   ├── trg_WorkstationActiveJobs_BeforeInsert.sql
+│   │   ├── trg_WorkstationActiveJobs_BeforeUpdate.sql
+│   │   ├── trg_WorkstationJobHistory_BeforeInsert.sql
+│   │   ├── trg_WorkstationJobHistory_BeforeUpdate.sql
+│   │   ├── trg_WorkOrderDunnageAssignments_BeforeInsert.sql
+│   │   ├── trg_WorkOrderDunnageAssignments_BeforeUpdate.sql
+│   │   ├── trg_SetupTechDunnageTypeConfig_BeforeInsert.sql
+│   │   ├── trg_SetupTechDunnageTypeConfig_BeforeUpdate.sql
+│   │   ├── trg_WorkOrderSubordinateParts_BeforeInsert.sql
+│   │   └── trg_WorkOrderSubordinateParts_BeforeUpdate.sql
 │   └── Waitlist/
 │       ├── trg_WaitlistEntries_BeforeInsert.sql
 │       └── trg_WaitlistEntries_BeforeUpdate.sql
 ├── seed/                                    ← development only — NOT for production
 │   ├── 01_Seed_Users.sql
-│   └── 02_Seed_WaitlistEntries.sql
+│   ├── 02_Seed_WaitlistEntries.sql
+│   └── 03_Seed_SetupTechDunnageTypeConfig.sql
 └── migrations/
-    └── V001__Initial_Schema.sql
+    ├── V001__Initial_Schema.sql
+    ├── V002__Add_SchemaVersions_Table.sql
+    ├── V003__SetupTech_Schema.sql
+    └── V004__SetupTech_Default_DunnageTypeConfig.sql
 ```
+
+The admin host copies `Database/migrations`, `Database/procedures`,
+`Database/triggers`, and `Database/indexes` into its runtime `database/`
+folder so the in-app migration runner can discover and apply them from disk.
 
 ---
 
@@ -173,6 +202,46 @@ Core business table — workcenter logistics requests.
 
 ---
 
+### `schema/tables/SetupTech/`
+
+| File | Purpose |
+|------|---------|
+| `WorkstationActiveJobs.sql` | Current active job per workstation. One row per workcenter. |
+| `WorkstationJobHistory.sql` | Archived prior workstation jobs for analytics and audit. |
+| `WorkOrderDunnageAssignments.sql` | Cached dunnage assignment lines for a work-order/sequence pair. |
+| `SetupTechDunnageTypeConfig.sql` | Enabled/disabled receiving-app dunnage types and their display order in SetupTech UI. |
+| `WorkOrderSubordinateParts.sql` | Cached subordinate/component parts returned from Infor Visual. |
+
+### `indexes/SetupTech/`
+
+| File | Covers |
+|------|--------|
+| `WorkstationActiveJobs_Indexes.sql` | `SetupTechUserId`, `(WorkOrderId,SequenceNo)` |
+| `WorkstationJobHistory_Indexes.sql` | `(WorkcenterId,ActiveFrom)`, `SetupTechUserId`, `(WorkOrderId,SequenceNo)` |
+| `WorkOrderDunnageAssignments_Indexes.sql` | `LastModifiedByUserId`, `DunnageTypeId` |
+| `SetupTechDunnageTypeConfig_Indexes.sql` | `(IsEnabled,DisplayOrder)` |
+| `WorkOrderSubordinateParts_Indexes.sql` | `CachedAt` |
+
+### `procedures/SetupTech/`
+
+| Procedure | Purpose |
+|-----------|---------|
+| `usp_SetupTech_GetActiveJob(p_WorkcenterId)` | Get the current active job for a workstation. |
+| `usp_SetupTech_SetActiveJob(...)` | Archive the prior active job and insert the new one atomically. |
+| `usp_SetupTech_GetDunnageAssignment(p_WorkOrderId, p_SequenceNo)` | Get cached dunnage assignment rows for a work-order/sequence pair. |
+| `usp_SetupTech_UpsertDunnageAssignment(...)` | Insert or update one dunnage assignment line. |
+| `usp_SetupTech_DeleteDunnageAssignment(p_Id)` | Remove a cached dunnage assignment line. |
+| `usp_SetupTech_UpsertSubordinateParts(...)` | Insert or update one subordinate-part cache row. |
+| `usp_SetupTech_GetJobHistory(p_WorkcenterId, p_PageSize)` | Get archived job history for a workstation. |
+| `usp_SetupTech_GetEnabledDunnageTypes()` | Get enabled dunnage UI categories ordered by `DisplayOrder`. |
+| `usp_SetupTech_UpsertDunnageTypeConfig(...)` | Insert or update a SetupTech dunnage type config row. |
+
+### `triggers/SetupTech/`
+
+All SetupTech triggers set UTC audit timestamps. `WorkstationActiveJobs` also normalizes `ActiveSince`, `WorkstationJobHistory` normalizes `ActiveFrom`/`ActiveUntil`, and `WorkOrderSubordinateParts` normalizes `CachedAt`.
+
+---
+
 ### `triggers/`
 
 | Trigger | Fires on | Purpose |
@@ -194,6 +263,7 @@ Core business table — workcenter logistics requests.
 |------|----------|
 | `01_Seed_Users.sql` | 9 users (one per role) + 2 shared workstation entries. ⚠️ Replace `PasswordHash` placeholders with real bcrypt hashes. |
 | `02_Seed_WaitlistEntries.sql` | 9 requests covering all 8 `RequestType` and 7 `Status` values. |
+| `03_Seed_SetupTechDunnageTypeConfig.sql` | Development reseed for SetupTech dunnage type filters. The production/default copy is handled by `V004`. |
 
 ---
 
@@ -204,6 +274,12 @@ Run this for a fresh server. Subsequent changes go in `V002__...`, `V003__...`, 
 ```bash
 mysql -h 172.16.1.104 -u <admin_user> -p < migrations/V001__Initial_Schema.sql
 ```
+
+### `migrations/V003__SetupTech_Schema.sql`
+Adds the SetupTech schema objects required by Feature 7: tables, indexes, triggers, and procedures.
+
+### `migrations/V004__SetupTech_Default_DunnageTypeConfig.sql`
+Seeds the required default SetupTech dunnage type configuration for production/runtime use. This is versioned migration data, not development sample data, and it inserts only missing rows so existing admin configuration is preserved.
 
 ---
 
@@ -238,9 +314,41 @@ mysql -h 172.16.1.104 -u <admin_user> -p < migrations/V001__Initial_Schema.sql
 26.  procedures/Waitlist/usp_Waitlist_Insert.sql
 27.  procedures/Waitlist/usp_Waitlist_Update.sql
 28.  procedures/Waitlist/usp_Waitlist_Delete.sql
+29.  schema/tables/SetupTech/WorkstationActiveJobs.sql
+30.  schema/tables/SetupTech/WorkstationJobHistory.sql
+31.  schema/tables/SetupTech/WorkOrderDunnageAssignments.sql
+32.  schema/tables/SetupTech/SetupTechDunnageTypeConfig.sql
+33.  schema/tables/SetupTech/WorkOrderSubordinateParts.sql
+34.  indexes/SetupTech/WorkstationActiveJobs_Indexes.sql
+35.  indexes/SetupTech/WorkstationJobHistory_Indexes.sql
+36.  indexes/SetupTech/WorkOrderDunnageAssignments_Indexes.sql
+37.  indexes/SetupTech/SetupTechDunnageTypeConfig_Indexes.sql
+38.  indexes/SetupTech/WorkOrderSubordinateParts_Indexes.sql
+39.  triggers/SetupTech/trg_WorkstationActiveJobs_BeforeInsert.sql
+40.  triggers/SetupTech/trg_WorkstationActiveJobs_BeforeUpdate.sql
+41.  triggers/SetupTech/trg_WorkstationJobHistory_BeforeInsert.sql
+42.  triggers/SetupTech/trg_WorkstationJobHistory_BeforeUpdate.sql
+43.  triggers/SetupTech/trg_WorkOrderDunnageAssignments_BeforeInsert.sql
+44.  triggers/SetupTech/trg_WorkOrderDunnageAssignments_BeforeUpdate.sql
+45.  triggers/SetupTech/trg_SetupTechDunnageTypeConfig_BeforeInsert.sql
+46.  triggers/SetupTech/trg_SetupTechDunnageTypeConfig_BeforeUpdate.sql
+47.  triggers/SetupTech/trg_WorkOrderSubordinateParts_BeforeInsert.sql
+48.  triggers/SetupTech/trg_WorkOrderSubordinateParts_BeforeUpdate.sql
+49.  procedures/SetupTech/usp_SetupTech_GetActiveJob.sql
+50.  procedures/SetupTech/usp_SetupTech_SetActiveJob.sql
+51.  procedures/SetupTech/usp_SetupTech_GetDunnageAssignment.sql
+52.  procedures/SetupTech/usp_SetupTech_UpsertDunnageAssignment.sql
+53.  procedures/SetupTech/usp_SetupTech_DeleteDunnageAssignment.sql
+54.  procedures/SetupTech/usp_SetupTech_UpsertSubordinateParts.sql
+55.  procedures/SetupTech/usp_SetupTech_GetJobHistory.sql
+56.  procedures/SetupTech/usp_SetupTech_GetEnabledDunnageTypes.sql
+57.  procedures/SetupTech/usp_SetupTech_UpsertDunnageTypeConfig.sql
+58.  migrations/V003__SetupTech_Schema.sql
+59.  migrations/V004__SetupTech_Default_DunnageTypeConfig.sql
      — dev only —
-29.  seed/01_Seed_Users.sql
-30.  seed/02_Seed_WaitlistEntries.sql
+60.  seed/01_Seed_Users.sql
+61.  seed/02_Seed_WaitlistEntries.sql
+62.  seed/03_Seed_SetupTechDunnageTypeConfig.sql
 ```
 
 ---

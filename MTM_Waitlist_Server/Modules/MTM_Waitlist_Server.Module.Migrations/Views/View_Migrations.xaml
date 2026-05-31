@@ -127,6 +127,33 @@
                     </ctk:SettingsExpander.Items>
                 </ctk:SettingsExpander>
 
+                <!-- DANGER ZONE -->
+                <ctk:SettingsExpander Header="Danger Zone"
+                                      Description="Irreversible recovery actions for a broken or unrecoverable database state">
+                    <ctk:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE7BA;" />
+                    </ctk:SettingsExpander.HeaderIcon>
+                    <ctk:SettingsExpander.Items>
+                        <ctk:SettingsCard Header="Wipe Database"
+                                          Description="Drops the entire configured database, recreates it empty, and re-enables first-run setup.">
+                            <ctk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE74D;" Foreground="#FFC62828" />
+                            </ctk:SettingsCard.HeaderIcon>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="This permanently deletes every table, row, procedure, trigger, and migration record in the configured database."
+                                           TextWrapping="Wrap"
+                                           Style="{ThemeResource BodyTextBlockStyle}" />
+                                <Button Content="Wipe Database"
+                                        MinHeight="36"
+                                        Background="#FFC62828"
+                                        Foreground="White"
+                                        IsEnabled="{x:Bind ViewModel.CanWipeDatabase, Mode=OneWay}"
+                                        Click="WipeDatabaseButton_Click" />
+                            </StackPanel>
+                        </ctk:SettingsCard>
+                    </ctk:SettingsExpander.Items>
+                </ctk:SettingsExpander>
+
                 <!-- OPERATION LOG -->
                 <ctk:SettingsExpander Header="Operation Log"
                                       Description="{x:Bind ViewModel.OperationLogDescription, Mode=OneWay}"

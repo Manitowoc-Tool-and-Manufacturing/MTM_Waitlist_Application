@@ -1,18 +1,22 @@
 -- =============================================================
--- MTM Waitlist Application — Seed: SetupTechDunnageTypeConfig
--- Domain:      SetupTech
--- Environment: DEVELOPMENT ONLY — DO NOT RUN IN PRODUCTION
--- Description: Seeds the SetupTech dunnage-type filter table from the
---              receiving-app type list without deleting existing rows.
---              Enabled by default: 1-4, 12-13.
---              Production/default server data now ships through
---              migrations/V004__SetupTech_Default_DunnageTypeConfig.sql.
--- Depends on:  schema/tables/SetupTech/SetupTechDunnageTypeConfig.sql
+-- MTM Waitlist Application — V004__SetupTech_Default_DunnageTypeConfig
+-- Version:     V004
+-- Description: Seeds the default SetupTech dunnage-type configuration used by
+--              the production server app. This is reference data required for
+--              the SetupTech dunnage picker, not development-only sample data.
+--              Existing rows are preserved so current server-side admin
+--              configuration is never overwritten by reapplying the migration.
+--
+-- Usage:
+--   mysql -h 172.16.1.104 -u <admin_user> -p < migrations/V004__SetupTech_Default_DunnageTypeConfig.sql
+--
+-- ROLLBACK: Delete only the seeded SetupTechDunnageTypeConfig rows by
+--           DunnageTypeId after confirming no admin customizations should be kept.
 -- =============================================================
 
 USE `mtm_waitlist`;
 
-INSERT INTO `SetupTechDunnageTypeConfig`
+INSERT IGNORE INTO `SetupTechDunnageTypeConfig`
     (`DunnageTypeId`, `DunnageTypeName`,                    `IsEnabled`, `DisplayOrder`)
 VALUES
     (1,  'Pallets / Skids',                      1,  1),
@@ -27,8 +31,4 @@ VALUES
     (10, 'Returnable Racks - John Deere',        0, 110),
     (11, 'Returnable Racks - Other',             0, 111),
     (12, 'Returnable Totes',                     1,  5),
-    (13, 'Returnable Baskets / Wire Containers', 1,  6)
-ON DUPLICATE KEY UPDATE
-    `DunnageTypeName` = VALUES(`DunnageTypeName`),
-    `IsEnabled`       = VALUES(`IsEnabled`),
-    `DisplayOrder`    = VALUES(`DisplayOrder`);
+    (13, 'Returnable Baskets / Wire Containers', 1,  6);

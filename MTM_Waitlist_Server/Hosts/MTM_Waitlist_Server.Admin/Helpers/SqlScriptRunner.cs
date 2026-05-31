@@ -18,6 +18,10 @@ namespace MTM_Waitlist_Server.Admin.Helpers;
 /// </summary>
 internal static class SqlScriptRunner
 {
+    private static readonly Regex DropIndexIfExistsRegex = new(
+        @"^DROP\s+INDEX\s+IF\s+EXISTS\s+`?(?<index>[^`\s]+)`?\s+ON\s+`?(?<table>[^`\s;]+)`?$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <summary>
     /// Reads the embedded SQL resource <paramref name="logicalName"/>, strips
     /// DELIMITER directives, splits into individual statements, and executes each
@@ -51,6 +55,17 @@ internal static class SqlScriptRunner
 
             // Skip the CREATE DATABASE line — Step 1 already created it.
             if (trimmed.StartsWith("CREATE DATABASE", StringComparison.OrdinalIgnoreCase)) { continue; }
+
+            if (await TryExecuteDropIndexIfExistsAsync(connection, trimmed, cancellationToken))
+            {
+                var dropIndexSummary = trimmed.Length > 80
+                    ? trimmed[..80].Replace('\n', ' ').Replace('\r', ' ') + "…"
+                    : trimmed.Replace('\n', ' ').Replace('\r', ' ');
+
+                log.Add($"✅ {dropIndexSummary}");
+                progress?.Invoke(log[^1]);
+                continue;
+            }
 
             await using var cmd = connection.CreateCommand();
             cmd.CommandText = trimmed;
@@ -97,6 +112,11 @@ internal static class SqlScriptRunner
             if (trimmed.StartsWith("USE ", StringComparison.OrdinalIgnoreCase)) { continue; }
             if (trimmed.StartsWith("CREATE DATABASE", StringComparison.OrdinalIgnoreCase)) { continue; }
 
+            if (await TryExecuteDropIndexIfExistsAsync(connection, trimmed, cancellationToken))
+            {
+                continue;
+            }
+
             // Strip DEFINER clauses so the object is owned by the running user,
             // preventing MySQL Error 1227 when the original author was root/SYSTEM_USER.
             var safeStatement = StripDefiner(trimmed);
@@ -128,6 +148,49 @@ internal static class SqlScriptRunner
 
     private static string StripDefiner(string sql) =>
         DefinerRegex.Replace(sql, "$1");
+
+    /// <summary>
+    /// Emulates MySQL 8's <c>DROP INDEX IF EXISTS</c> syntax on MySQL 5.7 by
+    /// checking <c>information_schema.STATISTICS</c> and issuing
+    /// <c>ALTER TABLE ... DROP INDEX ...</c> only when the index is present.
+    /// </summary>
+    private static async Task<bool> TryExecuteDropIndexIfExistsAsync(
+        MySqlConnection connection,
+        string statement,
+        CancellationToken cancellationToken)
+    {
+        var match = DropIndexIfExistsRegex.Match(statement.Trim().TrimEnd(';'));
+        if (!match.Success)
+        {
+            return false;
+        }
+
+        var indexName = match.Groups["index"].Value;
+        var tableName = match.Groups["table"].Value;
+
+        await using var existsCommand = connection.CreateCommand();
+        existsCommand.CommandText =
+            "SELECT COUNT(*) FROM information_schema.STATISTICS " +
+            "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tableName AND INDEX_NAME = @indexName";
+        existsCommand.Parameters.AddWithValue("@tableName", tableName);
+        existsCommand.Parameters.AddWithValue("@indexName", indexName);
+
+        var exists = Convert.ToInt32(await existsCommand.ExecuteScalarAsync(cancellationToken)) > 0;
+        if (!exists)
+        {
+            return true;
+        }
+
+        await using var dropCommand = connection.CreateCommand();
+        dropCommand.CommandText =
+            $"ALTER TABLE `{EscapeIdentifier(tableName)}` DROP INDEX `{EscapeIdentifier(indexName)}`";
+        await dropCommand.ExecuteNonQueryAsync(cancellationToken);
+
+        return true;
+    }
+
+    private static string EscapeIdentifier(string identifier) =>
+        identifier.Replace("`", "``", StringComparison.Ordinal);
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
@@ -167,8 +230,8 @@ internal static class SqlScriptRunner
     private static List<string> SplitStatements(string script)
     {
         var statements = new List<string>();
-        var current    = new StringBuilder();
-        var delimiter  = ";";
+        var current = new StringBuilder();
+        var delimiter = ";";
 
         using var reader = new StringReader(script);
         string? line;

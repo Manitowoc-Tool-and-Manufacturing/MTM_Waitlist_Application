@@ -5,6 +5,8 @@ using MTM_Waitlist_Server.Core.Interfaces.Migration;
 using MTM_Waitlist_Server.Core.Models.Migration;
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MTM_Waitlist_Server.Module.Migrations.ViewModels;
 
@@ -34,6 +36,9 @@ public partial class ViewModel_Migrations : ObservableObject
     public string OperationLogDescription => HasProgressLines
         ? "Output from the most recent migration run"
         : "No output yet — run a migration or re-run idempotent objects to populate this log";
+
+    /// <summary>True when destructive actions should be disabled.</summary>
+    public bool CanWipeDatabase => !IsBusy;
 
     /// <summary>InfoBar severity: Error when <see cref="IsError"/> is true, otherwise Informational.</summary>
     public InfoBarSeverity StatusSeverity => IsError ? InfoBarSeverity.Error : InfoBarSeverity.Informational;
@@ -203,4 +208,42 @@ public partial class ViewModel_Migrations : ObservableObject
 
     partial void OnIsErrorChanged(bool value) =>
         OnPropertyChanged(nameof(StatusSeverity));
+
+    /// <summary>Drops and recreates the configured database so migrations can run from a clean state.</summary>
+    [RelayCommand]
+    internal async Task WipeDatabaseAsync(CancellationToken ct)
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        IsError = false;
+        SqlPreview = string.Empty;
+        ProgressLines.Clear();
+
+        try
+        {
+            var progress = new Progress<MigrationProgress>(p => ProgressLines.Add($"[{p.Version}] {p.Message}"));
+            await _migration.ResetDatabaseAsync(progress, ct);
+
+            AppliedMigrations = [];
+            await LoadAsync(ct);
+            StatusMessage = "Database wiped successfully. The server database is now clean and ready for a fresh migration/bootstrap run.";
+        }
+        catch (Exception ex)
+        {
+            IsError = true;
+            StatusMessage = $"Database wipe failed: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+            OnPropertyChanged(nameof(CanWipeDatabase));
+        }
+    }
+
+    partial void OnIsBusyChanged(bool value) =>
+        OnPropertyChanged(nameof(CanWipeDatabase));
 }
