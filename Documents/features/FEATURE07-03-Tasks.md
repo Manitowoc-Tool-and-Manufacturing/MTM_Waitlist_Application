@@ -76,6 +76,38 @@ Check off items as you complete them. All items start unchecked. Reference [FEAT
 
 ---
 
+## Phase 2.5 — Server Pre-Flight: Resolve Existing TODOs
+
+> **Complete all items in this phase before starting Phase 3.** New `InforVisualController` and `SetupTechController` code must not be layered on top of these broken stubs.
+
+### 2.5.1 — Implement `WaitlistController` (`MTM_Waitlist_Server/Core/MTM_Waitlist_Server.Api/Controllers/WaitlistController.cs`)
+
+| Done | Task | Details |
+|------|------|---------|
+| [ ] | Implement `GetAll()` — `GET /api/waitlist` | Inject `IService_WaitlistEntry`; call `GetAllEntriesAsync()`; return 200 with list or 503 on failure |
+| [ ] | Implement `GetById(int id)` — `GET /api/waitlist/{id}` | Return 200 with entry, 404 if not found, 503 on service failure |
+| [ ] | Implement `Create(request)` — `POST /api/waitlist` | Call `CreateEntryAsync(request)`; return 201 Created with new entry |
+| [ ] | Implement `Update(id, request)` — `PUT /api/waitlist/{id}` | Call `UpdateEntryAsync(id, request)`; return 200 or 404 |
+| [ ] | Implement `Delete(id)` — `DELETE /api/waitlist/{id}` | Call `DeleteEntryAsync(id)`; return 204 No Content or 404 |
+| [ ] | Add/verify server-side `Service_WaitlistEntry` implementation exists | If no concrete implementation exists in the server project, create one following the DAO pattern used by other modules |
+
+### 2.5.2 — Wire API Lifecycle Buttons in `MainWindow.xaml.cs` (`MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/MainWindow.xaml.cs`)
+
+| Done | Task | Details |
+|------|------|---------|
+| [ ] | Inject `IService_ApiHost` into `MainWindow` | Add `private readonly IService_ApiHost _apiHost;` field; resolve from `App.Services` in constructor (same pattern as other views in `MainWindow`) |
+| [ ] | Wire `BtnStartApi_Click` | `await _apiHost.EnsureRunningAsync();` — replaces empty TODO stub at line 311 |
+| [ ] | Wire `BtnStopApi_Click` | `await _apiHost.StopAsync();` — replaces empty TODO stub at line 316 |
+| [ ] | Wire `BtnRestartApi_Click` | `await _apiHost.StopAsync(); await _apiHost.EnsureRunningAsync();` — replaces empty TODO stub at line 321 |
+
+### 2.5.3 — Build Verification After Pre-Flight
+
+| Done | Task | Command |
+|------|------|---------|
+| [ ] | Build server solution — zero errors | `dotnet build MTM_Waitlist_Server/MTM_Waitlist_Server.slnx` |
+
+---
+
 ## Phase 3 — Server-Side: InforVisual + SetupTech API Endpoints (`MTM_Waitlist_Server`)
 
 | Done | Task | Details |
@@ -346,6 +378,17 @@ Check off items as you complete them. All items start unchecked. Reference [FEAT
 | [ ] | Verify `MVVMTK0045` suppressed in Feature.Waitlist | `dotnet build … 2>&1 \| Select-String "MVVMTK0045"` — should return no matches |
 | [ ] | Verify no WMC1006 warnings in WinUI host | `dotnet build … 2>&1 \| Select-String "WMC1006"` — should return no matches |
 | [ ] | Build server solution — zero errors | `dotnet build MTM_Waitlist_Server.slnx` |
+
+### Server TODO Backlog — Resolve Before Production Build
+
+> These do not block FEATURE-07 but **must** be completed before the application goes to production. Track in a follow-up task after FEATURE-07 merges.
+
+| Done | Task | File | Risk |
+|------|------|------|------|
+| [ ] | `ClearAllBackupsAsync` — add double-confirm dialog requiring user to type `"CLEAR ALL"` | `ViewModel_Backup.cs:134` | **HIGH** — one-click total backup deletion with no confirmation |
+| [ ] | `RestoreFromFileAsync` — wire file picker | `ViewModel_Backup.cs:89` | Medium — button is a no-op |
+| [ ] | `BrowseBackupFolderAsync` — wire `Process.Start` to open backup folder | `ViewModel_Backup.cs:105` | Low — button is a no-op |
+| [ ] | `OpenFullLogAsync` — wire full log window | `ViewModel_Dashboard.cs:165` | Low — button is a no-op |
 
 ---
 

@@ -159,6 +159,54 @@ Each file includes a file-level comment: `-- WL_NN_Name.sql / READ ONLY — Info
 
 ---
 
+## Phase 2.5 — Server Pre-Flight: Resolve Existing TODOs Before Adding New Endpoints
+
+**Must be completed before Phase 3.** The two items below are pre-existing TODO stubs in the server project. Adding `InforVisualController` and `SetupTechController` on top of them without resolving them first would layer new code over broken infrastructure.
+
+### 2.5.1 Implement `WaitlistController` (all 5 endpoints)
+
+**File:** `MTM_Waitlist_Server/Core/MTM_Waitlist_Server.Api/Controllers/WaitlistController.cs`
+
+The entire controller body is a TODO stub. The class comment reads _"Implementation is a TODO stub pending FEATURE-01 scope definition."_ FEATURE-01 client auth is now implemented, so the scope is defined. Implement all 5 endpoints via `IService_WaitlistEntry`:
+
+| Method | Route | Action |
+|--------|-------|--------|
+| `GetAll()` | `GET /api/waitlist` | `IService_WaitlistEntry.GetAllEntriesAsync()` → 200 with list or 503 |
+| `GetById(int id)` | `GET /api/waitlist/{id}` | `GetByIdAsync(id)` → 200, 404, or 503 |
+| `Create(request)` | `POST /api/waitlist` | `CreateEntryAsync(request)` → 201 Created |
+| `Update(id, request)` | `PUT /api/waitlist/{id}` | `UpdateEntryAsync(id, request)` → 200 or 404 |
+| `Delete(id)` | `DELETE /api/waitlist/{id}` | `DeleteEntryAsync(id)` → 204 No Content or 404 |
+
+The `IService_WaitlistEntry` interface already exists in the server Core project. Add a server-side `Service_WaitlistEntry` implementation if one does not yet exist, following the same DAO pattern as the other server module services.
+
+### 2.5.2 Wire API Start / Stop / Restart Buttons in `MainWindow.xaml.cs`
+
+**File:** `MTM_Waitlist_Server/Hosts/MTM_Waitlist_Server.Admin/MainWindow.xaml.cs` — lines 311, 316, 321
+
+`IService_ApiHost` is already defined (`Core/Interfaces/Api/IService_ApiHost.cs`), implemented (`Services/Service_ApiHost.cs`), and registered in DI (`App.xaml.cs:64`). The three click handlers are empty. Inject `IService_ApiHost` into `MainWindow` and wire each handler:
+
+```csharp
+private async void BtnStartApi_Click(object sender, RoutedEventArgs e)
+    => await _apiHost.EnsureRunningAsync();
+
+private async void BtnStopApi_Click(object sender, RoutedEventArgs e)
+    => await _apiHost.StopAsync();
+
+private async void BtnRestartApi_Click(object sender, RoutedEventArgs e)
+{
+    await _apiHost.StopAsync();
+    await _apiHost.EnsureRunningAsync();
+}
+```
+
+This is critical for FEATURE-07: when the `VISUAL\MTMFG` connection string is first configured, an admin will need to restart the Kestrel host for the new `InforVisualController` to pick it up. If the button does nothing, the only recovery is a full app restart.
+
+### 2.5.3 Build server after pre-flight fixes
+
+Run `dotnet build MTM_Waitlist_Server.slnx` — zero errors required before starting Phase 3.
+
+---
+
 ## Phase 3 — Server-Side: InforVisual API Endpoints
 
 **Reference:** Research §7
@@ -486,6 +534,17 @@ dotnet build MTM_Waitlist_Application/Features/Feature.Waitlist/Feature.Waitlist
 dotnet build MTM_Waitlist_Application/MTM_Waitlist_Application.WinUI/MTM_Waitlist_Application.WinUI.csproj `
     -f net10.0-windows10.0.19041.0 -p:Platform=x64 -v minimal
 ```
+
+### Remaining Server TODO Backlog — Resolve Before Production
+
+These TODOs are unrelated to FEATURE-07 functionality and do not block the build, but **must** be resolved before the application goes to production. Track them in a follow-up task after FEATURE-07 merges.
+
+| File | Line | TODO | Risk |
+|------|------|------|------|
+| `ViewModel_Backup.cs` | 134 | `ClearAllBackupsAsync` — no double-confirm | **HIGH** — deletes all backups instantly with one click |
+| `ViewModel_Backup.cs` | 89 | `RestoreFromFileAsync` — file picker not wired | Medium — button is a no-op |
+| `ViewModel_Backup.cs` | 105 | `BrowseBackupFolderAsync` — `Process.Start` not wired | Low — button is a no-op |
+| `ViewModel_Dashboard.cs` | 165 | `OpenFullLogAsync` — log window not wired | Low — button is a no-op |
 
 ---
 

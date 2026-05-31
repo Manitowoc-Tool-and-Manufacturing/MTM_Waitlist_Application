@@ -1,0 +1,47 @@
+SET NOCOUNT ON;
+
+WITH SingleSequenceOrders AS (
+    SELECT
+        r.WORKORDER_BASE_ID AS ORDER_ID
+    FROM dbo.REQUIREMENT AS r
+    WHERE r.WORKORDER_TYPE = 'W'
+      AND r.PART_ID IS NOT NULL
+      AND LTRIM(RTRIM(r.PART_ID)) <> ''
+    GROUP BY r.WORKORDER_BASE_ID
+    HAVING COUNT(DISTINCT r.OPERATION_SEQ_NO) = 1
+),
+LatestRequirementRows AS (
+    SELECT DISTINCT TOP (1000)
+        r.WORKORDER_BASE_ID AS ORDER_ID,
+        r.OPERATION_SEQ_NO,
+        r.PIECE_NO,
+        r.PART_ID,
+        r.CALC_QTY,
+        r.QTY_PER,
+        r.FIXED_QTY,
+        r.REQUIRED_DATE,
+        ps.SITE_ID,
+        ps.QTY_ON_HAND
+    FROM dbo.REQUIREMENT AS r
+    INNER JOIN SingleSequenceOrders AS sso
+        ON sso.ORDER_ID = r.WORKORDER_BASE_ID
+    LEFT JOIN dbo.PART_SITE AS ps
+        ON ps.PART_ID = r.PART_ID
+    WHERE r.WORKORDER_TYPE = 'W'
+      AND r.PART_ID IS NOT NULL
+      AND LTRIM(RTRIM(r.PART_ID)) <> ''
+    ORDER BY r.REQUIRED_DATE DESC, r.WORKORDER_BASE_ID, r.OPERATION_SEQ_NO, r.PIECE_NO, r.PART_ID, ps.SITE_ID
+)
+SELECT
+    ORDER_ID,
+    OPERATION_SEQ_NO,
+    PIECE_NO,
+    PART_ID,
+    CALC_QTY,
+    QTY_PER,
+    FIXED_QTY,
+    REQUIRED_DATE,
+    SITE_ID,
+    QTY_ON_HAND
+FROM LatestRequirementRows
+ORDER BY ORDER_ID, OPERATION_SEQ_NO, PIECE_NO, PART_ID, SITE_ID;

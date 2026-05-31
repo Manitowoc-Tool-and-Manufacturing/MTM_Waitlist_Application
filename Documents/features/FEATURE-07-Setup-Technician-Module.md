@@ -118,7 +118,7 @@ The following existing queries from the MTM Receiving Application illustrate the
 | `PART_SITE` | Per-site inventory — `PART_ID`, `SITE_ID`, `QTY_ON_HAND`; JOIN to `WORK_ORDER_MATL.PART_ID` = `PART_SITE.PART_ID` WHERE `SITE_ID = '002'` to get on-hand quantity |
 | `SHOP_RESOURCE` | Workcenter list |
 
-> Reference CSV schema files at `MTM_Receiving_Application/docs/development/InforVisual/DatabaseCSVFiles/` for full column details.
+> Reference CSV schema files at `Documents/InforVisualRelated/CSV_Documents/` for full column details.
 
 ---
 
