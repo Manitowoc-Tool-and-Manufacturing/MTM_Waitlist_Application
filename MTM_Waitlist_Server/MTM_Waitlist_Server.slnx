@@ -4,12 +4,16 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/.github/" />
+  <Folder Name="/.github/">
+    <File Path=".github/copilot-instructions.md" />
+  </Folder>
   <Folder Name="/Core/">
     <Project Path="Core/MTM_Waitlist_Server.Api/MTM_Waitlist_Server.Api.csproj" />
     <Project Path="Core/MTM_Waitlist_Server.Core/MTM_Waitlist_Server.Core.csproj" />
   </Folder>
   <Folder Name="/Database/">
+    <File Path="Database/DATABASE-INITIALIZATION-REMEDIATION.md" />
+    <File Path="Database/MIGRATION-DETERMINISTIC-VALIDATION-AND-REPAIR-SPEC.md" />
     <File Path="Database/README.md" />
   </Folder>
   <Folder Name="/Database/indexes/" />
@@ -18,11 +22,21 @@
     <File Path="Database/indexes/Auth/SharedWorkstations_Indexes.sql" />
     <File Path="Database/indexes/Auth/Users_Indexes.sql" />
   </Folder>
+  <Folder Name="/Database/indexes/SetupTech/">
+    <File Path="Database/indexes/SetupTech/SetupTechDunnageTypeConfig_Indexes.sql" />
+    <File Path="Database/indexes/SetupTech/WorkOrderDunnageAssignments_Indexes.sql" />
+    <File Path="Database/indexes/SetupTech/WorkOrderSubordinateParts_Indexes.sql" />
+    <File Path="Database/indexes/SetupTech/WorkstationActiveJobs_Indexes.sql" />
+    <File Path="Database/indexes/SetupTech/WorkstationJobHistory_Indexes.sql" />
+  </Folder>
   <Folder Name="/Database/indexes/Waitlist/">
     <File Path="Database/indexes/Waitlist/WaitlistEntries_Indexes.sql" />
   </Folder>
   <Folder Name="/Database/migrations/">
     <File Path="Database/migrations/V001__Initial_Schema.sql" />
+    <File Path="Database/migrations/V002__Add_SchemaVersions_Table.sql" />
+    <File Path="Database/migrations/V003__SetupTech_Schema.sql" />
+    <File Path="Database/migrations/V004__SetupTech_Default_DunnageTypeConfig.sql" />
   </Folder>
   <Folder Name="/Database/procedures/" />
   <Folder Name="/Database/procedures/Auth/">
@@ -35,6 +49,17 @@
     <File Path="Database/procedures/Auth/usp_Auth_SaveRefreshToken.sql" />
     <File Path="Database/procedures/Auth/usp_Auth_ValidateCredentials.sql" />
   </Folder>
+  <Folder Name="/Database/procedures/SetupTech/">
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_DeleteDunnageAssignment.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_GetActiveJob.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_GetDunnageAssignment.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_GetEnabledDunnageTypes.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_GetJobHistory.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_SetActiveJob.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_UpsertDunnageAssignment.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_UpsertDunnageTypeConfig.sql" />
+    <File Path="Database/procedures/SetupTech/usp_SetupTech_UpsertSubordinateParts.sql" />
+  </Folder>
   <Folder Name="/Database/procedures/Waitlist/">
     <File Path="Database/procedures/Waitlist/usp_Waitlist_Delete.sql" />
     <File Path="Database/procedures/Waitlist/usp_Waitlist_GetAll.sql" />
@@ -43,21 +68,39 @@
     <File Path="Database/procedures/Waitlist/usp_Waitlist_Update.sql" />
   </Folder>
   <Folder Name="/Database/schema/">
-    <File Path="Database/schema/00_Database.sql" />
+    <File Path="Database/schema/00_Database.bat" />
   </Folder>
-  <Folder Name="/Database/schema/admin/" />
+  <Folder Name="/Database/schema/admin/">
+    <File Path="Database/schema/admin/Admin_Users.sql" />
+  </Folder>
+  <Folder Name="/Database/schema/data/" />
+  <Folder Name="/Database/schema/data/System/">
+    <File Path="Database/schema/data/System/SchemaVersions_BaselineHistory.sql" />
+    <File Path="Database/schema/data/System/SchemaVersions_PreExisting_Bootstrap.sql" />
+  </Folder>
   <Folder Name="/Database/schema/tables/" />
   <Folder Name="/Database/schema/tables/Auth/">
     <File Path="Database/schema/tables/Auth/RefreshTokens.sql" />
     <File Path="Database/schema/tables/Auth/SharedWorkstations.sql" />
     <File Path="Database/schema/tables/Auth/Users.sql" />
   </Folder>
+  <Folder Name="/Database/schema/tables/SetupTech/">
+    <File Path="Database/schema/tables/SetupTech/SetupTechDunnageTypeConfig.sql" />
+    <File Path="Database/schema/tables/SetupTech/WorkOrderDunnageAssignments.sql" />
+    <File Path="Database/schema/tables/SetupTech/WorkOrderSubordinateParts.sql" />
+    <File Path="Database/schema/tables/SetupTech/WorkstationActiveJobs.sql" />
+    <File Path="Database/schema/tables/SetupTech/WorkstationJobHistory.sql" />
+  </Folder>
+  <Folder Name="/Database/schema/tables/System/">
+    <File Path="Database/schema/tables/System/SchemaVersions.sql" />
+  </Folder>
   <Folder Name="/Database/schema/tables/Waitlist/">
     <File Path="Database/schema/tables/Waitlist/WaitlistEntries.sql" />
   </Folder>
   <Folder Name="/Database/seed/">
-    <File Path="Database/seed/01_Seed_Users.sql" />
-    <File Path="Database/seed/02_Seed_WaitlistEntries.sql" />
+    <File Path="Database/seed/00_Seed_DevelopmentData.bat" />
+    <File Path="Database/seed/01_Seed_WaitlistEntries.sql" />
+    <File Path="Database/seed/02_Seed_SetupTechDunnageTypeConfig.sql" />
   </Folder>
   <Folder Name="/Database/triggers/" />
   <Folder Name="/Database/triggers/Auth/">
@@ -107,7 +150,9 @@
     <Project Path="Tests/MTM_Waitlist_Server.Core.Tests/MTM_Waitlist_Server.Core.Tests.csproj" />
     <Project Path="Tests/MTM_Waitlist_Server.Module.Dashboard.Tests/MTM_Waitlist_Server.Module.Dashboard.Tests.csproj" />
     <Project Path="Tests/MTM_Waitlist_Server.Module.KillSwitch.Tests/MTM_Waitlist_Server.Module.KillSwitch.Tests.csproj" Id="a55c7bca-72b3-4415-8fc4-c4c147d84637" />
-    <Project Path="Tests/MTM_Waitlist_Server.Module.Migrations.Tests/MTM_Waitlist_Server.Module.Migrations.Tests.csproj" Id="631bfa81-66f6-43b3-a43d-a23b3594504a" />
+    <Project Path="Tests/MTM_Waitlist_Server.Module.Migrations.Tests/MTM_Waitlist_Server.Module.Migrations.Tests.csproj" Id="631bfa81-66f6-43b3-a43d-a23b3594504a">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="Tests/MTM_Waitlist_Server.Module.Settings.Tests/MTM_Waitlist_Server.Module.Settings.Tests.csproj" />
     <Project Path="Tests/MTM_Waitlist_Server.Modules.Backup.Tests/MTM_Waitlist_Server.Module.Backup.Tests.csproj" />
   </Folder>

@@ -100,7 +100,7 @@ Two dedicated MySQL users are required. Run `Database/schema/admin/Admin_Users.s
 | MySQL User | Used By | Privileges |
 |-----------|---------|------------|
 | `waitlist_admin_dbappuser` | REST API (all client requests) | `EXECUTE`, `SELECT` on `mtm_waitlist.*` |
-| `waitlist_admin_dbupdater` | Admin dashboard, backup, migrations | `ALL` on `mtm_waitlist.*` + `PROCESS`, `REPLICATION CLIENT`, `KILL` on `*.*` |
+| `waitlist_admin_dbupdater` | Admin dashboard, backup, migrations | `ALL` on `mtm_waitlist.*` + `PROCESS`, `REPLICATION CLIENT`, `SUPER` on `*.*` |
 
 Passwords are stored in `%ProgramData%\MTM\WaitlistServer\server-settings.json` (DPAPI-encrypted) and **never** in source control.
 

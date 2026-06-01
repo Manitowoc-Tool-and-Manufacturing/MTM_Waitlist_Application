@@ -12,7 +12,7 @@
 -- App user: used by the REST API for all client-facing requests.
 -- Minimal privileges: EXECUTE (stored procedures) + SELECT on app tables.
 CREATE USER IF NOT EXISTS 'waitlist_admin_dbappuser'@'%'
-    IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
+    IDENTIFIED BY 'mtmfg_waitlist_app_user_password';
 
 GRANT EXECUTE, SELECT
     ON `mtm_waitlist`.* TO 'waitlist_admin_dbappuser'@'%';
@@ -20,15 +20,12 @@ GRANT EXECUTE, SELECT
 -- Updater user: used by the admin app for dashboard, backup, and migrations.
 -- Elevated privileges required for monitoring and maintenance operations.
 CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'%'
-    IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
+    IDENTIFIED BY 'mtmfg_waitlist_app_user_password';
 
 -- PROCESS          : required for SHOW FULL PROCESSLIST (dashboard active connections)
 -- REPLICATION CLIENT : required for SHOW MASTER STATUS (backup metadata)
--- KILL             : required for session termination from dashboard
--- SYSTEM_USER      : required to DROP/ALTER procedures owned by a SYSTEM_USER account
---                    (MySQL 8.0+ security model — root is implicitly SYSTEM_USER)
--- CREATE ROUTINE   : required to CREATE/DROP stored procedures and functions
-GRANT SELECT, PROCESS, REPLICATION CLIENT, KILL, SYSTEM_USER, CREATE ROUTINE
+-- SUPER            : required on MySQL 5.7 to terminate other users' sessions from the dashboard
+GRANT SELECT, PROCESS, REPLICATION CLIENT, SUPER
     ON *.* TO 'waitlist_admin_dbupdater'@'%';
 
 GRANT ALL PRIVILEGES

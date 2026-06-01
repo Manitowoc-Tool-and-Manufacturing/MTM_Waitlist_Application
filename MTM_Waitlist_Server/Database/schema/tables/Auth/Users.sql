@@ -7,7 +7,7 @@
 --                   user must enter app credentials (Username + PasswordHash).
 --                2. Personal Workstation — Windows username is NOT in SharedWorkstations;
 --                   app auto-logs in by matching WindowsUsername to this table.
--- Depends on:  schema/00_Database.sql
+-- Depends on:  `mtm_waitlist` already created and selected.
 -- MySQL:       5.7 compatible
 -- =============================================================
 

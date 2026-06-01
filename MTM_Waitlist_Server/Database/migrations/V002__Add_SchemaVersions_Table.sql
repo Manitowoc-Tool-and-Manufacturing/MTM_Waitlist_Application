@@ -33,3 +33,5 @@ INSERT IGNORE INTO `SchemaVersions`
 VALUES
     ('V001', 'Initial_Schema', 'V001__Initial_Schema.sql',
      'bootstrapped-pre-tracking', UTC_TIMESTAMP(), 'system', 0, 1);
+
+SELECT 'NOTE: Completed migration V002__Add_SchemaVersions_Table.' AS `MigrationNote`;

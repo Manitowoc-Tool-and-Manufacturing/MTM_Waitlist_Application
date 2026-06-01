@@ -15,8 +15,8 @@
         <!-- Top toolbar -->
         <Grid Grid.Row="0">
             <StackPanel Orientation="Vertical" Spacing="2">
-                <TextBlock Text="Database Migrations" Style="{ThemeResource TitleTextBlockStyle}" />
-                <TextBlock Text="Apply versioned schema migrations and re-run stored procedures."
+                <TextBlock Text="Database Schema Updates" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="Compare checked-in SQL object files to the live database, then apply safe updates."
                            Style="{ThemeResource CaptionTextBlockStyle}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
@@ -27,8 +27,9 @@
                               Visibility="{x:Bind ViewModel.IsBusy, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 <Button Content="Refresh" MinHeight="36"
                         Command="{x:Bind ViewModel.LoadCommand, Mode=OneWay}" />
-                <Button Content="Apply Migrations" MinHeight="36"
+                <Button Content="Apply Updates" MinHeight="36"
                         Style="{ThemeResource AccentButtonStyle}"
+                    IsEnabled="{x:Bind ViewModel.CanApplyPendingMigrations, Mode=OneWay}"
                         Command="{x:Bind ViewModel.ApplyMigrationsCommand, Mode=OneWay}" />
             </StackPanel>
         </Grid>
@@ -45,24 +46,31 @@
             <StackPanel Spacing="4" HorizontalAlignment="Stretch">
 
                 <!-- SCHEMA VERSIONS TABLE WARNING -->
-                <InfoBar Title="Schema Versions Table Missing"
-                         Message="The schema_versions tracking table does not exist. Apply migrations to create it."
+                <InfoBar Title="Update History Table Missing"
+                         Message="The SchemaVersions tracking table does not exist yet. It will be created automatically once the baseline schema exists."
                          Severity="Warning"
                          IsOpen="{x:Bind ViewModel.IsSchemaVersionsTableMissing, Mode=OneWay}"
                          IsClosable="False" />
 
                 <!-- PENDING MIGRATIONS -->
-                <ctk:SettingsExpander Header="Pending Migrations"
-                                      Description="Migration scripts that have not yet been applied">
+                <ctk:SettingsExpander Header="Pending Updates"
+                                      Description="{x:Bind ViewModel.PendingUpdatesDescription, Mode=OneWay}">
                     <ctk:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE8A9;" />
                     </ctk:SettingsExpander.HeaderIcon>
                     <Button Content="Apply All" MinHeight="36"
                             Style="{ThemeResource AccentButtonStyle}"
+                            IsEnabled="{x:Bind ViewModel.CanApplyPendingMigrations, Mode=OneWay}"
                             Command="{x:Bind ViewModel.ApplyMigrationsCommand, Mode=OneWay}" />
                     <ctk:SettingsExpander.Items>
                         <ctk:SettingsCard>
-                            <ListView ItemsSource="{x:Bind ViewModel.PendingMigrations, Mode=OneWay}"
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="No pending updates. The live database currently matches the checked-in SQL definitions."
+                                           Visibility="{x:Bind ViewModel.HasPendingMigrations, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}"
+                                           TextWrapping="Wrap"
+                                           Style="{ThemeResource BodyTextBlockStyle}" />
+                                <ListView ItemsSource="{x:Bind ViewModel.PendingMigrations, Mode=OneWay}"
+                                      Visibility="{x:Bind ViewModel.HasPendingMigrations, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
                                       MinHeight="40" MaxHeight="300"
                                       SelectionMode="None">
                                 <ListView.ItemTemplate>
@@ -73,26 +81,35 @@
                                                        Text="{x:Bind Version}"
                                                        Style="{ThemeResource BodyStrongTextBlockStyle}"
                                                        VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{x:Bind Description}"
-                                                       Style="{ThemeResource BodyTextBlockStyle}"
-                                                       VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock Text="{x:Bind Description}"
+                                                           Style="{ThemeResource BodyTextBlockStyle}"
+                                                           TextWrapping="WrapWholeWords" />
+                                                <TextBlock Text="{x:Bind AutoApplySummary}"
+                                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{x:Bind DetailSummary}"
+                                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                           TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
                                             <Button Grid.Column="2"
-                                                    Content="Preview SQL"
+                                                    Content="Preview Details"
                                                     MinHeight="32"
                                                     Tag="{x:Bind}"
                                                     Click="PreviewButton_Click" />
                                         </Grid>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
-                            </ListView>
+                                </ListView>
+                            </StackPanel>
                         </ctk:SettingsCard>
                     </ctk:SettingsExpander.Items>
                 </ctk:SettingsExpander>
 
                 <!-- SQL PREVIEW -->
                 <ctk:SettingsExpander Header="SQL Preview"
-                                      Description="SQL content of the selected pending migration">
+                                      Description="SQL content of the selected stored definition">
                     <ctk:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE943;" />
                     </ctk:SettingsExpander.HeaderIcon>
@@ -110,18 +127,18 @@
                 </ctk:SettingsExpander>
 
                 <!-- IDEMPOTENT OBJECTS -->
-                <ctk:SettingsExpander Header="Re-run Idempotent Objects"
-                                      Description="Re-apply stored procedures, triggers, and indexes without version tracking">
+                <ctk:SettingsExpander Header="Replaceable Objects"
+                                      Description="Apply pending procedures, triggers, and missing indexes without rebuilding tables">
                     <ctk:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE72C;" />
                     </ctk:SettingsExpander.HeaderIcon>
                     <ctk:SettingsExpander.Items>
-                        <ctk:SettingsCard Header="Re-run All Idempotent Objects"
-                                          Description="Re-applies all stored procedures, triggers, and indexes from the database folder">
+                        <ctk:SettingsCard Header="Apply Replaceable Updates"
+                                          Description="Applies the pending definitions that can be safely replaced without altering live table structures">
                             <ctk:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE72C;" />
                             </ctk:SettingsCard.HeaderIcon>
-                            <Button Content="Re-run" MinHeight="36"
+                            <Button Content="Apply Replaceable Updates" MinHeight="36"
                                     Command="{x:Bind ViewModel.RerunIdempotentObjectsCommand, Mode=OneWay}" />
                         </ctk:SettingsCard>
                     </ctk:SettingsExpander.Items>
@@ -179,8 +196,8 @@
                 </ctk:SettingsExpander>
 
                 <!-- APPLIED MIGRATIONS -->
-                <ctk:SettingsExpander Header="Applied Migrations"
-                                      Description="Migration versions that have already been run against this database">
+                <ctk:SettingsExpander Header="Update History"
+                                      Description="Recent update attempts recorded by the admin app">
                     <ctk:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE930;" />
                     </ctk:SettingsExpander.HeaderIcon>
@@ -191,12 +208,13 @@
                                       SelectionMode="None">
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="mig:AppliedMigration">
-                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12"
+                                                                                <Grid ColumnDefinitions="2*,*,Auto,Auto" ColumnSpacing="12"
                                               Padding="0,4,0,4">
                                             <TextBlock Grid.Column="0"
-                                                       Text="{x:Bind Version}"
+                                                                                                             Text="{x:Bind Script}"
                                                        Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                       VerticalAlignment="Center" />
+                                                                                                             VerticalAlignment="Center"
+                                                                                                             TextWrapping="WrapWholeWords" />
                                             <TextBlock Grid.Column="1"
                                                        Text="{x:Bind Description}"
                                                        Style="{ThemeResource BodyTextBlockStyle}"

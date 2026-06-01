@@ -3,7 +3,7 @@
 -- Domain:      SetupTech
 -- Description: Caches subordinate/component parts returned from Infor Visual
 --              for a work-order and sequence pair.
--- Depends on:  schema/00_Database.sql
+-- Depends on:  `mtm_waitlist` already created and selected.
 -- MySQL:       5.7 compatible
 -- =============================================================
 

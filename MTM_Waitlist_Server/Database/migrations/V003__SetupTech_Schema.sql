@@ -112,27 +112,136 @@ CREATE TABLE IF NOT EXISTS `WorkOrderSubordinateParts`
 -- SECTION 2 — Indexes
 -- ─────────────────────────────────────────────────────────────
 
-DROP INDEX IF EXISTS `idx_WorkstationActiveJobs_SetupTechUserId` ON `WorkstationActiveJobs`;
+-- MySQL 5.7 does not support DROP INDEX IF EXISTS, so each drop is guarded.
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkstationActiveJobs'
+              AND INDEX_NAME = 'idx_WorkstationActiveJobs_SetupTechUserId'),
+        'DROP INDEX `idx_WorkstationActiveJobs_SetupTechUserId` ON `WorkstationActiveJobs`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkstationActiveJobs_SetupTechUserId` ON `WorkstationActiveJobs` (`SetupTechUserId`);
-DROP INDEX IF EXISTS `idx_WorkstationActiveJobs_WorkOrder_Sequence` ON `WorkstationActiveJobs`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkstationActiveJobs'
+              AND INDEX_NAME = 'idx_WorkstationActiveJobs_WorkOrder_Sequence'),
+        'DROP INDEX `idx_WorkstationActiveJobs_WorkOrder_Sequence` ON `WorkstationActiveJobs`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkstationActiveJobs_WorkOrder_Sequence` ON `WorkstationActiveJobs` (`WorkOrderId`, `SequenceNo`);
 
-DROP INDEX IF EXISTS `idx_WorkstationJobHistory_Workcenter_ActiveFrom` ON `WorkstationJobHistory`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkstationJobHistory'
+              AND INDEX_NAME = 'idx_WorkstationJobHistory_Workcenter_ActiveFrom'),
+        'DROP INDEX `idx_WorkstationJobHistory_Workcenter_ActiveFrom` ON `WorkstationJobHistory`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkstationJobHistory_Workcenter_ActiveFrom` ON `WorkstationJobHistory` (`WorkcenterId`, `ActiveFrom`);
-DROP INDEX IF EXISTS `idx_WorkstationJobHistory_SetupTechUserId` ON `WorkstationJobHistory`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkstationJobHistory'
+              AND INDEX_NAME = 'idx_WorkstationJobHistory_SetupTechUserId'),
+        'DROP INDEX `idx_WorkstationJobHistory_SetupTechUserId` ON `WorkstationJobHistory`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkstationJobHistory_SetupTechUserId` ON `WorkstationJobHistory` (`SetupTechUserId`);
-DROP INDEX IF EXISTS `idx_WorkstationJobHistory_WorkOrder_Sequence` ON `WorkstationJobHistory`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkstationJobHistory'
+              AND INDEX_NAME = 'idx_WorkstationJobHistory_WorkOrder_Sequence'),
+        'DROP INDEX `idx_WorkstationJobHistory_WorkOrder_Sequence` ON `WorkstationJobHistory`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkstationJobHistory_WorkOrder_Sequence` ON `WorkstationJobHistory` (`WorkOrderId`, `SequenceNo`);
 
-DROP INDEX IF EXISTS `idx_WorkOrderDunnageAssignments_LastModifiedByUserId` ON `WorkOrderDunnageAssignments`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkOrderDunnageAssignments'
+              AND INDEX_NAME = 'idx_WorkOrderDunnageAssignments_LastModifiedByUserId'),
+        'DROP INDEX `idx_WorkOrderDunnageAssignments_LastModifiedByUserId` ON `WorkOrderDunnageAssignments`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkOrderDunnageAssignments_LastModifiedByUserId` ON `WorkOrderDunnageAssignments` (`LastModifiedByUserId`);
-DROP INDEX IF EXISTS `idx_WorkOrderDunnageAssignments_DunnageTypeId` ON `WorkOrderDunnageAssignments`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkOrderDunnageAssignments'
+              AND INDEX_NAME = 'idx_WorkOrderDunnageAssignments_DunnageTypeId'),
+        'DROP INDEX `idx_WorkOrderDunnageAssignments_DunnageTypeId` ON `WorkOrderDunnageAssignments`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkOrderDunnageAssignments_DunnageTypeId` ON `WorkOrderDunnageAssignments` (`DunnageTypeId`);
 
-DROP INDEX IF EXISTS `idx_SetupTechDunnageTypeConfig_IsEnabled_DisplayOrder` ON `SetupTechDunnageTypeConfig`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'SetupTechDunnageTypeConfig'
+              AND INDEX_NAME = 'idx_SetupTechDunnageTypeConfig_IsEnabled_DisplayOrder'),
+        'DROP INDEX `idx_SetupTechDunnageTypeConfig_IsEnabled_DisplayOrder` ON `SetupTechDunnageTypeConfig`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_SetupTechDunnageTypeConfig_IsEnabled_DisplayOrder` ON `SetupTechDunnageTypeConfig` (`IsEnabled`, `DisplayOrder`);
 
-DROP INDEX IF EXISTS `idx_WorkOrderSubordinateParts_CachedAt` ON `WorkOrderSubordinateParts`;
+SET @sql = (
+    SELECT IF(
+        EXISTS(
+            SELECT 1
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'WorkOrderSubordinateParts'
+              AND INDEX_NAME = 'idx_WorkOrderSubordinateParts_CachedAt'),
+        'DROP INDEX `idx_WorkOrderSubordinateParts_CachedAt` ON `WorkOrderSubordinateParts`',
+        'DO 0'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX `idx_WorkOrderSubordinateParts_CachedAt` ON `WorkOrderSubordinateParts` (`CachedAt`);
 
 -- ─────────────────────────────────────────────────────────────
@@ -152,6 +261,8 @@ BEGIN
     SET NEW.`UpdatedAt` = UTC_TIMESTAMP();
 END$$
 DELIMITER ;
+
+SELECT 'NOTE: Completed migration V003__SetupTech_Schema.' AS `MigrationNote`;
 
 DROP TRIGGER IF EXISTS `trg_WorkstationActiveJobs_BeforeUpdate`;
 DELIMITER $$

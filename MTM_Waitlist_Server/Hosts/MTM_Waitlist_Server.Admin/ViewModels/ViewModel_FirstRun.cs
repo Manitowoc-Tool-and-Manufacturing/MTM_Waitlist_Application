@@ -9,6 +9,7 @@ using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MTM_Waitlist_Server.Admin.ViewModels;
@@ -56,8 +57,41 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     public bool AppUserExists
     {
         get => _appUserExists;
-        private set => SetProperty(ref _appUserExists, value);
+        private set
+        {
+            if (SetProperty(ref _appUserExists, value))
+            {
+                OnPropertyChanged(nameof(NeedsExistingAppUserPassword));
+                OnPropertyChanged(nameof(CanEditAppUsername));
+                OnPropertyChanged(nameof(CanEditAppPassword));
+                OnPropertyChanged(nameof(AppUserInputsOpacity));
+                OnPropertyChanged(nameof(AppUserHelpText));
+            }
+        }
     }
+
+    /// <summary>
+    /// True when the app already has a saved password for the existing MySQL app user.
+    /// When false, step 1 must allow the operator to enter a replacement password.
+    /// </summary>
+    public bool HasSavedAppUserPassword { get; private set; }
+
+    /// <summary>True when step 1 must collect a replacement password for the existing MySQL app user.</summary>
+    public bool NeedsExistingAppUserPassword => AppUserExists && !HasSavedAppUserPassword;
+
+    /// <summary>Username stays locked when the MySQL user already exists.</summary>
+    public bool CanEditAppUsername => !AppUserExists;
+
+    /// <summary>Password stays editable when creating a new user or repairing an existing one with no saved password.</summary>
+    public bool CanEditAppPassword => !AppUserExists || NeedsExistingAppUserPassword;
+
+    /// <summary>Dims the app-user section only when it is fully reused without operator input.</summary>
+    public double AppUserInputsOpacity => AppUserExists && !NeedsExistingAppUserPassword ? 0.45 : 1.0;
+
+    /// <summary>Explains whether step 1 will create, reuse, or reset the application MySQL user password.</summary>
+    public string AppUserHelpText => NeedsExistingAppUserPassword
+        ? "This MySQL user already exists, but the saved password is unavailable. Enter a password below to reset that existing user."
+        : "This account will own the database and is used by the server at runtime.";
 
 
 
@@ -81,21 +115,21 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     public ViewModel_FirstRun(IService_FirstRun firstRun, IService_SettingsStore settingsStore,
         Model_FirstRunProbeResult? initialProbe = null)
     {
-        _firstRun      = firstRun;
+        _firstRun = firstRun;
         _settingsStore = settingsStore;
 
         // Set defaults for fields that previously had inline initializers.
-        CurrentStep     = 1;
-        StatusMessage   = string.Empty;
-        MigrationLog    = string.Empty;
-        AppUsername     = string.Empty;
-        DisplayName     = string.Empty;
-        UserPassword    = string.Empty;
+        CurrentStep = 1;
+        StatusMessage = string.Empty;
+        MigrationLog = string.Empty;
+        AppUsername = string.Empty;
+        DisplayName = string.Empty;
+        UserPassword = string.Empty;
         ConfirmPassword = string.Empty;
-        SelectedRole    = "Admin";
+        SelectedRole = "Admin";
         DbAdminUsername = "root";
         DbAdminPassword = string.Empty;
-        DbAppPassword   = string.Empty;
+        DbAppPassword = string.Empty;
 
         // Pre-fill host/port/name from any existing saved settings so the user
         // doesn't have to re-type them on repeat visits to the wizard.
@@ -103,6 +137,7 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
         DbHost = db.Host;
         DbPort = db.Port.ToString();
         DbName = db.DatabaseName;
+        HasSavedAppUserPassword = !string.IsNullOrWhiteSpace(db.UpdaterPassword);
         // App-user defaults are shown as hints; root credentials are never pre-filled.
         DbAppUsername = string.IsNullOrWhiteSpace(db.UpdaterUsername)
             ? "waitlist_admin_dbupdater"
@@ -133,11 +168,13 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
         {
             var csb = new MySqlConnectionStringBuilder
             {
-                Server            = host,
-                Port              = (uint)port,
-                UserID            = appUsername,
-                Password          = appPassword,
+                Server = host,
+                Port = (uint)port,
+                UserID = appUsername,
+                Password = appPassword,
                 ConnectionTimeout = 5,
+                AllowPublicKeyRetrieval = true,
+                SslMode = MySqlSslMode.Preferred,
                 // Do NOT specify a database — the schema may not exist yet.
                 // We only want to verify the MySQL user account exists and can authenticate.
             };
@@ -186,11 +223,13 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
         {
             var csb = new MySqlConnectionStringBuilder
             {
-                Server            = DbHost,
-                Port              = (uint)port,
-                UserID            = DbAdminUsername,
-                Password          = DbAdminPassword,
+                Server = DbHost,
+                Port = (uint)port,
+                UserID = DbAdminUsername,
+                Password = DbAdminPassword,
                 ConnectionTimeout = 5,
+                AllowPublicKeyRetrieval = true,
+                SslMode = MySqlSslMode.Preferred,
             };
 
             await using var conn = new MySqlConnection(csb.ConnectionString);
@@ -217,7 +256,7 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     [RelayCommand]
     private async Task SetupDatabaseAsync()
     {
-        IsWorking     = true;
+        IsWorking = true;
         StatusMessage = "Creating database and application user…";
         Step1Complete = false;
 
@@ -252,9 +291,18 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
                 return;
             }
 
+            HasSavedAppUserPassword = !string.IsNullOrWhiteSpace(DbAppPassword)
+                || HasSavedAppUserPassword;
+            OnPropertyChanged(nameof(NeedsExistingAppUserPassword));
+            OnPropertyChanged(nameof(CanEditAppPassword));
+            OnPropertyChanged(nameof(AppUserInputsOpacity));
+            OnPropertyChanged(nameof(AppUserHelpText));
+
             Step1Complete = true;
             StatusMessage = AppUserExists
-                ? $"✅ Database '{DbName}' ready. User '{DbAppUsername}' already existed — skipped creation."
+                ? NeedsExistingAppUserPassword
+                    ? $"✅ Database '{DbName}' ready. Existing user '{DbAppUsername}' password was reset and access refreshed."
+                    : $"✅ Database '{DbName}' ready. User '{DbAppUsername}' already existed — reused saved credentials."
                 : $"✅ Database '{DbName}' created and user '{DbAppUsername}' configured.";
         }
         finally
@@ -268,66 +316,46 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     private void GoToStep2()
     {
         if (!Step1Complete) { return; }
-        CurrentStep   = 2;
+        CurrentStep = 2;
         StatusMessage = string.Empty;
 
         // Skip Step 2 if schema already exists — probe told us only NoAdminUser.
         if (ProbeStatus == FirstRunStatus.NoAdminUser)
         {
             Step2Complete = true;
-            CurrentStep   = 3;
+            CurrentStep = 3;
         }
     }
 
     // ── Step 2 — Bootstrap Migration ─────────────────────────────────────────
 
     /// <summary>
-    /// Runs <c>V001__Initial_Schema.sql</c> against the target database using the
-    /// <b>privileged</b> (root/DBA) credentials from Step 1.  The app user lacks
-    /// the elevated rights needed for triggers and stored procedures, so DDL must
-    /// run as root.  The script is embedded in the assembly.
+    /// Runs the baseline compare-and-apply workflow against the target database using
+    /// the runtime application user saved by Step 1.
     /// </summary>
     [RelayCommand]
-    private async Task RunBootstrapAsync()
+    private async Task RunBootstrapAsync(CancellationToken ct)
     {
-        IsWorking     = true;
-        MigrationLog  = string.Empty;
-        StatusMessage = "Running bootstrap migration…";
+        IsWorking = true;
+        MigrationLog = string.Empty;
+        StatusMessage = "Comparing SQL definitions to the database…";
 
         try
         {
-            if (!int.TryParse(DbPort, out var port)) { port = 3306; }
+            var result = await _firstRun.BootstrapSchemaAsync(
+                new Progress<string>(AppendLog),
+                ct);
 
-            if (string.IsNullOrWhiteSpace(DbAdminPassword))
+            if (!result.IsSuccess)
             {
-                StatusMessage = "❌ Go back to Step 1 and enter the privileged MySQL account password before running bootstrap.";
+                StatusMessage = $"❌ {result.ErrorMessage}";
+                AppendLog($"❌ {result.ErrorMessage}");
                 return;
             }
 
-            // Use the privileged credentials — triggers and stored procedures require
-            // elevated rights that the application user does not have.
-            var csb = new MySqlConnectionStringBuilder
-            {
-                Server             = DbHost,
-                Port               = (uint)port,
-                Database           = DbName,
-                UserID             = DbAdminUsername,
-                Password           = DbAdminPassword,
-                ConnectionTimeout  = 10,
-                AllowUserVariables = true,
-            };
-
-            await using var conn = new MySqlConnection(csb.ConnectionString);
-            await conn.OpenAsync();
-
-            var log = await SqlScriptRunner.RunEmbeddedScriptAsync(
-                conn,
-                "V001__Initial_Schema.sql",
-                line => AppendLog(line));
-
             Step2Complete = true;
-            StatusMessage = $"✅ Bootstrap complete — {log.Count} statement(s) executed.";
-            CurrentStep   = 3;
+            StatusMessage = $"✅ Baseline compare-and-apply complete — {result.MigrationsApplied} object(s) updated.";
+            CurrentStep = 3;
         }
         catch (Exception ex)
         {
@@ -348,7 +376,7 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
     {
         if (!ValidateStep3()) { return; }
 
-        IsWorking     = true;
+        IsWorking = true;
         StatusMessage = "Creating user…";
 
         try

@@ -251,7 +251,7 @@ GRANT EXECUTE, SELECT
 CREATE USER IF NOT EXISTS 'waitlist_admin_dbupdater'@'localhost'
     IDENTIFIED BY '*** SET STRONG PASSWORD HERE ***';
 
-GRANT SELECT, PROCESS, REPLICATION CLIENT, KILL
+GRANT SELECT, PROCESS, REPLICATION CLIENT, SUPER
     ON *.* TO 'waitlist_admin_dbupdater'@'localhost';
 
 GRANT ALL PRIVILEGES
@@ -262,7 +262,7 @@ FLUSH PRIVILEGES;
 
 `REPLICATION CLIENT` is needed for `SHOW MASTER STATUS` (useful in backup — DATABASE-04).  
 `PROCESS` is needed for `SHOW FULL PROCESSLIST`.  
-`KILL` is needed for session termination from the dashboard.
+`SUPER` is needed on MySQL 5.7 for session termination from the dashboard.
 
 ---
 

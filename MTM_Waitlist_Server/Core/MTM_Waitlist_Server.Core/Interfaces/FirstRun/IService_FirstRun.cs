@@ -1,4 +1,5 @@
 using MTM_Waitlist_Server.Core.Models.FirstRun;
+using MTM_Waitlist_Server.Core.Models.Migration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,6 +48,12 @@ public interface IService_FirstRun
         string appDbUsername,
         string appDbPassword,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Step 2 of the first-run wizard.
+    /// Compares the checked-in SQL definitions to the target database and applies the missing or drifted baseline objects.
+    /// </summary>
+    Task<MigrationResult> BootstrapSchemaAsync(IProgress<string> progress, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates the first admin user directly (INSERT INTO Users).

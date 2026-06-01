@@ -30,7 +30,7 @@ BEGIN
         `Role`,
         `IsActive`
     FROM  `Users`
-    WHERE `WindowsUsername` = p_WindowsUsername
+    WHERE `WindowsUsername` = CONVERT(p_WindowsUsername USING utf8mb4) COLLATE utf8mb4_unicode_ci
       AND `IsActive`        = 1
     LIMIT 1;
 END$$

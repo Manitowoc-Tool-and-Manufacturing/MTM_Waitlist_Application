@@ -1,7 +1,0 @@
-SchemaVersions	V003:0, V004:1
-SetupTechTables	5
-SetupTechProcedures	0
-SetupTechTriggers	0
-SetupTechIndexes	0
-DunnageTypeConfigRows	13
-DunnageTypeConfigEnabledDisabled	6 enabled / 7 disabled

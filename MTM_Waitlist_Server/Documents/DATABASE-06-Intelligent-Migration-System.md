@@ -387,7 +387,7 @@ public interface IService_Migration
     Task<MigrationResult> ApplyPendingMigrationsAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
     Task<RerunResult> RerunIdempotentObjectsAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
     Task<IReadOnlyList<AppliedMigration>> GetAppliedMigrationsAsync(CancellationToken ct = default);
-    IReadOnlyList<PendingMigration> GetPendingMigrations();
+    Task<IReadOnlyList<PendingMigration>> GetPendingMigrationsAsync(CancellationToken ct = default);
     string PreviewMigrationSql(string version);
 }
 ```

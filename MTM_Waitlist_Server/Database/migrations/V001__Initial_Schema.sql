@@ -24,8 +24,7 @@
 
 CREATE DATABASE IF NOT EXISTS `mtm_waitlist`
     CHARACTER SET utf8mb4
-    COLLATE      utf8mb4_unicode_ci
-    COMMENT      'MTM Waitlist Application — internal work-network database';
+    COLLATE      utf8mb4_unicode_ci;
 
 USE `mtm_waitlist`;
 
@@ -433,3 +432,5 @@ DELIMITER ;
 -- =============================================================
 -- END OF V001__Initial_Schema
 -- =============================================================
+
+SELECT 'NOTE: Completed migration V001__Initial_Schema.' AS `MigrationNote`;

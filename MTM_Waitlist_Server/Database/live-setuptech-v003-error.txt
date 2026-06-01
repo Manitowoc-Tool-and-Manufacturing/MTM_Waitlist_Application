@@ -1,2 +1,0 @@
-V003	0	MySQL error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'IF EXISTS `idx_WorkstationActiveJobs_SetupTechUserId` ON `WorkstationActiveJobs`' at line 1\nStatement: DROP INDEX IF EXISTS `idx_WorkstationActiveJobs_SetupTechUserId` ON `WorkstationActiveJobs`
-V004	1	

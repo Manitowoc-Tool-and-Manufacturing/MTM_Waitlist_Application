@@ -12,9 +12,11 @@
 # Full initial deploy — no seed data
 mysql -h 172.16.1.104 -u <admin_user> -p < migrations/V001__Initial_Schema.sql
 
+# Full local reset from PowerShell
+.\schema\00_Database.bat localhost root root
+
 # Add dev sample data (development only — NOT for production)
-mysql -h 172.16.1.104 -u <admin_user> -p mtm_waitlist < seed/01_Seed_Users.sql
-mysql -h 172.16.1.104 -u <admin_user> -p mtm_waitlist < seed/02_Seed_WaitlistEntries.sql
+.\seed\00_Seed_DevelopmentData.bat localhost root root
 ```
 
 ---
@@ -25,12 +27,18 @@ mysql -h 172.16.1.104 -u <admin_user> -p mtm_waitlist < seed/02_Seed_WaitlistEnt
 Database/
 ├── README.md
 ├── schema/
-│   ├── 00_Database.sql
+│   ├── 00_Database.bat
+│   ├── data/
+│   │   └── System/
+│   │       ├── SchemaVersions_BaselineHistory.sql
+│   │       └── SchemaVersions_PreExisting_Bootstrap.sql
 │   └── tables/
 │       ├── Auth/
 │       │   ├── Users.sql
 │       │   ├── SharedWorkstations.sql
 │       │   └── RefreshTokens.sql
+│       ├── System/
+│       │   └── SchemaVersions.sql
 │       └── Waitlist/
 │           └── WaitlistEntries.sql
 ├── indexes/
@@ -87,9 +95,9 @@ Database/
 │       ├── trg_WaitlistEntries_BeforeInsert.sql
 │       └── trg_WaitlistEntries_BeforeUpdate.sql
 ├── seed/                                    ← development only — NOT for production
-│   ├── 01_Seed_Users.sql
-│   ├── 02_Seed_WaitlistEntries.sql
-│   └── 03_Seed_SetupTechDunnageTypeConfig.sql
+│   ├── 00_Seed_DevelopmentData.bat
+│   ├── 01_Seed_WaitlistEntries.sql
+│   └── 02_Seed_SetupTechDunnageTypeConfig.sql
 └── migrations/
     ├── V001__Initial_Schema.sql
     ├── V002__Add_SchemaVersions_Table.sql
@@ -105,12 +113,70 @@ folder so the in-app migration runner can discover and apply them from disk.
 
 ## File Reference
 
-### `schema/00_Database.sql`
-Creates the `mtm_waitlist` database with `utf8mb4` / `utf8mb4_unicode_ci`. Run first.
+### `schema/00_Database.bat`
+Supported Windows batch entry point for a destructive full reinstall. It drops `mtm_waitlist`, runs `V001` through `V004` sequentially with the mysql client, then backfills the matching `SchemaVersions` rows.
 
-```bash
-mysql -h 172.16.1.104 -u <admin_user> -p < schema/00_Database.sql
+Important: this repository has two different `Database` folders. Use the server-side one at `MTM_Waitlist_Server/Database`, not the top-level repository `Database` folder.
+
+Windows PowerShell example:
+
+```powershell
+Set-Location C:\Users\johnk\source\repos\MTM_Waitlist_Application\MTM_Waitlist_Server\Database
+.\schema\00_Database.bat localhost root root
 ```
+
+If you are currently in the top-level repository `Database` folder, first move up one level before changing into the server folder:
+
+```powershell
+Set-Location ..
+Set-Location .\MTM_Waitlist_Server\Database
+.\schema\00_Database.bat localhost root root
+```
+
+Arguments: `[host] [user] [password] [mysqlExe]`
+
+To avoid putting the password on the command line, set `MYSQL_PWD` first and omit the third argument:
+
+```powershell
+$env:MYSQL_PWD = 'root'
+.\schema\00_Database.bat localhost root
+```
+
+Do not put a space-delimited password after `-p`. If you intentionally pass an inline password directly to `mysql`, it must use the attached form such as `-proot`.
+
+This batch file does not rely on mysql `SOURCE`, so it works from PowerShell and `cmd.exe`.
+
+It now uses checked-in SQL assets for the `SchemaVersions` table and baseline history backfill instead of generating inline SQL in the batch file.
+
+### `schema/tables/System/SchemaVersions.sql`
+Canonical `SchemaVersions` table definition used by the Server Admin migration service whenever it needs to bootstrap migration tracking onto a pre-existing schema.
+
+### `schema/data/System/SchemaVersions_PreExisting_Bootstrap.sql`
+Backfills the `V001` history row when the admin app discovers a database that already has the core tables but predates the migration tracking table.
+
+### `schema/data/System/SchemaVersions_BaselineHistory.sql`
+Backfills the `V002` through `V004` history rows during a full destructive reinstall driven by `schema/00_Database.bat`.
+
+### `seed/00_Seed_DevelopmentData.bat`
+Supported Windows batch entry point for dev-only seed data. It applies the current server seed files in order after the schema already exists.
+
+Windows PowerShell example:
+
+```powershell
+Set-Location C:\Users\johnk\source\repos\MTM_Waitlist_Application\MTM_Waitlist_Server\Database
+.\seed\00_Seed_DevelopmentData.bat localhost root root
+```
+
+To avoid putting the password on the command line, set `MYSQL_PWD` first and omit the third argument:
+
+```powershell
+$env:MYSQL_PWD = 'root'
+.\seed\00_Seed_DevelopmentData.bat localhost root
+```
+
+Arguments: `[host] [user] [password] [mysqlExe]`
+
+This batch file is development-only. It should be run only after `schema/00_Database.bat` or another schema bootstrap path has already created `mtm_waitlist`.
 
 ---
 
@@ -133,7 +199,7 @@ Windows usernames of shared kiosks/floor terminals that require manual login.
 Any PC whose Windows username does NOT appear here → auto-login.
 
 **C# model:** `Model_SharedWorkstation`  
-**Depends on:** `schema/00_Database.sql`
+**Depends on:** `mtm_waitlist` already created and selected, or `schema/00_Database.bat` for full reinstall.
 
 ---
 
@@ -261,9 +327,9 @@ All SetupTech triggers set UTC audit timestamps. `WorkstationActiveJobs` also no
 
 | File | Contents |
 |------|----------|
-| `01_Seed_Users.sql` | 9 users (one per role) + 2 shared workstation entries. ⚠️ Replace `PasswordHash` placeholders with real bcrypt hashes. |
-| `02_Seed_WaitlistEntries.sql` | 9 requests covering all 8 `RequestType` and 7 `Status` values. |
-| `03_Seed_SetupTechDunnageTypeConfig.sql` | Development reseed for SetupTech dunnage type filters. The production/default copy is handled by `V004`. |
+| `00_Seed_DevelopmentData.bat` | Runs all current dev-only seed files in order. |
+| `01_Seed_WaitlistEntries.sql` | 9 requests covering all 8 `RequestType` and 7 `Status` values. If no seeded users exist, nullable user FKs fall back to `NULL`. |
+| `02_Seed_SetupTechDunnageTypeConfig.sql` | Development reseed for SetupTech dunnage type filters. The production/default copy is handled by `V004`. |
 
 ---
 
@@ -285,8 +351,12 @@ Seeds the required default SetupTech dunnage type configuration for production/r
 
 ## Execution Order (Individual Files)
 
+For a destructive full reinstall from scratch, prefer `schema/00_Database.bat`, which runs the versioned migration files in order.
+
+Use the list below only when you intentionally need to run the split object files one-by-one.
+
 ```
- 1.  schema/00_Database.sql
+ 1.  schema/00_Database.bat
  2.  schema/tables/Auth/Users.sql
  3.  schema/tables/Auth/SharedWorkstations.sql
  4.  schema/tables/Auth/RefreshTokens.sql
@@ -346,9 +416,9 @@ Seeds the required default SetupTech dunnage type configuration for production/r
 58.  migrations/V003__SetupTech_Schema.sql
 59.  migrations/V004__SetupTech_Default_DunnageTypeConfig.sql
      — dev only —
-60.  seed/01_Seed_Users.sql
-61.  seed/02_Seed_WaitlistEntries.sql
-62.  seed/03_Seed_SetupTechDunnageTypeConfig.sql
+60.  seed/00_Seed_DevelopmentData.bat
+61.  seed/01_Seed_WaitlistEntries.sql
+62.  seed/02_Seed_SetupTechDunnageTypeConfig.sql
 ```
 
 ---

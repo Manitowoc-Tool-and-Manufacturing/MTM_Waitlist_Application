@@ -2,27 +2,30 @@ using MTM_Waitlist_Server.Core.Models.Migration;
 
 namespace MTM_Waitlist_Server.Core.Interfaces.Migration;
 
-/// <summary>Manages incremental database migrations using the SchemaVersions tracking table.</summary>
+/// <summary>
+/// Compares the checked-in SQL object files to the live database and applies the
+/// updates that can be executed safely without destructive rebuilds.
+/// </summary>
 public interface IService_Migration
 {
     /// <summary>
-    /// Detects the current migration schema state in a single coordinated pass:
+    /// Detects the current database-update state in a single coordinated pass:
     /// <list type="bullet">
-    ///   <item><see cref="MigrationSchemaState.Ready"/> — SchemaVersions exists and data loaded.</item>
-    ///   <item><see cref="MigrationSchemaState.PreExistingSchema"/> — core tables exist but SchemaVersions does not; tracking table will be created and known versions backfilled automatically.</item>
-    ///   <item><see cref="MigrationSchemaState.FreshDatabase"/> — no core tables found; full migration run from V001 is required.</item>
+    ///   <item><see cref="MigrationSchemaState.Ready"/> — the baseline schema exists and the update-history table is available.</item>
+    ///   <item><see cref="MigrationSchemaState.PreExistingSchema"/> — core tables exist but the update-history table does not; the tracking table will be created automatically.</item>
+    ///   <item><see cref="MigrationSchemaState.FreshDatabase"/> — no core tables were found, so the stored baseline definitions still need to be applied.</item>
     ///   <item><see cref="MigrationSchemaState.Error"/> — database unreachable or probe failed.</item>
     /// </list>
     /// </summary>
     Task<(MigrationSchemaState State, string? ErrorMessage)> DetectSchemaStateAsync(CancellationToken ct = default);
 
-    /// <summary>Returns true if the SchemaVersions table exists in the database.</summary>
+    /// <summary>Returns true if the SchemaVersions tracking table exists in the database.</summary>
     Task<bool> SchemaVersionsTableExistsAsync(CancellationToken ct = default);
 
-    /// <summary>Applies all pending migration scripts in version order.</summary>
+    /// <summary>Applies the pending stored SQL definitions that are safe to update automatically.</summary>
     Task<MigrationResult> ApplyPendingMigrationsAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
 
-    /// <summary>Re-runs all stored procedures, triggers, and indexes (always idempotent).</summary>
+    /// <summary>Applies pending replaceable objects such as procedures, triggers, and missing indexes.</summary>
     Task<RerunResult> RerunIdempotentObjectsAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
 
     /// <summary>
@@ -30,12 +33,12 @@ public interface IService_Migration
     /// </summary>
     Task ResetDatabaseAsync(IProgress<MigrationProgress> progress, CancellationToken ct = default);
 
-    /// <summary>Returns the list of migrations recorded in the SchemaVersions table.</summary>
+    /// <summary>Returns the list of update attempts recorded in the SchemaVersions table.</summary>
     Task<IReadOnlyList<AppliedMigration>> GetAppliedMigrationsAsync(CancellationToken ct = default);
 
-    /// <summary>Returns migration script files on disk that have not yet been applied.</summary>
-    IReadOnlyList<PendingMigration> GetPendingMigrations();
+    /// <summary>Returns the stored SQL definitions on disk that are missing or drifted in the live database.</summary>
+    Task<IReadOnlyList<PendingMigration>> GetPendingMigrationsAsync(CancellationToken ct = default);
 
-    /// <summary>Returns the SQL content of the specified migration file for preview.</summary>
+    /// <summary>Returns the SQL content of the specified stored definition for preview.</summary>
     string PreviewMigrationSql(string version);
 }

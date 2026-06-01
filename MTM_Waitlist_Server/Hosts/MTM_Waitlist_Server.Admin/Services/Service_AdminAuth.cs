@@ -52,6 +52,22 @@ internal sealed class Service_AdminAuth : IService_AdminAuth
             await using var conn = new MySqlConnection(csb.ConnectionString);
             await conn.OpenAsync();
 
+            var role = await GetRoleFromStoredProcedureAsync(conn, windowsUsername)
+                ?? await GetRoleFromUsersTableAsync(conn, windowsUsername);
+
+            return Array.IndexOf(AllowedRoles, role ?? string.Empty) >= 0;
+        }
+        catch
+        {
+            // If the database is unreachable at startup, deny access rather than crashing.
+            return false;
+        }
+    }
+
+    private static async Task<string?> GetRoleFromStoredProcedureAsync(MySqlConnection conn, string windowsUsername)
+    {
+        try
+        {
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = "CALL usp_Auth_GetUserByWindowsUsername(@p_WindowsUsername)";
             cmd.Parameters.AddWithValue("@p_WindowsUsername", windowsUsername);
@@ -59,18 +75,28 @@ internal sealed class Service_AdminAuth : IService_AdminAuth
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
             {
-                // No matching active user found.
-                return false;
+                return null;
             }
 
-            var role = reader["Role"]?.ToString() ?? string.Empty;
-            return Array.IndexOf(AllowedRoles, role) >= 0;
+            return reader["Role"]?.ToString();
         }
-        catch
+        catch (MySqlException ex) when (ex.Number is 1267 or 1305)
         {
-            // If the database is unreachable at startup, deny access rather than crashing.
-            return false;
+            return null;
         }
+    }
+
+    private static async Task<string?> GetRoleFromUsersTableAsync(MySqlConnection conn, string windowsUsername)
+    {
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT `Role` FROM `Users` " +
+            "WHERE `WindowsUsername` = @windowsUsername AND `IsActive` = 1 " +
+            "LIMIT 1";
+        cmd.Parameters.AddWithValue("@windowsUsername", windowsUsername);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return result?.ToString();
     }
 
     /// <summary>

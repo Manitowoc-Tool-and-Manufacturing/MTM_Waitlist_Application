@@ -1,9 +1,13 @@
 using MTM_Waitlist_Server.Admin.Logging;
 using MTM_Waitlist_Server.Core.Interfaces.FirstRun;
+using MTM_Waitlist_Server.Core.Interfaces.Migration;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
+using MTM_Waitlist_Server.Core.Models.Migration;
 using MySqlConnector;
 using System;
+using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,12 +19,16 @@ namespace MTM_Waitlist_Server.Admin.Services;
 /// </summary>
 internal sealed class Service_FirstRun : IService_FirstRun
 {
+    private const string AutoSeedPasswordHash = "WINDOWS_AUTH_AUTO_SEEDED_ACCOUNT";
+
     private readonly IService_SettingsStore _settingsStore;
+    private readonly IService_Migration _migration;
 
     /// <summary>Initialises a new instance of <see cref="Service_FirstRun"/>.</summary>
-    public Service_FirstRun(IService_SettingsStore settingsStore)
+    public Service_FirstRun(IService_SettingsStore settingsStore, IService_Migration migration)
     {
         _settingsStore = settingsStore;
+        _migration = migration;
     }
 
     /// <inheritdoc/>
@@ -33,14 +41,14 @@ internal sealed class Service_FirstRun : IService_FirstRun
 
         var csb = new MySqlConnectionStringBuilder
         {
-            Server                   = db.Host,
-            Port                     = (uint)db.Port,
-            UserID                   = db.UpdaterUsername,
-            Password                 = db.UpdaterPassword,
-            ConnectionTimeout        = (uint)db.ConnectionTimeout,
-            DefaultCommandTimeout    = (uint)db.CommandTimeout,
-            AllowPublicKeyRetrieval  = true,
-            SslMode                  = MySqlSslMode.Preferred,
+            Server = db.Host,
+            Port = (uint)db.Port,
+            UserID = db.UpdaterUsername,
+            Password = db.UpdaterPassword,
+            ConnectionTimeout = (uint)db.ConnectionTimeout,
+            DefaultCommandTimeout = (uint)db.CommandTimeout,
+            AllowPublicKeyRetrieval = true,
+            SslMode = MySqlSslMode.Preferred,
             // Do not specify a database yet — we are checking whether it exists.
         };
 
@@ -108,8 +116,34 @@ internal sealed class Service_FirstRun : IService_FirstRun
 
             if (adminCount == 0)
             {
-                StartupLogger.Info("Probe result: NoAdminUser (schema exists but no active admin found).");
-                return Model_FirstRunProbeResult.NoAdminUser();
+                StartupLogger.Warn("Probe step 3: no active Admin/Developer user found. Attempting to auto-seed the current Windows user as Admin.");
+
+                try
+                {
+                    await AutoSeedCurrentWindowsAdminAsync(conn, db.DatabaseName, cancellationToken);
+                    adminCount = await ScalarAsync<long>(
+                        conn,
+                        $"""
+                        SELECT COUNT(*)
+                        FROM `{db.DatabaseName}`.`Users`
+                        WHERE `IsActive` = 1
+                          AND `Role` IN ('Admin', 'Developer')
+                        """,
+                        null,
+                        cancellationToken);
+
+                    StartupLogger.Info($"Probe step 3: active Admin/Developer count after auto-seed = {adminCount}.");
+                }
+                catch (Exception ex)
+                {
+                    StartupLogger.Warn($"Probe step 3: auto-seeding current Windows admin failed — {ex.GetType().Name}: {ex.Message}");
+                }
+
+                if (adminCount == 0)
+                {
+                    StartupLogger.Info("Probe result: NoAdminUser (schema exists but no active admin found). ");
+                    return Model_FirstRunProbeResult.NoAdminUser();
+                }
             }
         }
 
@@ -150,10 +184,10 @@ internal sealed class Service_FirstRun : IService_FirstRun
         // Connect with the privileged (root / admin) credentials — no database selected yet.
         var csb = new MySqlConnectionStringBuilder
         {
-            Server            = host,
-            Port              = (uint)port,
-            UserID            = adminUsername,
-            Password          = adminPassword,
+            Server = host,
+            Port = (uint)port,
+            UserID = adminUsername,
+            Password = adminPassword,
             ConnectionTimeout = 10,
         };
 
@@ -161,6 +195,12 @@ internal sealed class Service_FirstRun : IService_FirstRun
         {
             await using var conn = new MySqlConnection(csb.ConnectionString);
             await conn.OpenAsync(cancellationToken);
+
+            var settings = _settingsStore.Get();
+            var existingSavedPassword = settings.Database.UpdaterPassword;
+            var effectiveAppPassword = string.IsNullOrWhiteSpace(appDbPassword)
+                ? existingSavedPassword
+                : appDbPassword;
 
             // 1. Create the database if it doesn't exist.
             await using (var cmd = conn.CreateCommand())
@@ -171,22 +211,37 @@ internal sealed class Service_FirstRun : IService_FirstRun
                 await cmd.ExecuteNonQueryAsync(cancellationToken);
             }
 
-            // 2. Create the application MySQL user if it doesn't exist and grant privileges.
-            //    Separate CREATE USER from GRANT so partial state doesn't leave the server broken.
-            await using (var cmd = conn.CreateCommand())
+            var appUserExists = await MySqlUserExistsAsync(conn, appDbUsername, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(effectiveAppPassword))
             {
-                cmd.CommandText =
-                    $"CREATE USER IF NOT EXISTS @appUser@'%' IDENTIFIED BY @appPwd";
-                cmd.Parameters.AddWithValue("@appUser", appDbUsername);
-                cmd.Parameters.AddWithValue("@appPwd",  appDbPassword);
-                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                return appUserExists
+                    ? "The application MySQL user already exists, but no password is available to reuse. Enter a password to reset that user before continuing."
+                    : "Please enter a password for the application MySQL user before continuing.";
+            }
+
+            // 2. Create or reset the application MySQL user, then grant privileges.
+            if (appUserExists)
+            {
+                await using var alterUserCommand = conn.CreateCommand();
+                alterUserCommand.CommandText =
+                    $"ALTER USER {FormatMySqlUserAccount(appDbUsername)} IDENTIFIED BY @appPwd";
+                alterUserCommand.Parameters.AddWithValue("@appPwd", effectiveAppPassword);
+                await alterUserCommand.ExecuteNonQueryAsync(cancellationToken);
+            }
+            else
+            {
+                await using var createUserCommand = conn.CreateCommand();
+                createUserCommand.CommandText =
+                    $"CREATE USER {FormatMySqlUserAccount(appDbUsername)} IDENTIFIED BY @appPwd";
+                createUserCommand.Parameters.AddWithValue("@appPwd", effectiveAppPassword);
+                await createUserCommand.ExecuteNonQueryAsync(cancellationToken);
             }
 
             await using (var cmd = conn.CreateCommand())
             {
                 cmd.CommandText =
-                    $"GRANT ALL PRIVILEGES ON `{databaseName}`.* TO @appUser@'%'";
-                cmd.Parameters.AddWithValue("@appUser", appDbUsername);
+                    $"GRANT ALL PRIVILEGES ON `{databaseName}`.* TO {FormatMySqlUserAccount(appDbUsername)}";
                 await cmd.ExecuteNonQueryAsync(cancellationToken);
             }
 
@@ -197,12 +252,11 @@ internal sealed class Service_FirstRun : IService_FirstRun
             }
 
             // 3. Persist the verified connection settings so the rest of the app can use them.
-            var settings = _settingsStore.Get();
-            settings.Database.Host            = host;
-            settings.Database.Port            = port;
-            settings.Database.DatabaseName    = databaseName;
+            settings.Database.Host = host;
+            settings.Database.Port = port;
+            settings.Database.DatabaseName = databaseName;
             settings.Database.UpdaterUsername = appDbUsername;
-            settings.Database.UpdaterPassword = appDbPassword;
+            settings.Database.UpdaterPassword = effectiveAppPassword;
             await _settingsStore.SaveAsync(settings);
 
             return null; // null = success
@@ -211,6 +265,17 @@ internal sealed class Service_FirstRun : IService_FirstRun
         {
             return ex.Message;
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<MigrationResult> BootstrapSchemaAsync(
+        IProgress<string> progress,
+        CancellationToken cancellationToken = default)
+    {
+        var migrationProgress = new Progress<MigrationProgress>(step =>
+            progress.Report($"[{step.Version}] {step.Message}"));
+
+        return await _migration.ApplyPendingMigrationsAsync(migrationProgress, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -225,13 +290,15 @@ internal sealed class Service_FirstRun : IService_FirstRun
         var db = _settingsStore.Get().Database;
         var csb = new MySqlConnectionStringBuilder
         {
-            Server   = db.Host,
-            Port     = (uint)db.Port,
+            Server = db.Host,
+            Port = (uint)db.Port,
             Database = db.DatabaseName,
-            UserID   = db.UpdaterUsername,
+            UserID = db.UpdaterUsername,
             Password = db.UpdaterPassword,
-            ConnectionTimeout     = (uint)db.ConnectionTimeout,
+            ConnectionTimeout = (uint)db.ConnectionTimeout,
             DefaultCommandTimeout = (uint)db.CommandTimeout,
+            AllowPublicKeyRetrieval = true,
+            SslMode = MySqlSslMode.Preferred,
         };
 
         await using var conn = new MySqlConnection(csb.ConnectionString);
@@ -248,11 +315,11 @@ internal sealed class Service_FirstRun : IService_FirstRun
                  1, UTC_TIMESTAMP(), UTC_TIMESTAMP())
             """;
 
-        cmd.Parameters.AddWithValue("@win",     windowsUsername);
-        cmd.Parameters.AddWithValue("@app",     appUsername);
-        cmd.Parameters.AddWithValue("@hash",    passwordHash);
+        cmd.Parameters.AddWithValue("@win", windowsUsername);
+        cmd.Parameters.AddWithValue("@app", appUsername);
+        cmd.Parameters.AddWithValue("@hash", passwordHash);
         cmd.Parameters.AddWithValue("@display", displayName);
-        cmd.Parameters.AddWithValue("@role",    role);
+        cmd.Parameters.AddWithValue("@role", role);
 
         await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
@@ -276,6 +343,94 @@ internal sealed class Service_FirstRun : IService_FirstRun
         return (T)Convert.ChangeType(result!, typeof(T));
     }
 
+    private static async Task AutoSeedCurrentWindowsAdminAsync(
+        MySqlConnection conn,
+        string databaseName,
+        CancellationToken ct)
+    {
+        var windowsUsername = WindowsIdentity.GetCurrent().Name;
+        if (string.IsNullOrWhiteSpace(windowsUsername))
+        {
+            throw new InvalidOperationException("Current Windows username could not be resolved.");
+        }
+
+        var accountName = ExtractAccountName(windowsUsername);
+        var displayName = ResolveWindowsDisplayName(windowsUsername, accountName);
+        var appUsername = BuildAppUsername(accountName);
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            $"""
+            INSERT INTO `{databaseName}`.`Users`
+                (`WindowsUsername`, `Username`, `PasswordHash`, `DisplayName`, `Role`, `IsActive`)
+            VALUES
+                (@win, @app, @hash, @display, 'Admin', 1)
+            ON DUPLICATE KEY UPDATE
+                `WindowsUsername` = VALUES(`WindowsUsername`),
+                `DisplayName` = VALUES(`DisplayName`),
+                `Role` = 'Admin',
+                `IsActive` = 1
+            """;
+        cmd.Parameters.AddWithValue("@win", windowsUsername);
+        cmd.Parameters.AddWithValue("@app", appUsername);
+        cmd.Parameters.AddWithValue("@hash", AutoSeedPasswordHash);
+        cmd.Parameters.AddWithValue("@display", displayName);
+
+        await cmd.ExecuteNonQueryAsync(ct);
+        StartupLogger.Info($"Auto-seeded current Windows user '{windowsUsername}' as Admin in '{databaseName}'.Users.");
+    }
+
+    private static string ExtractAccountName(string windowsUsername)
+    {
+        var separatorIndex = windowsUsername.LastIndexOf('\\');
+        return separatorIndex >= 0 && separatorIndex < windowsUsername.Length - 1
+            ? windowsUsername[(separatorIndex + 1)..]
+            : windowsUsername;
+    }
+
+    private static string BuildAppUsername(string accountName)
+    {
+        var sanitized = Regex.Replace(accountName.Trim(), "[^A-Za-z0-9._-]", "_", RegexOptions.CultureInvariant);
+        return string.IsNullOrWhiteSpace(sanitized)
+            ? Environment.UserName
+            : sanitized;
+    }
+
+    private static string ResolveWindowsDisplayName(string windowsUsername, string fallbackAccountName)
+    {
+        var displayName = Environment.GetEnvironmentVariable("USERNAME");
+        if (!string.IsNullOrWhiteSpace(displayName) && !string.Equals(displayName, fallbackAccountName, StringComparison.OrdinalIgnoreCase))
+        {
+            return displayName;
+        }
+
+        return string.IsNullOrWhiteSpace(fallbackAccountName)
+            ? windowsUsername
+            : fallbackAccountName;
+    }
+
+    private static async Task<bool> MySqlUserExistsAsync(
+        MySqlConnection conn,
+        string username,
+        CancellationToken ct)
+    {
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM mysql.user WHERE User = @user";
+        cmd.Parameters.AddWithValue("@user", username);
+        var result = await cmd.ExecuteScalarAsync(ct);
+        return Convert.ToInt32(result) > 0;
+    }
+
+    private static string FormatMySqlUserAccount(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            throw new InvalidOperationException("Application MySQL username cannot be empty.");
+        }
+
+        return $"'{username.Replace("'", "''", StringComparison.Ordinal)}'@'%'";
+    }
+
     /// <summary>
     /// Returns <c>true</c> when the exception represents a genuine network-level failure
     /// (host unreachable, port closed, DNS failure, connection timeout) rather than an
@@ -286,11 +441,11 @@ internal sealed class Service_FirstRun : IService_FirstRun
         // MySqlConnector error numbers that indicate the server is genuinely unreachable.
         // 1042 = ER_BAD_HOST_ERROR, 2003 = CR_CONN_HOST_ERROR, 2005 = CR_UNKNOWN_HOST,
         // 2013 = CR_SERVER_LOST, 9000 = connection timeout used by MySqlConnector.
-        const int erBadHostError      = 1042;
-        const int crConnHostError     = 2003;
-        const int crUnknownHost       = 2005;
-        const int crServerLost        = 2013;
-        const int connectorTimeout    = 9000;
+        const int erBadHostError = 1042;
+        const int crConnHostError = 2003;
+        const int crUnknownHost = 2005;
+        const int crServerLost = 2013;
+        const int connectorTimeout = 9000;
 
         return ex.Number is erBadHostError or crConnHostError
                          or crUnknownHost or crServerLost or connectorTimeout

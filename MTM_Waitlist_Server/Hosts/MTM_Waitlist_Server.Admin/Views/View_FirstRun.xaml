@@ -87,18 +87,19 @@
                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                    Visibility="{x:Bind ViewModel.AppUserExists, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                     </StackPanel>
-                    <TextBlock Text="This account will own the database and is used by the server at runtime."
+                                        <TextBlock Text="{x:Bind ViewModel.AppUserHelpText, Mode=OneWay}"
                                Style="{ThemeResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
                     <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto" RowSpacing="10" ColumnSpacing="12"
-                          Opacity="{x:Bind ViewModel.AppUserExists, Converter={StaticResource BoolToOpacityConverter}, Mode=OneWay}">
+                                                    Opacity="{x:Bind ViewModel.AppUserInputsOpacity, Mode=OneWay}">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Username" VerticalAlignment="Center" />
                         <TextBox   Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.DbAppUsername, Mode=TwoWay}"
-                                   IsEnabled="{x:Bind ViewModel.AppUserExists, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                                                     IsEnabled="{x:Bind ViewModel.CanEditAppUsername, Mode=OneWay}" />
 
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Password" VerticalAlignment="Center" />
                         <PasswordBox Grid.Row="1" Grid.Column="1"
                                      Password="{x:Bind ViewModel.DbAppPassword, Mode=TwoWay}"
-                                     IsEnabled="{x:Bind ViewModel.AppUserExists, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                                                         PlaceholderText="Enter password to create or reset the app user"
+                                                                         IsEnabled="{x:Bind ViewModel.CanEditAppPassword, Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
 
@@ -115,16 +116,16 @@
 
             <!-- ── STEP 2 ── -->
             <StackPanel x:Name="PanelStep2" Spacing="16" Visibility="Collapsed">
-                <TextBlock Text="STEP 2 — Run Bootstrap Migration"
+                <TextBlock Text="STEP 2 — Compare And Apply Baseline Schema"
                            Style="{ThemeResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="This creates the mtm_waitlist database schema. Required before any other operation."
+                <TextBlock Text="This compares the stored SQL definitions to the target database and applies any missing baseline objects."
                            Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap" />
 
-                <!-- Remind the user which privileged account will be used for DDL -->
+                <!-- Remind the user which runtime account will be used for schema compare/apply -->
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Running as:" VerticalAlignment="Center"
+                    <TextBlock Text="Runtime user:" VerticalAlignment="Center"
                                Style="{ThemeResource CaptionTextBlockStyle}" />
-                    <TextBlock Text="{x:Bind ViewModel.DbAdminUsername, Mode=OneWay}"
+                    <TextBlock Text="{x:Bind ViewModel.DbAppUsername, Mode=OneWay}"
                                VerticalAlignment="Center" FontWeight="SemiBold"
                                Style="{ThemeResource CaptionTextBlockStyle}" />
                     <TextBlock Text="@" VerticalAlignment="Center"
@@ -132,13 +133,13 @@
                     <TextBlock Text="{x:Bind ViewModel.DbHost, Mode=OneWay}"
                                VerticalAlignment="Center"
                                Style="{ThemeResource CaptionTextBlockStyle}" />
-                    <TextBlock Text="(privileged account from Step 1)"
+                    <TextBlock Text="(saved by Step 1)"
                                VerticalAlignment="Center"
                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
                                Style="{ThemeResource CaptionTextBlockStyle}" />
                 </StackPanel>
 
-                <Button Content="▶ Run Bootstrap"
+                <Button Content="▶ Compare And Apply"
                         Command="{x:Bind ViewModel.RunBootstrapCommand}"
                         IsEnabled="{x:Bind ViewModel.IsWorking, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
 

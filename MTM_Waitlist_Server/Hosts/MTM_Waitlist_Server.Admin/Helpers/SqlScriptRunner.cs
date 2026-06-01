@@ -22,6 +22,10 @@ internal static class SqlScriptRunner
         @"^DROP\s+INDEX\s+IF\s+EXISTS\s+`?(?<index>[^`\s]+)`?\s+ON\s+`?(?<table>[^`\s;]+)`?$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly Regex CreateIndexRegex = new(
+        @"^CREATE\s+INDEX\s+`?(?<index>[^`\s]+)`?\s+ON\s+`?(?<table>[^`\s;(]+)`?\s*\((?<columns>.+)\)$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
+
     /// <summary>
     /// Reads the embedded SQL resource <paramref name="logicalName"/>, strips
     /// DELIMITER directives, splits into individual statements, and executes each
@@ -63,6 +67,17 @@ internal static class SqlScriptRunner
                     : trimmed.Replace('\n', ' ').Replace('\r', ' ');
 
                 log.Add($"✅ {dropIndexSummary}");
+                progress?.Invoke(log[^1]);
+                continue;
+            }
+
+            if (await TryExecuteCreateIndexAsync(connection, trimmed, cancellationToken))
+            {
+                var createIndexSummary = trimmed.Length > 80
+                    ? trimmed[..80].Replace('\n', ' ').Replace('\r', ' ') + "…"
+                    : trimmed.Replace('\n', ' ').Replace('\r', ' ');
+
+                log.Add($"✅ {createIndexSummary}");
                 progress?.Invoke(log[^1]);
                 continue;
             }
@@ -113,6 +128,11 @@ internal static class SqlScriptRunner
             if (trimmed.StartsWith("CREATE DATABASE", StringComparison.OrdinalIgnoreCase)) { continue; }
 
             if (await TryExecuteDropIndexIfExistsAsync(connection, trimmed, cancellationToken))
+            {
+                continue;
+            }
+
+            if (await TryExecuteCreateIndexAsync(connection, trimmed, cancellationToken))
             {
                 continue;
             }
@@ -186,6 +206,44 @@ internal static class SqlScriptRunner
             $"ALTER TABLE `{EscapeIdentifier(tableName)}` DROP INDEX `{EscapeIdentifier(indexName)}`";
         await dropCommand.ExecuteNonQueryAsync(cancellationToken);
 
+        return true;
+    }
+
+    /// <summary>
+    /// Skips duplicate CREATE INDEX statements when the same named index already exists.
+    /// This keeps bootstrap scripts rerunnable without dropping indexes that may be backing
+    /// foreign key constraints.
+    /// </summary>
+    private static async Task<bool> TryExecuteCreateIndexAsync(
+        MySqlConnection connection,
+        string statement,
+        CancellationToken cancellationToken)
+    {
+        var match = CreateIndexRegex.Match(statement.Trim().TrimEnd(';'));
+        if (!match.Success)
+        {
+            return false;
+        }
+
+        var indexName = match.Groups["index"].Value;
+        var tableName = match.Groups["table"].Value;
+
+        await using var existsCommand = connection.CreateCommand();
+        existsCommand.CommandText =
+            "SELECT COUNT(*) FROM information_schema.STATISTICS " +
+            "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tableName AND INDEX_NAME = @indexName";
+        existsCommand.Parameters.AddWithValue("@tableName", tableName);
+        existsCommand.Parameters.AddWithValue("@indexName", indexName);
+
+        var exists = Convert.ToInt32(await existsCommand.ExecuteScalarAsync(cancellationToken)) > 0;
+        if (exists)
+        {
+            return true;
+        }
+
+        await using var createCommand = connection.CreateCommand();
+        createCommand.CommandText = statement.Trim();
+        await createCommand.ExecuteNonQueryAsync(cancellationToken);
         return true;
     }
 
@@ -263,7 +321,7 @@ internal static class SqlScriptRunner
 
             // Check whether the accumulated buffer ends with the current delimiter.
             var buf = current.ToString();
-            var idx = buf.LastIndexOf(delimiter, StringComparison.Ordinal);
+            var idx = LastDelimiterIndexOutsideString(buf, delimiter);
             if (idx >= 0)
             {
                 // Everything up to (and including) the delimiter is one statement.
@@ -290,5 +348,53 @@ internal static class SqlScriptRunner
         }
 
         return statements;
+    }
+
+    private static int LastDelimiterIndexOutsideString(string sql, string delimiter)
+    {
+        var inSingleQuote = false;
+        var inDoubleQuote = false;
+        var lastIndex = -1;
+
+        for (var i = 0; i < sql.Length; i++)
+        {
+            var current = sql[i];
+            var previousIsEscape = i > 0 && sql[i - 1] == '\\' && !IsEscapedBackslash(sql, i - 1);
+
+            if (current == '\'' && !inDoubleQuote && !previousIsEscape)
+            {
+                inSingleQuote = !inSingleQuote;
+                continue;
+            }
+
+            if (current == '"' && !inSingleQuote && !previousIsEscape)
+            {
+                inDoubleQuote = !inDoubleQuote;
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote && MatchesAt(sql, delimiter, i))
+            {
+                lastIndex = i;
+                i += delimiter.Length - 1;
+            }
+        }
+
+        return lastIndex;
+    }
+
+    private static bool MatchesAt(string value, string match, int index) =>
+        index <= value.Length - match.Length &&
+        string.Compare(value, index, match, 0, match.Length, StringComparison.Ordinal) == 0;
+
+    private static bool IsEscapedBackslash(string value, int index)
+    {
+        var count = 0;
+        for (var i = index; i >= 0 && value[i] == '\\'; i--)
+        {
+            count++;
+        }
+
+        return count % 2 == 0;
     }
 }

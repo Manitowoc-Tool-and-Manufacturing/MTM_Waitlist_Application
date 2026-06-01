@@ -12,7 +12,7 @@
 --   3a. Row returned  → show login form → usp_Auth_ValidateCredentials.
 --   3b. No row        → auto-login via usp_Auth_GetUserByWindowsUsername.
 --
--- Depends on:  schema/00_Database.sql
+-- Depends on:  `mtm_waitlist` already created and selected.
 -- MySQL:       5.7 compatible
 -- =============================================================
 

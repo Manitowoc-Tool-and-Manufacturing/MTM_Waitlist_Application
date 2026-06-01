@@ -32,3 +32,5 @@ VALUES
     (11, 'Returnable Racks - Other',             0, 111),
     (12, 'Returnable Totes',                     1,  5),
     (13, 'Returnable Baskets / Wire Containers', 1,  6);
+
+SELECT 'NOTE: Completed migration V004__SetupTech_Default_DunnageTypeConfig.' AS `MigrationNote`;

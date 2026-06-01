@@ -3,7 +3,7 @@
 -- Domain:      SetupTech
 -- Description: Controls which receiving-app dunnage types appear in the
 --              SetupTech UI and the order in which they are displayed.
--- Depends on:  schema/00_Database.sql
+-- Depends on:  `mtm_waitlist` already created and selected.
 -- MySQL:       5.7 compatible
 -- =============================================================
 

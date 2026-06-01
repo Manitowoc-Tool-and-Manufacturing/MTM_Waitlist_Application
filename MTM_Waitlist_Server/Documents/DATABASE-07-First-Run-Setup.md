@@ -356,7 +356,7 @@ The Settings nav shortcut is disabled when first-run is active so the user canno
 
 ## Seed Data
 
-The seed files (`Database/seed/01_Seed_Users.sql`, `Database/seed/02_Seed_WaitlistEntries.sql`) are **dev-only** and are never run by the wizard. Step 3 replaces them for production first-run user creation. Developers running locally still apply seed files manually.
+The seed files (`Database/seed/01_Seed_WaitlistEntries.sql`, `Database/seed/02_Seed_SetupTechDunnageTypeConfig.sql`) are **dev-only** and are never run by the wizard. Step 3 replaces them for production first-run user creation. Developers running locally can apply them with `Database/seed/00_Seed_DevelopmentData.bat`.
 
 ---
 
