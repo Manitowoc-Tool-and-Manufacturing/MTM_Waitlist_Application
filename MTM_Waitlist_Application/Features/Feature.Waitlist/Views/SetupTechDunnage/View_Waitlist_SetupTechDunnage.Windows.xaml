@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Waitlist.Views.SetupTechDunnage.View_Waitlist_SetupTechDunnage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Core.Models.SetupTech;assembly=Core"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels.SetupTechDunnage"
+    x:DataType="vm:ViewModel_Waitlist_SetupTechDunnage"
+    x:Name="PageRoot"
+    BackgroundColor="#F0F2F5"
+    Title="Assign Dunnage">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto">
+        <Label FontAttributes="Bold" FontSize="22" Text="Setup Technician - Add Dunnage" />
+        <Border Grid.Row="1" Margin="0,14,0,14" Padding="16,12" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Workstation" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Work Order" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Validate" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#1565C0" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="4" TextColor="White" /></Border>
+                <Label FontAttributes="Bold" Text="Dunnage" TextColor="#1565C0" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,16,*">
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
+                <Label FontAttributes="Bold" FontSize="14" Text="Current Assignment" />
+                <Label Grid.Row="1" FontSize="11" Text="{Binding WorkOrderId, StringFormat='{0} / current sequence'}" TextColor="#555555" />
+                <Border Grid.Row="2" Margin="0,10,0,0" Padding="16" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                    <CollectionView ItemsSource="{Binding CurrentAssignments, Mode=OneWay}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Model_SetupTech_DunnageAssignment">
+                                <Grid Padding="0,8" ColumnDefinitions="*,40">
+                                    <VerticalStackLayout>
+                                        <Label FontAttributes="Bold" FontSize="13" Text="{Binding DunnagePartName}" />
+                                        <Label FontSize="11" Text="{Binding DunnageTypeName}" TextColor="#555555" />
+                                    </VerticalStackLayout>
+                                    <Button
+                                        Grid.Column="1"
+                                        BackgroundColor="#FFEBEE"
+                                        Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.RemoveDunnageItemCommand}"
+                                        CommandParameter="{Binding .}"
+                                        FontSize="11"
+                                        HeightRequest="32"
+                                        Text="X"
+                                        TextColor="#C62828"
+                                        WidthRequest="32" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*,Auto,Auto">
+                <Label FontAttributes="Bold" FontSize="14" Text="Add Dunnage" />
+                <CollectionView
+                    Grid.Row="1"
+                    HeightRequest="52"
+                    ItemsSource="{Binding EnabledDunnageTypes, Mode=OneWay}"
+                    ItemsLayout="HorizontalList"
+                    SelectedItem="{Binding SelectedTypeFilter, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Model_SetupTech_DunnageTypeConfig">
+                            <Border Margin="0,0,8,0" Padding="14,10" BackgroundColor="White" Stroke="#CCCCCC" StrokeShape="RoundRectangle 6">
+                                <Label FontSize="12" Text="{Binding DunnageTypeName}" TextColor="#555555" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Border Grid.Row="2" Margin="0,10,0,10" Padding="12" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                    <CollectionView
+                        ItemsSource="{Binding DunnageCatalog, Mode=OneWay}"
+                        SelectedItem="{Binding SelectedDunnagePart, Mode=TwoWay}"
+                        SelectionMode="Single">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Model_DunnagePart">
+                                <Grid Padding="10,8">
+                                    <Label FontSize="13" Text="{Binding DunnagePartName}" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+
+                <Button Grid.Row="3" HeightRequest="40" BackgroundColor="#1565C0" Command="{Binding AddSelectedDunnageCommand}" Text="Add Item" TextColor="White" />
+                <VerticalStackLayout Grid.Row="4" Spacing="6">
+                    <Label FontSize="12" Text="{Binding StatusMessage, Mode=OneWay}" TextColor="#1565C0" />
+                    <Label FontSize="12" Text="{Binding ErrorMessage, Mode=OneWay}" TextColor="#B42318" />
+                </VerticalStackLayout>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,14,0,0" ColumnDefinitions="Auto,*">
+            <Button Grid.Column="0" WidthRequest="160" HeightRequest="44" BackgroundColor="#EEEEEE" Command="{Binding BackToValidationCommand}" Text="Back to Validate" TextColor="#333333" />
+            <Button Grid.Column="1" Margin="12,0,0,0" HeightRequest="44" BackgroundColor="#388E3C" Command="{Binding SaveAndContinueCommand}" Text="Save and Complete Setup" TextColor="White" />
+        </Grid>
+    </Grid>
+</ContentPage>

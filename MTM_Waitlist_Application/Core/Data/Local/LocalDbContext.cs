@@ -39,5 +39,10 @@ public sealed class LocalDbContext
     {
         await Connection.CreateTableAsync<Entity_WaitlistEntry>();
         await Connection.CreateTableAsync<Entity_OfflineWriteQueue>();
+        await Connection.CreateTableAsync<Entity_VisualWorkcenter>();
+        await Connection.CreateTableAsync<Entity_SetupTech_ActiveJob>();
+        await Connection.CreateTableAsync<Entity_SetupTech_JobHistoryEntry>();
+        await Connection.CreateTableAsync<Entity_SetupTech_DunnageAssignment>();
+        await Connection.CreateTableAsync<Entity_SetupTech_DunnageTypeConfig>();
     }
 }

@@ -9,6 +9,7 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);MVVMTK0045</NoWarn>
 
     <SupportedOSPlatformVersion
       Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"
@@ -26,10 +27,103 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.60" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\Core\Services\Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Remove="Views\SetupTech\View_Waitlist_SetupTech.Windows.xaml" />
+    <MauiXaml Remove="Views\SetupTech\View_Waitlist_SetupTech.Android.xaml" />
+    <None Remove="Views\SetupTech\View_Waitlist_SetupTech.Windows.xaml" />
+    <None Remove="Views\SetupTech\View_Waitlist_SetupTech.Android.xaml" />
+    <None Include="Views\SetupTech\View_Waitlist_SetupTech.Windows.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+    <None Include="Views\SetupTech\View_Waitlist_SetupTech.Android.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <None Remove="Views\SetupTech\View_Waitlist_SetupTech.Windows.xaml" />
+    <MauiXaml Include="Views\SetupTech\View_Waitlist_SetupTech.Windows.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <None Remove="Views\SetupTech\View_Waitlist_SetupTech.Android.xaml" />
+    <MauiXaml Include="Views\SetupTech\View_Waitlist_SetupTech.Android.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Windows.xaml" />
+    <MauiXaml Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Android.xaml" />
+    <None Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Windows.xaml" />
+    <None Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Android.xaml" />
+    <None Include="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Windows.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+    <None Include="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Android.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <None Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Windows.xaml" />
+    <MauiXaml Include="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Windows.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <None Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Android.xaml" />
+    <MauiXaml Include="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.Android.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Windows.xaml" />
+    <MauiXaml Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Android.xaml" />
+    <None Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Windows.xaml" />
+    <None Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Android.xaml" />
+    <None Include="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Windows.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+    <None Include="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Android.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <None Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Windows.xaml" />
+    <MauiXaml Include="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Windows.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <None Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Android.xaml" />
+    <MauiXaml Include="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.Android.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Windows.xaml" />
+    <MauiXaml Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Android.xaml" />
+    <None Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Windows.xaml" />
+    <None Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Android.xaml" />
+    <None Include="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Windows.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+    <None Include="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Android.xaml">
+      <SubType>Designer</SubType>
+      <Visible>true</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <None Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Windows.xaml" />
+    <MauiXaml Include="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Windows.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <None Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Android.xaml" />
+    <MauiXaml Include="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.Android.xaml" />
   </ItemGroup>
 </Project>

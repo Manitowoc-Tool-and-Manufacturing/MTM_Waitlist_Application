@@ -4,8 +4,11 @@ namespace Core.Models.Auth;
 /// Holds the JWT bearer token and its expiry timestamp.
 /// Stored in the platform's secure vault via SecureStorage — never in plaintext.
 /// </summary>
-public sealed class Model_AuthToken
+public sealed record Model_AuthToken
 {
+    /// <summary>The authenticated user's numeric identifier.</summary>
+    public int UserId { get; init; }
+
     /// <summary>The raw JWT bearer token string.</summary>
     public string Token { get; init; } = string.Empty;
 

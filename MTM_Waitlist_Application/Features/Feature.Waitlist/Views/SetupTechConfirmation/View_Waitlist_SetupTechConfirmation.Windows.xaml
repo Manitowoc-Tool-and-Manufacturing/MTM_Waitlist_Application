@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Waitlist.Views.SetupTechConfirmation.View_Waitlist_SetupTechConfirmation"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Core.Models.SetupTech;assembly=Core"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels.SetupTechConfirmation"
+    x:DataType="vm:ViewModel_Waitlist_SetupTechConfirmation"
+    BackgroundColor="#F0F2F5"
+    Title="Setup Complete">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*">
+        <Label FontAttributes="Bold" FontSize="22" Text="Setup Technician - Complete" />
+        <Border Grid.Row="1" Margin="0,14,0,14" Padding="16,12" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Workstation" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Work Order" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Validate" TextColor="#388E3C" />
+                <BoxView WidthRequest="36" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label Text="Check" TextColor="White" /></Border>
+                <Label Text="Dunnage" TextColor="#388E3C" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <Border Grid.Row="2" MaximumWidthRequest="900" Padding="36,30" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 12" VerticalOptions="Center">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                <Border Padding="20,14" BackgroundColor="#E8F5E9" Stroke="#A5D6A7" StrokeShape="RoundRectangle 8">
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="14">
+                        <Border BackgroundColor="#388E3C" Padding="10,6" StrokeShape="RoundRectangle 18"><Label FontAttributes="Bold" FontSize="18" Text="Check" TextColor="White" /></Border>
+                        <VerticalStackLayout>
+                            <Label FontAttributes="Bold" FontSize="18" Text="Active Job Saved" TextColor="#1B5E20" />
+                            <Label Text="{Binding WorkcenterId, StringFormat='{0} is now configured and ready for production'}" TextColor="#2E7D32" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="0,20,0,20" ColumnDefinitions="*,24,*">
+                    <VerticalStackLayout Grid.Column="0" Spacing="8">
+                        <Border Padding="14,10" BackgroundColor="#F9F9F9" Stroke="#EEEEEE" StrokeShape="RoundRectangle 6"><Grid ColumnDefinitions="120,*"><Label Text="Workstation" TextColor="#777777" /><Label Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkcenterId, Mode=OneWay}" /></Grid></Border>
+                        <Border Padding="14,10" BackgroundColor="#F9F9F9" Stroke="#EEEEEE" StrokeShape="RoundRectangle 6"><Grid ColumnDefinitions="120,*"><Label Text="Work Order" TextColor="#777777" /><Label Grid.Column="1" FontAttributes="Bold" Text="{Binding ActiveJob.WorkOrderId, Mode=OneWay}" /></Grid></Border>
+                        <Border Padding="14,10" BackgroundColor="#F9F9F9" Stroke="#EEEEEE" StrokeShape="RoundRectangle 6"><Grid ColumnDefinitions="120,*"><Label Text="Sequence" TextColor="#777777" /><Label Grid.Column="1" FontAttributes="Bold" Text="{Binding ActiveJob.SequenceNo, StringFormat='Seq {0}', Mode=OneWay}" /></Grid></Border>
+                        <Border Padding="14,10" BackgroundColor="#F9F9F9" Stroke="#EEEEEE" StrokeShape="RoundRectangle 6"><Grid ColumnDefinitions="120,*"><Label Text="Part" TextColor="#777777" /><Label Grid.Column="1" FontAttributes="Bold" Text="{Binding ActiveJob.PartId, Mode=OneWay}" /></Grid></Border>
+                        <Border Padding="14,10" BackgroundColor="#FFF8E1" Stroke="#FFE082" StrokeShape="RoundRectangle 6"><Grid ColumnDefinitions="120,*"><Label Text="Saved By" TextColor="#777777" /><Label Grid.Column="1" Text="{Binding SavedByDisplayName, StringFormat='{}{0}  -  '}" /><Label Grid.Column="1" Margin="120,0,0,0" Text="{Binding SavedTimestamp, Mode=OneWay}" /></Grid></Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="2" Spacing="10">
+                        <Label FontAttributes="Bold" FontSize="12" Text="SUBORDINATE PARTS" TextColor="#555555" />
+                        <CollectionView HeightRequest="180" ItemsSource="{Binding SubordinateParts, Mode=OneWay}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Model_SetupTech_SubordinatePart">
+                                    <Grid Padding="0,4" ColumnDefinitions="*,60,60">
+                                        <Label FontAttributes="Bold" FontSize="12" Text="{Binding SubPartId}" />
+                                        <Label Grid.Column="1" HorizontalTextAlignment="End" Text="{Binding RequiredQty, StringFormat='Req: {0}'}" TextColor="#777777" />
+                                        <Label Grid.Column="2" FontAttributes="Bold" HorizontalTextAlignment="End" Text="{Binding QtyOnHand, StringFormat='OH: {0}'}" TextColor="#1565C0" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Label FontAttributes="Bold" FontSize="12" Text="DUNNAGE ASSIGNED" TextColor="#555555" />
+                        <CollectionView HeightRequest="140" ItemsSource="{Binding DunnageAssignments, Mode=OneWay}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Model_SetupTech_DunnageAssignment">
+                                    <VerticalStackLayout Padding="0,4">
+                                        <Label FontAttributes="Bold" FontSize="12" Text="{Binding DunnagePartName}" />
+                                        <Label FontSize="11" Text="{Binding DunnageTypeName}" TextColor="#777777" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <Label Grid.Row="2" FontSize="11" Text="Previous active job for this workstation was archived to history." TextColor="#777777" IsVisible="{Binding HadArchivedExistingJob, Mode=OneWay}" />
+
+                <Grid Grid.Row="3" Margin="0,20,0,0" ColumnDefinitions="*,12,*">
+                    <Button Grid.Column="0" HeightRequest="38" BackgroundColor="#EEEEEE" Command="{Binding StartOverCommand}" Text="New Setup" TextColor="#333333" />
+                    <Button Grid.Column="2" HeightRequest="38" BackgroundColor="#1565C0" Command="{Binding GoToDashboardCommand}" Text="Go to Dashboard" TextColor="White" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

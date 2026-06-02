@@ -30,6 +30,11 @@
         Title="Dashboard"
         Route="Dashboard" />
 
+    <ShellContent
+        x:Name="SetupTechContent"
+        Title="Setup Tech"
+        Route="SetupTech" />
+
     <!--
         Add further FlyoutItems here as feature pages are built.
         Example:

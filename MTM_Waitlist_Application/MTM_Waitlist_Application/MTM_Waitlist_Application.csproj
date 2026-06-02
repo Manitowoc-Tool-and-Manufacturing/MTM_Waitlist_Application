@@ -44,5 +44,6 @@
     <ProjectReference Include="..\Core\Services\Services.csproj" />
     <ProjectReference Include="..\Features\Feature.Auth\Feature.Auth.csproj" />
     <ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
+    <ProjectReference Include="..\Features\Feature.Waitlist\Feature.Waitlist.csproj" />
   </ItemGroup>
 </Project>

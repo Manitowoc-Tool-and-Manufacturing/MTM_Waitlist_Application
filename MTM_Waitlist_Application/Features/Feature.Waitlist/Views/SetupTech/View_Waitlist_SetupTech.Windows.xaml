@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Waitlist.Views.SetupTech.View_Waitlist_SetupTech"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Core.Models.InforVisual;assembly=Core"
+    xmlns:setupModels="clr-namespace:Core.Models.SetupTech;assembly=Core"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels.SetupTech"
+    x:DataType="vm:ViewModel_Waitlist_SetupTech"
+    x:Name="PageRoot"
+    BackgroundColor="#F0F2F5"
+    Title="Setup Technician">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*">
+        <Label
+            Grid.Row="0"
+            FontAttributes="Bold"
+            FontSize="22"
+            Text="Setup Technician - New Job Setup" />
+
+        <Border
+            Grid.Row="1"
+            Margin="0,14,0,14"
+            Padding="16,12"
+            BackgroundColor="White"
+            Stroke="#E0E0E0"
+            StrokeShape="RoundRectangle 8"
+            IsVisible="{Binding IsAuthorized, Mode=OneWay}">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Border BackgroundColor="#1565C0" Padding="8,4" StrokeShape="RoundRectangle 16">
+                    <Label FontAttributes="Bold" Text="1" TextColor="White" />
+                </Border>
+                <Label FontAttributes="Bold" Text="Workstation" TextColor="#1565C0" VerticalTextAlignment="Center" />
+                <BoxView WidthRequest="40" HeightRequest="2" Color="#1565C0" VerticalOptions="Center" />
+                <Border BackgroundColor="{Binding IsWorkOrderStep, Converter={x:Null}}" />
+                <Border BackgroundColor="#BBBBBB" Padding="8,4" StrokeShape="RoundRectangle 16">
+                    <Label FontAttributes="Bold" Text="2" TextColor="White" />
+                </Border>
+                <Label Text="Work Order" TextColor="#999999" VerticalTextAlignment="Center" />
+                <BoxView WidthRequest="40" HeightRequest="2" Color="#CCCCCC" VerticalOptions="Center" />
+                <Border BackgroundColor="#BBBBBB" Padding="8,4" StrokeShape="RoundRectangle 16">
+                    <Label FontAttributes="Bold" Text="3" TextColor="White" />
+                </Border>
+                <Label Text="Validate" TextColor="#999999" VerticalTextAlignment="Center" />
+                <BoxView WidthRequest="40" HeightRequest="2" Color="#CCCCCC" VerticalOptions="Center" />
+                <Border BackgroundColor="#BBBBBB" Padding="8,4" StrokeShape="RoundRectangle 16">
+                    <Label FontAttributes="Bold" Text="4" TextColor="White" />
+                </Border>
+                <Label Text="Dunnage" TextColor="#999999" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <Border
+            Grid.Row="2"
+            Padding="20"
+            BackgroundColor="#FFF3E0"
+            Stroke="#E65100"
+            StrokeShape="RoundRectangle 8"
+            IsVisible="{Binding ShowUnauthorizedState, Mode=OneWay}">
+            <VerticalStackLayout Spacing="8">
+                <Label FontAttributes="Bold" FontSize="18" Text="Access Required" TextColor="#BF360C" />
+                <Label Text="{Binding AccessDeniedMessage, Mode=OneWay}" TextColor="#BF360C" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid
+            Grid.Row="2"
+            IsVisible="{Binding IsWorkstationStep, Mode=OneWay}"
+            ColumnDefinitions="3*,16,2*"
+            IsEnabled="{Binding IsAuthorized, Mode=OneWay}">
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto">
+                <Label FontAttributes="Bold" FontSize="14" Text="Select Workstation" />
+
+                <Border
+                    Grid.Row="1"
+                    Margin="0,10,0,10"
+                    Padding="10,6"
+                    BackgroundColor="White"
+                    Stroke="#CCCCCC"
+                    StrokeShape="RoundRectangle 6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry Grid.Column="0" BackgroundColor="Transparent" Placeholder="Search workstation" Text="{Binding SearchText, Mode=TwoWay}" />
+                        <Label Grid.Column="1" Margin="8,0,0,0" Text="Search" VerticalTextAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="2" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                    <CollectionView
+                        ItemsSource="{Binding AvailableWorkcenters, Mode=OneWay}"
+                        SelectedItem="{Binding SelectedWorkcenter, Mode=TwoWay}"
+                        SelectionMode="Single">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Model_VisualWorkcenter">
+                                <Grid Padding="14,12" RowDefinitions="Auto,Auto">
+                                    <Label FontAttributes="Bold" FontSize="15" Text="{Binding WorkcenterId}" />
+                                    <Label Grid.Row="1" FontSize="11" Text="{Binding Description}" TextColor="#777777" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+
+                <Button
+                    Grid.Row="3"
+                    Margin="0,12,0,0"
+                    HeightRequest="44"
+                    BackgroundColor="#1565C0"
+                    Command="{Binding ContinueToWorkOrderCommand}"
+                    IsEnabled="{Binding CanContinueToWorkOrder, Mode=OneWay}"
+                    Text="Continue to Work Order"
+                    TextColor="White" />
+            </Grid>
+
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <Label FontAttributes="Bold" FontSize="14" Text="Currently Active" />
+                <Border
+                    Grid.Row="1"
+                    Margin="0,10,0,0"
+                    Padding="16"
+                    BackgroundColor="White"
+                    Stroke="#E0E0E0"
+                    StrokeShape="RoundRectangle 8"
+                    VerticalOptions="Start">
+                    <VerticalStackLayout Spacing="8">
+                        <Label FontAttributes="Bold" FontSize="11" Text="ACTIVE JOB" TextColor="#1565C0" />
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                            <Label Text="Work Order:" TextColor="#777777" />
+                            <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding CurrentActiveJob.WorkOrderId, Mode=OneWay}" />
+                            <Label Grid.Row="1" Text="Sequence:" TextColor="#777777" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding CurrentActiveJob.SequenceNo, StringFormat='Seq {0}', Mode=OneWay}" />
+                            <Label Grid.Row="2" Text="Part:" TextColor="#777777" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding CurrentActiveJob.PartId, Mode=OneWay}" />
+                            <Label Grid.Row="3" Text="Since:" TextColor="#777777" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding CurrentActiveJob.ActiveSince, StringFormat='{0:g}', Mode=OneWay}" />
+                        </Grid>
+                        <Border
+                            Padding="10"
+                            BackgroundColor="#FFF3E0"
+                            Stroke="#E65100"
+                            StrokeShape="RoundRectangle 6"
+                            IsVisible="{Binding HasCurrentActiveJob, Mode=OneWay}">
+                            <Label
+                                FontSize="12"
+                                Text="Continuing will archive the current active job into workstation history."
+                                TextColor="#BF360C" />
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Grid
+            Grid.Row="2"
+            IsVisible="{Binding IsWorkOrderStep, Mode=OneWay}"
+            ColumnDefinitions="3*,16,2*"
+            IsEnabled="{Binding IsAuthorized, Mode=OneWay}">
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+                <Border
+                    Padding="10,6"
+                    BackgroundColor="#E3F2FD"
+                    Stroke="#90CAF9"
+                    StrokeShape="RoundRectangle 20"
+                    HorizontalOptions="Start">
+                    <HorizontalStackLayout Spacing="4">
+                        <Label FontSize="12" Text="Workstation:" TextColor="#555555" />
+                        <Label FontAttributes="Bold" FontSize="12" Text="{Binding SelectedWorkcenter.WorkcenterId, Mode=OneWay}" TextColor="#1565C0" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <Label Grid.Row="1" Margin="0,12,0,6" FontAttributes="Bold" FontSize="14" Text="Scan Work Order Barcode" />
+                <Border Grid.Row="2" Padding="12,8" BackgroundColor="White" Stroke="#1565C0" StrokeThickness="2" StrokeShape="RoundRectangle 8">
+                    <Entry BackgroundColor="Transparent" FontSize="16" Placeholder="WO-123456" Text="{Binding WorkOrderInput, Mode=TwoWay}" />
+                </Border>
+                <Grid Grid.Row="3" Margin="0,8,0,0" ColumnDefinitions="Auto,*">
+                    <Button WidthRequest="120" BackgroundColor="#EEEEEE" Command="{Binding BackToWorkstationCommand}" Text="Back" TextColor="#333333" />
+                    <Button Grid.Column="1" Margin="10,0,0,0" BackgroundColor="#1565C0" Command="{Binding LookupWorkOrderCommand}" IsEnabled="{Binding CanLookupWorkOrder, Mode=OneWay}" Text="Look Up Work Order" TextColor="White" />
+                </Grid>
+
+                <Border Grid.Row="4" Margin="0,12,0,12" Padding="16" BackgroundColor="White" Stroke="#388E3C" StrokeShape="RoundRectangle 8">
+                    <VerticalStackLayout Spacing="8">
+                        <Label FontAttributes="Bold" FontSize="10" Text="INFOR VISUAL - LIVE DATA" TextColor="#388E3C" />
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                            <Label Text="Work Order:" TextColor="#777777" />
+                            <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkOrderHeader.WorkOrderId, Mode=OneWay}" />
+                            <Label Grid.Row="1" Text="Part:" TextColor="#777777" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding WorkOrderHeader.PartId, Mode=OneWay}" />
+                            <Label Grid.Row="2" Text="Status:" TextColor="#777777" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding WorkOrderHeader.WorkOrderStatus, Mode=OneWay}" />
+                        </Grid>
+
+                        <Label Margin="0,8,0,0" FontAttributes="Bold" FontSize="14" Text="Select Sequence" />
+                        <CollectionView
+                            ItemsSource="{Binding AvailableSequences, Mode=OneWay}"
+                            SelectedItem="{Binding SelectedSequence, Mode=TwoWay}"
+                            SelectionMode="Single">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Model_VisualWorkOrderSequence">
+                                    <Grid Padding="14,12" RowDefinitions="Auto,Auto">
+                                        <Label FontAttributes="Bold" Text="{Binding SequenceNo, StringFormat='Seq {0}'}" />
+                                        <Label Grid.Row="1" FontSize="11" Text="{Binding WorkcenterDescription}" TextColor="#777777" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button
+                    Grid.Row="5"
+                    HeightRequest="44"
+                    BackgroundColor="#1565C0"
+                    Command="{Binding ContinueToValidationCommand}"
+                    IsEnabled="{Binding CanContinueToValidation, Mode=OneWay}"
+                    Text="Continue to Validation"
+                    TextColor="White" />
+            </Grid>
+
+            <Border
+                Grid.Column="2"
+                Padding="12"
+                BackgroundColor="#F3F3F3"
+                Stroke="#DDDDDD"
+                StrokeShape="RoundRectangle 8"
+                VerticalOptions="Start">
+                <VerticalStackLayout Spacing="8">
+                    <Label FontAttributes="Bold" FontSize="12" Text="Tips" TextColor="#444444" />
+                    <Label FontSize="11" Text="Scan the physical job traveler barcode when available." TextColor="#666666" />
+                    <Label FontSize="11" Text="If the workcenter does not match exactly, all returned sequences are shown." TextColor="#666666" />
+                    <Label FontSize="11" Text="Only open or released work orders should be used for new setup." TextColor="#666666" />
+                    <Label FontSize="11" Text="{Binding StatusMessage, Mode=OneWay}" TextColor="#1565C0" />
+                    <Label FontSize="11" Text="{Binding ErrorMessage, Mode=OneWay}" TextColor="#B42318" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

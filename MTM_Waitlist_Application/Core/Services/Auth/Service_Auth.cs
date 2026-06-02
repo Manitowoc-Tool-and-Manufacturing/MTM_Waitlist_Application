@@ -2,6 +2,8 @@ using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
 using Core.Models.Auth;
 using Core.Models.Shared;
+using System.Text;
+using System.Text.Json;
 
 namespace Services.Auth;
 
@@ -41,8 +43,9 @@ public sealed class Service_Auth : IService_Auth
             return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
-        return result;
+        var token = EnsureUserId(result.Data);
+        await _tokenStore.StoreSessionAsync(token, cancellationToken);
+        return Model_Dao_Result<Model_AuthToken>.Success(token);
     }
 
     /// <inheritdoc/>
@@ -59,8 +62,9 @@ public sealed class Service_Auth : IService_Auth
             return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
-        return result;
+        var token = EnsureUserId(result.Data);
+        await _tokenStore.StoreSessionAsync(token, cancellationToken);
+        return Model_Dao_Result<Model_AuthToken>.Success(token);
     }
 
     /// <inheritdoc/>
@@ -116,8 +120,58 @@ public sealed class Service_Auth : IService_Auth
             return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
         }
 
-        await _tokenStore.StoreSessionAsync(result.Data, cancellationToken);
-        return result;
+        var token = EnsureUserId(result.Data);
+        await _tokenStore.StoreSessionAsync(token, cancellationToken);
+        return Model_Dao_Result<Model_AuthToken>.Success(token);
+    }
+
+    private static Model_AuthToken EnsureUserId(Model_AuthToken token)
+    {
+        if (token.UserId > 0)
+        {
+            return token;
+        }
+
+        return token with { UserId = ReadUserIdFromJwt(token.Token) };
+    }
+
+    private static int ReadUserIdFromJwt(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return 0;
+        }
+
+        var segments = token.Split('.');
+        if (segments.Length < 2)
+        {
+            return 0;
+        }
+
+        try
+        {
+            var payload = segments[1]
+                .Replace('-', '+')
+                .Replace('_', '/');
+
+            var padding = payload.Length % 4;
+            if (padding > 0)
+            {
+                payload = payload.PadRight(payload.Length + (4 - padding), '=');
+            }
+
+            var bytes = Convert.FromBase64String(payload);
+            using var document = JsonDocument.Parse(Encoding.UTF8.GetString(bytes));
+
+            return document.RootElement.TryGetProperty("sub", out var subject)
+                && subject.TryGetInt32(out var userId)
+                ? userId
+                : 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     private static string GetUserFriendlyErrorMessage(string errorMessage)

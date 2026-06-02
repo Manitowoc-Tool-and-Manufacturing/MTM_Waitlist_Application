@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Waitlist.Views.SetupTechValidation.View_Waitlist_SetupTechValidation"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Core.Models.SetupTech;assembly=Core"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels.SetupTechValidation"
+    x:DataType="vm:ViewModel_Waitlist_SetupTechValidation"
+    BackgroundColor="#F0F2F5"
+    Title="Validate Setup">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label FontAttributes="Bold" FontSize="18" Text="New Job Setup" />
+            <Grid ColumnDefinitions="*,4,*,4,*,4,*">
+                <Border Grid.Column="0" HeightRequest="6" BackgroundColor="#388E3C" StrokeShape="RoundRectangle 3" />
+                <Border Grid.Column="2" HeightRequest="6" BackgroundColor="#388E3C" StrokeShape="RoundRectangle 3" />
+                <Border Grid.Column="4" HeightRequest="6" BackgroundColor="#1565C0" StrokeShape="RoundRectangle 3" />
+                <Border Grid.Column="6" HeightRequest="6" BackgroundColor="#CCCCCC" StrokeShape="RoundRectangle 3" />
+            </Grid>
+            <Label FontSize="11" Text="Step 3 of 4 - Validate" TextColor="#777777" />
+
+            <Label FontAttributes="Bold" FontSize="14" Text="Confirm Job Details" />
+            <Border Padding="16" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                    <Label Text="Workstation" TextColor="#777777" />
+                    <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkcenterId, Mode=OneWay}" />
+                    <Label Grid.Row="1" Text="Work Order" TextColor="#777777" />
+                    <Label Grid.Row="1" Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkOrderHeader.WorkOrderId, Mode=OneWay}" />
+                    <Label Grid.Row="2" Text="Sequence" TextColor="#777777" />
+                    <Label Grid.Row="2" Grid.Column="1" FontAttributes="Bold" Text="{Binding SelectedSequence.SequenceNo, StringFormat='Seq {0}', Mode=OneWay}" />
+                    <Label Grid.Row="3" Text="Part" TextColor="#777777" />
+                    <Label Grid.Row="3" Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkOrderHeader.PartId, Mode=OneWay}" />
+                    <Label Grid.Row="4" Text="Part Type" TextColor="#777777" />
+                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding WorkOrderHeader.PartType, Mode=OneWay}" />
+                </Grid>
+            </Border>
+
+            <Label FontAttributes="Bold" FontSize="14" Text="Subordinate Parts" />
+            <CollectionView ItemsSource="{Binding SubordinateParts, Mode=OneWay}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Model_SetupTech_SubordinatePart">
+                        <Border Margin="0,0,0,8" Padding="14" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout>
+                                    <Label FontAttributes="Bold" FontSize="14" Text="{Binding SubPartId}" />
+                                    <Label FontSize="12" Text="{Binding SubPartDesc}" TextColor="#555555" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                    <Label FontSize="12" HorizontalTextAlignment="End" Text="{Binding RequiredQty, StringFormat='Req: {0}'}" TextColor="#777777" />
+                                    <Label FontAttributes="Bold" FontSize="12" HorizontalTextAlignment="End" Text="{Binding QtyOnHand, StringFormat='On Hand: {0}'}" TextColor="#1565C0" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Grid ColumnDefinitions="*,8,2*">
+                <Button Grid.Column="0" HeightRequest="52" BackgroundColor="#EEEEEE" Command="{Binding ChangeWorkOrderCommand}" Text="Change" TextColor="#333333" />
+                <Button Grid.Column="2" HeightRequest="52" BackgroundColor="#388E3C" Command="{Binding ApproveCommand}" Text="Approve" TextColor="White" />
+            </Grid>
+
+            <Label FontSize="12" Text="{Binding ErrorMessage, Mode=OneWay}" TextColor="#B42318" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -2,6 +2,7 @@
 using Core.Interfaces.Lifecycle;
 using Feature.Dashboard.Views.Main;
 using Feature.Auth.Views.Login;
+using Feature.Waitlist.Views.SetupTech;
 using Microsoft.Extensions.Logging;
 
 namespace MTM_Waitlist_Application
@@ -161,9 +162,9 @@ namespace MTM_Waitlist_Application
         private AppShell CreateShellForCurrentRole()
         {
             _logger.LogInformation("[STARTUP] CreateShellForCurrentRole — creating AppShell");
-            // All currently implemented roles land on Dashboard because it is the only
-            // authenticated feature surface available today.
-            return new AppShell(_serviceProvider.GetRequiredService<View_Dashboard_Main>());
+            return new AppShell(
+                _serviceProvider.GetRequiredService<View_Dashboard_Main>(),
+                _serviceProvider.GetRequiredService<View_Waitlist_SetupTech>());
         }
     }
 }

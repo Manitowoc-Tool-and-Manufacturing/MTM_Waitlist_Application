@@ -36,4 +36,47 @@ public static class Constants_Api
 
     /// <summary>REST endpoint for acknowledging a received shutdown signal.</summary>
     public const string ShutdownSignalAcknowledgeEndpoint = "/api/admin/shutdown-signal/acknowledge";
+
+    /// <summary>REST endpoint for retrieving all available Infor Visual workcenters.</summary>
+    public const string VisualWorkcenters = "/api/infor-visual/workcenters";
+
+    /// <summary>REST endpoint template for retrieving a single Infor Visual work order header.</summary>
+    public const string VisualWorkOrderHeader = "/api/infor-visual/work-orders/{0}";
+
+    /// <summary>REST endpoint template for retrieving all sequences for an Infor Visual work order.</summary>
+    public const string VisualWorkOrderSequences = "/api/infor-visual/work-orders/{0}/sequences";
+
+    /// <summary>REST endpoint template for retrieving subordinate parts for a work order sequence.</summary>
+    public const string VisualSubordinateParts = "/api/infor-visual/work-orders/{0}/sequences/{1}/subordinate-parts";
+
+    /// <summary>REST endpoint template for retrieving active work orders for a workcenter.</summary>
+    public const string VisualActiveWorkOrders = "/api/infor-visual/resources/{0}/active-work-orders";
+
+    /// <summary>REST endpoint template for retrieving the current active job for a workstation.</summary>
+    public const string SetupTechActiveJob = "/api/setup-tech/active-job/{0}";
+
+    /// <summary>REST endpoint for saving the active workstation job configuration.</summary>
+    public const string SetupTechSetActiveJob = "/api/setup-tech/active-job";
+
+    /// <summary>REST endpoint template for retrieving cached dunnage assignments for a work order sequence.</summary>
+    public const string SetupTechDunnageAssignment = "/api/setup-tech/dunnage-assignment/{0}/{1}";
+
+    /// <summary>REST endpoint for inserting or updating a cached dunnage assignment line.</summary>
+    public const string SetupTechUpsertDunnage = "/api/setup-tech/dunnage-assignment";
+
+    /// <summary>REST endpoint template for deleting a cached dunnage assignment line.</summary>
+    public const string SetupTechDeleteDunnage = "/api/setup-tech/dunnage-assignment/{0}";
+
+    /// <summary>REST endpoint for retrieving enabled Setup Tech dunnage types.</summary>
+    public const string SetupTechDunnageTypes = "/api/setup-tech/dunnage-types";
+
+    /// <summary>REST endpoint template for retrieving job history for a workstation.</summary>
+    public const string SetupTechJobHistory = "/api/setup-tech/job-history/{0}";
+
+    /// <summary>REST endpoint for retrieving the cross-database dunnage catalog.</summary>
+    public const string DunnageCatalog = "/api/dunnage-catalog";
+
+    /// <summary>REST endpoint template for retrieving cached subordinate parts for a work order sequence.</summary>
+    public const string SetupTechSubordinateParts = "/api/setup-tech/subordinate-parts/{0}/{1}";
+
 }

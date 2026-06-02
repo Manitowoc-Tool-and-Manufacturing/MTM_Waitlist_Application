@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using MTM_Waitlist_Server.Api.Data;
 using MTM_Waitlist_Server.Api.Services;
 using MTM_Waitlist_Server.Core.Interfaces.Dashboard;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
@@ -50,7 +51,9 @@ public static class ApiStartup
             builder.Services.Add(descriptor);
         }
 
+        builder.Services.AddSingleton<Dao_InforVisualWorkOrder>();
         builder.Services.AddSingleton<Service_ApiAuth>();
+        builder.Services.AddSingleton<Service_ApiSetupTech>();
         builder.Services.AddSingleton<Service_ApiWaitlist>();
 
         // Explicitly register this assembly as an application part so that MVC

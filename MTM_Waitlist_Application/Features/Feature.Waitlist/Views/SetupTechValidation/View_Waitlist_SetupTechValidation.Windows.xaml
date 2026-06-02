@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Feature.Waitlist.Views.SetupTechValidation.View_Waitlist_SetupTechValidation"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Core.Models.SetupTech;assembly=Core"
+    xmlns:vm="clr-namespace:Feature.Waitlist.ViewModels.SetupTechValidation"
+    x:DataType="vm:ViewModel_Waitlist_SetupTechValidation"
+    BackgroundColor="#F0F2F5"
+    Title="Validate Setup">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*">
+        <Label FontAttributes="Bold" FontSize="22" Text="Setup Technician - Validate Job" />
+
+        <Border Grid.Row="1" Margin="0,14,0,14" Padding="16,12" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" Text="Check" TextColor="White" /></Border>
+                <Label Text="Workstation" TextColor="#388E3C" VerticalTextAlignment="Center" />
+                <BoxView WidthRequest="40" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#388E3C" Padding="8,4" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" Text="Check" TextColor="White" /></Border>
+                <Label Text="Work Order" TextColor="#388E3C" VerticalTextAlignment="Center" />
+                <BoxView WidthRequest="40" HeightRequest="2" Color="#388E3C" VerticalOptions="Center" />
+                <Border BackgroundColor="#1565C0" Padding="8,4" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" Text="3" TextColor="White" /></Border>
+                <Label FontAttributes="Bold" Text="Validate" TextColor="#1565C0" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,16,*">
+            <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto,Auto">
+                <Label FontAttributes="Bold" FontSize="14" Text="Confirm Job Details" />
+                <Border Grid.Row="1" Margin="0,10,0,12" Padding="20" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                    <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <Label Text="Workstation" TextColor="#777777" />
+                        <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkcenterId, Mode=OneWay}" />
+                        <Label Grid.Row="1" Text="Work Order" TextColor="#777777" />
+                        <Label Grid.Row="1" Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkOrderHeader.WorkOrderId, Mode=OneWay}" />
+                        <Label Grid.Row="2" Text="Sequence" TextColor="#777777" />
+                        <Label Grid.Row="2" Grid.Column="1" FontAttributes="Bold" Text="{Binding SelectedSequence.SequenceNo, StringFormat='Seq {0}', Mode=OneWay}" />
+                        <Label Grid.Row="3" Text="Part Number" TextColor="#777777" />
+                        <Label Grid.Row="3" Grid.Column="1" FontAttributes="Bold" Text="{Binding WorkOrderHeader.PartId, Mode=OneWay}" />
+                        <Label Grid.Row="4" Text="Part Type" TextColor="#777777" />
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding WorkOrderHeader.PartType, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+                <Border Grid.Row="2" Margin="0,0,0,12" Padding="12" BackgroundColor="#F3F3F3" Stroke="#DDDDDD" StrokeShape="RoundRectangle 6">
+                    <Label FontSize="12" Text="Change Work Order if anything looks incorrect before moving to dunnage assignment." TextColor="#1565C0" />
+                </Border>
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,10,*">
+                    <Button Grid.Column="0" WidthRequest="160" HeightRequest="44" BackgroundColor="#EEEEEE" Command="{Binding ChangeWorkOrderCommand}" Text="Change Work Order" TextColor="#333333" />
+                    <Button Grid.Column="2" HeightRequest="44" BackgroundColor="#388E3C" Command="{Binding ApproveCommand}" Text="Approve and Continue" TextColor="White" />
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <Label FontAttributes="Bold" FontSize="14" Text="Subordinate Parts" />
+                <Border Grid.Row="1" Margin="0,10,0,0" Padding="16" BackgroundColor="White" Stroke="#E0E0E0" StrokeShape="RoundRectangle 8">
+                    <CollectionView ItemsSource="{Binding SubordinateParts, Mode=OneWay}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Model_SetupTech_SubordinatePart">
+                                <Grid Padding="0,8" ColumnDefinitions="*,60,80">
+                                    <VerticalStackLayout>
+                                        <Label FontAttributes="Bold" FontSize="13" Text="{Binding SubPartId}" />
+                                        <Label FontSize="11" Text="{Binding SubPartDesc}" TextColor="#555555" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" HorizontalTextAlignment="End" Text="{Binding RequiredQty}" />
+                                    <Label Grid.Column="2" FontAttributes="Bold" HorizontalTextAlignment="End" Text="{Binding QtyOnHand}" TextColor="#1565C0" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

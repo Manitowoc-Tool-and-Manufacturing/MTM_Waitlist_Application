@@ -22,6 +22,15 @@ public sealed class Service_AuthTokenStore_WinUI : IService_AuthTokenStore
     }
 
     /// <inheritdoc />
+    public Task<Model_AuthToken?> GetStoredSessionAsync(CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_currentToken);
+        }
+    }
+
+    /// <inheritdoc />
     public Task<string> GetRefreshTokenAsync(CancellationToken cancellationToken = default)
     {
         lock (_gate)

@@ -23,6 +23,13 @@ public interface IService_AuthTokenStore
     Task<string> GetRefreshTokenAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the full currently stored authenticated session.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the read operation.</param>
+    /// <returns>The stored session, or <see langword="null"/> when no session is available.</returns>
+    Task<Model_AuthToken?> GetStoredSessionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Stores the authenticated session returned by the server.
     /// </summary>
     /// <param name="token">Authenticated token response.</param>
