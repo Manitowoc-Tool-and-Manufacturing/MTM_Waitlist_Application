@@ -48,6 +48,10 @@ public sealed class Service_ApiAuth
             }
 
             var passwordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
+            if (passwordHash == "WINDOWS_AUTH_AUTO_SEEDED_ACCOUNT")
+            {
+                throw new InvalidOperationException("The Windows-auth account 'WINDOWS_AUTH_AUTO_SEEDED_ACCOUNT' cannot log in with a password. Reset your password in server settings first.");
+            }
             if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
             {
                 return null;

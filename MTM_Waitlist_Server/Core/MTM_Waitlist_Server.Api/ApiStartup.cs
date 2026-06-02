@@ -62,13 +62,12 @@ public static class ApiStartup
         builder.Services.AddControllers()
             .AddApplicationPart(typeof(ApiStartup).Assembly);
 
-        // Resolve the JWT secret from shared settings so tokens issued by Service_ApiAuth
-        // can be validated by the same key.
+        // Resolve the JWT secret from shared settings, falling back to the embedded file
         var settingsStore = sharedProvider.GetRequiredService<IService_SettingsStore>();
         var jwtSecret = settingsStore.Get().Api.JwtSecret;
         var keyBytes = jwtSecret.Length > 0
             ? Encoding.UTF8.GetBytes(jwtSecret)
-            : Encoding.UTF8.GetBytes("MTM-Waitlist-Development-Secret-Key-32-chars"); // Fallback for first-run without settings
+            : Encoding.UTF8.GetBytes(ReadEmbeddedJwtSecret());
 
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -113,5 +112,18 @@ public static class ApiStartup
         app.MapControllers();
 
         return app;
+    }
+
+    private static string ReadEmbeddedJwtSecret()
+    {
+        var assembly = typeof(ApiStartup).Assembly;
+        var assemblyLocation = assembly.Location;
+        var filePath = Path.Combine(Path.GetDirectoryName(assemblyLocation)!, "jwt-secret.txt");
+        if (File.Exists(filePath))
+        {
+            return File.ReadAllText(filePath).Trim();
+        }
+        // Final fallback if file is missing
+        return "MTM-Waitlist-Development-Secret-Key-32-chars";
     }
 }

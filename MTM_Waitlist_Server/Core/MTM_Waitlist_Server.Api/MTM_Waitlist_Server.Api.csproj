@@ -20,4 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\MTM_Waitlist_Server.Core\MTM_Waitlist_Server.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="jwt-secret.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

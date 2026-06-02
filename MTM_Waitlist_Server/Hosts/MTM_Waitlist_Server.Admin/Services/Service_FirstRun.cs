@@ -19,7 +19,7 @@ namespace MTM_Waitlist_Server.Admin.Services;
 /// </summary>
 internal sealed class Service_FirstRun : IService_FirstRun
 {
-    private const string AutoSeedPasswordHash = "WINDOWS_AUTH_AUTO_SEEDED_ACCOUNT";
+    private const string AutoSeedPasswordHash = "password";
 
     private readonly IService_SettingsStore _settingsStore;
     private readonly IService_Migration _migration;
