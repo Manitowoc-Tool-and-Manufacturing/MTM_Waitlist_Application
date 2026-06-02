@@ -197,9 +197,10 @@ internal sealed class Service_FirstRun : IService_FirstRun
             await conn.OpenAsync(cancellationToken);
 
             var settings = _settingsStore.Get();
-            var existingSavedPassword = settings.Database.UpdaterPassword;
+
+            // If no password provided, use the reversed username as default.
             var effectiveAppPassword = string.IsNullOrWhiteSpace(appDbPassword)
-                ? existingSavedPassword
+                ? DatabaseSettings.ComputeReversedPassword(appDbUsername)
                 : appDbPassword;
 
             // 1. Create the database if it doesn't exist.
@@ -212,13 +213,6 @@ internal sealed class Service_FirstRun : IService_FirstRun
             }
 
             var appUserExists = await MySqlUserExistsAsync(conn, appDbUsername, cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(effectiveAppPassword))
-            {
-                return appUserExists
-                    ? "The application MySQL user already exists, but no password is available to reuse. Enter a password to reset that user before continuing."
-                    : "Please enter a password for the application MySQL user before continuing.";
-            }
 
             // 2. Create or reset the application MySQL user, then grant privileges.
             if (appUserExists)

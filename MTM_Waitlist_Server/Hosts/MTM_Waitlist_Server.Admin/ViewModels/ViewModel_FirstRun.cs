@@ -5,6 +5,7 @@ using MTM_Waitlist_Server.Admin.Helpers;
 using MTM_Waitlist_Server.Core.Interfaces.FirstRun;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
+using MTM_Waitlist_Server.Core.Models.Settings;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
@@ -269,18 +270,18 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
             }
 
             if (string.IsNullOrWhiteSpace(DbAdminPassword))
-            {
-                StatusMessage = "❌ Please enter the privileged MySQL account password.";
-                return;
-            }
+        {
+            StatusMessage = "Please enter the privileged MySQL account password.";
+            return;
+        }
 
-            if (!AppUserExists && string.IsNullOrWhiteSpace(DbAppPassword))
-            {
-                StatusMessage = "❌ Please enter a password for the application database user.";
-                return;
-            }
+        // Auto-generate password from reversed username if creating new user
+        if (!AppUserExists && string.IsNullOrWhiteSpace(DbAppPassword))
+        {
+            DbAppPassword = DatabaseSettings.ComputeReversedPassword(DbAppUsername);
+        }
 
-            var error = await _firstRun.SetupDatabaseAsync(
+        var error = await _firstRun.SetupDatabaseAsync(
                 DbHost, port, DbName,
                 DbAdminUsername, DbAdminPassword,
                 DbAppUsername, DbAppPassword);
