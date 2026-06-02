@@ -47,6 +47,12 @@ public partial class ViewModel_Auth_Login : ObservableObject
     private string _errorMessage = string.Empty;
 
     /// <summary>
+    /// The raw technical error message for clipboard copying (retains original details).
+    /// </summary>
+    [ObservableProperty]
+    private string _rawErrorMessage = string.Empty;
+
+    /// <summary>
     /// Startup or connection status shown above the credential form.
     /// </summary>
     [ObservableProperty]
@@ -230,6 +236,7 @@ public partial class ViewModel_Auth_Login : ObservableObject
         else
         {
             ErrorMessage = result.ErrorMessage;
+            RawErrorMessage = result.RawErrorMessage;
         }
     }
 
@@ -254,16 +261,31 @@ public partial class ViewModel_Auth_Login : ObservableObject
 
     /// <summary>
     /// Copies the current error message to the clipboard for support purposes.
+    /// Includes both the friendly message and the raw technical error.
     /// </summary>
     [RelayCommand]
     private async Task CopyErrorAsync()
     {
-        var errorText = string.Join(Environment.NewLine,
-            ErrorMessage,
-            StatusMessage);
-        if (!string.IsNullOrWhiteSpace(errorText))
+        var lines = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
-            await Clipboard.SetTextAsync(errorText.Trim());
+            lines.Add($"Friendly error: {ErrorMessage}");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(RawErrorMessage))
+        {
+            lines.Add($"Technical details: {RawErrorMessage}");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(StatusMessage))
+        {
+            lines.Add($"Status: {StatusMessage}");
+        }
+        
+        if (lines.Count > 0)
+        {
+            await Clipboard.SetTextAsync(string.Join(Environment.NewLine, lines));
         }
     }
 

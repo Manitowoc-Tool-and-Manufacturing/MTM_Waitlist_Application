@@ -8,10 +8,10 @@ using System.Text.Json;
 namespace Services.Auth;
 
 /// <summary>
-/// Handles user authentication against the backend API and manages JWT storage.
-/// The token is stored in the platform's secure vault via MAUI SecureStorage
-/// (Android Keystore on Android, Windows DPAPI on Windows) — never in plaintext.
-/// </summary>
+    /// Handles user authentication against the backend API and manages JWT storage.
+    /// The token is stored in the platform secure vault via MAUI SecureStorage
+    /// (Android Keystore on Android, Windows DPAPI on Windows) — never in plaintext.
+    /// </summary>
 public sealed class Service_Auth : IService_Auth
 {
     private const string ServiceUnavailableMessage =
@@ -40,7 +40,9 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
+            return Model_Dao_Result<Model_AuthToken>.Failure(
+                GetUserFriendlyErrorMessage(result.ErrorMessage),
+                result.RawErrorMessage ?? result.ErrorMessage);
         }
 
         var token = EnsureUserId(result.Data);
@@ -59,7 +61,9 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
+            return Model_Dao_Result<Model_AuthToken>.Failure(
+                GetUserFriendlyErrorMessage(result.ErrorMessage),
+                result.RawErrorMessage ?? result.ErrorMessage);
         }
 
         var token = EnsureUserId(result.Data);
@@ -78,7 +82,9 @@ public sealed class Service_Auth : IService_Auth
 
         return result.IsSuccess
             ? result
-            : Model_Dao_Result<Model_Auth_LoginMode>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
+            : Model_Dao_Result<Model_Auth_LoginMode>.Failure(
+                GetUserFriendlyErrorMessage(result.ErrorMessage),
+                result.RawErrorMessage ?? result.ErrorMessage);
     }
 
     /// <inheritdoc/>
@@ -117,7 +123,9 @@ public sealed class Service_Auth : IService_Auth
 
         if (!result.IsSuccess || result.Data is null)
         {
-            return Model_Dao_Result<Model_AuthToken>.Failure(GetUserFriendlyErrorMessage(result.ErrorMessage));
+            return Model_Dao_Result<Model_AuthToken>.Failure(
+                GetUserFriendlyErrorMessage(result.ErrorMessage),
+                result.RawErrorMessage ?? result.ErrorMessage);
         }
 
         var token = EnsureUserId(result.Data);

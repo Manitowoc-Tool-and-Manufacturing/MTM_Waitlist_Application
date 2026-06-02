@@ -16,6 +16,9 @@ public sealed class Model_Dao_Result<T>
     /// <summary>Human-readable error description when <see cref="IsSuccess"/> is <see langword="false"/>.</summary>
     public string ErrorMessage { get; init; } = string.Empty;
 
+    /// <summary>Raw technical error for diagnostic purposes (retains original details).</summary>
+    public string RawErrorMessage { get; init; } = string.Empty;
+
     /// <summary>Creates a successful result carrying <paramref name="data"/>.</summary>
     public static Model_Dao_Result<T> Success(T data) =>
         new() { IsSuccess = true, Data = data };
@@ -23,6 +26,10 @@ public sealed class Model_Dao_Result<T>
     /// <summary>Creates a failure result with a descriptive <paramref name="message"/>.</summary>
     public static Model_Dao_Result<T> Failure(string message) =>
         new() { IsSuccess = false, ErrorMessage = message };
+
+    /// <summary>Creates a failure result with friendly message and raw technical details.</summary>
+    public static Model_Dao_Result<T> Failure(string friendlyMessage, string rawMessage) =>
+        new() { IsSuccess = false, ErrorMessage = friendlyMessage, RawErrorMessage = rawMessage };
 }
 
 /// <summary>
@@ -37,6 +44,9 @@ public sealed class Model_Dao_Result
     /// <summary>Human-readable error description when <see cref="IsSuccess"/> is <see langword="false"/>.</summary>
     public string ErrorMessage { get; init; } = string.Empty;
 
+    /// <summary>Raw technical error for diagnostic purposes (retains original details).</summary>
+    public string RawErrorMessage { get; init; } = string.Empty;
+
     /// <summary>Creates a successful result.</summary>
     public static Model_Dao_Result Success() =>
         new() { IsSuccess = true };
@@ -44,4 +54,8 @@ public sealed class Model_Dao_Result
     /// <summary>Creates a failure result with a descriptive <paramref name="message"/>.</summary>
     public static Model_Dao_Result Failure(string message) =>
         new() { IsSuccess = false, ErrorMessage = message };
+
+    /// <summary>Creates a failure result with friendly message and raw technical details.</summary>
+    public static Model_Dao_Result Failure(string friendlyMessage, string rawMessage) =>
+        new() { IsSuccess = false, ErrorMessage = friendlyMessage, RawErrorMessage = rawMessage };
 }
