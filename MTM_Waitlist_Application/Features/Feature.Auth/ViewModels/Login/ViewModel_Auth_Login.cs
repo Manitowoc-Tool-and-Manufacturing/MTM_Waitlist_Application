@@ -58,6 +58,12 @@ public partial class ViewModel_Auth_Login : ObservableObject
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
     /// <summary>
+    /// Indicates whether there is an error message to show (status or validation).
+    /// Used to show the Copy Error button.
+    /// </summary>
+    public bool HasErrorMessage => !string.IsNullOrWhiteSpace(ErrorMessage) || HasStatusMessage;
+
+    /// <summary>
     /// Indicates whether an authentication request is in progress.
     /// Drives the activity indicator on both platform layouts.
     /// </summary>

@@ -97,44 +97,31 @@
                         Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
                                              Converter={StaticResource StringToVisibilityConverter}}" />
 
-<!-- Error message -->
-                     <TextBlock
-                         Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                         Foreground="#B42318"
-                         TextWrapping="Wrap"
-                         Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
-                                              Converter={StaticResource StringToVisibilityConverter}}" />
+                    <!-- Copy error button -->
+                    <Button
+                        Content="Copy Error"
+                        Command="{x:Bind ViewModel.CopyErrorCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="36"
+                        Visibility="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay,
+                                             Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                     <!-- Copy error button -->
-                     <Button
-                         Content="Copy Error"
-                         Command="{x:Bind ViewModel.CopyErrorCommand}"
-                         HorizontalAlignment="Stretch"
-                         MinHeight="36"
-                         Visibility="{x:Bind ViewModel.HasStatusMessage, Mode=OneWay,
-                                              Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                     <!-- Action buttons -->
-                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                         <Button
-                             Grid.Column="0"
-                             Content="Sign In"
-                             Command="{x:Bind ViewModel.LoginCommand}"
-                             HorizontalAlignment="Stretch"
-                             MinHeight="36" />
-                         <Button
-                             Grid.Column="1"
-                             Content="Copy Error"
-                             Command="{x:Bind ViewModel.CopyErrorCommand}"
-                             HorizontalAlignment="Stretch"
-                             MinHeight="36" />
-                         <Button
-                             Grid.Column="2"
-                             Content="Clear"
-                             Command="{x:Bind ViewModel.ClearPasswordCommand}"
-                             HorizontalAlignment="Stretch"
-                             MinHeight="36" />
-                     </Grid>
+                    <!-- Action buttons -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                        <Button
+                            Grid.Column="0"
+                            Content="Sign In"
+                            Command="{x:Bind ViewModel.LoginCommand}"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="36" />
+                        <Button
+                            Grid.Column="1"
+                            Content="Clear"
+                            Command="{x:Bind ViewModel.ClearPasswordCommand}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="36" />
+                    </Grid>
 
                     <!-- Sign-in progress indicator -->
                     <ProgressRing

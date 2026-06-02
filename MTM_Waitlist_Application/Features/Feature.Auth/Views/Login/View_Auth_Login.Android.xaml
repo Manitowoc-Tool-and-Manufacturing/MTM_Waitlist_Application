@@ -84,7 +84,7 @@
                     Grid.Column="1"
                     Command="{Binding CopyErrorCommand}"
                     HeightRequest="52"
-                    IsVisible="{Binding HasStatusMessage, Mode=OneWay}"
+                    IsVisible="{Binding HasErrorMessage, Mode=OneWay}"
                     Text="Copy Error" />
                 <Button
                     Grid.Column="2"
