@@ -9,17 +9,16 @@ public class DatabaseSettings
     public string AppUsername { get; set; } = "waitlist_admin_dbappuser";
     /// <summary>
     /// DPAPI-encrypted in JSON — never store plain text.
-    /// Default: username reversed character-by-character.
+    /// Default: username reversed character-by-character (resuppabd_nimda_tsiltiaw).
     /// </summary>
-    public string AppPassword { get; set; } = "rupsbda_maditlaitlirraw";
+    public string AppPassword { get; set; } = "resuppabd_nimda_tsiltiaw";
     public string UpdaterUsername { get; set; } = "waitlist_admin_dbupdater";
     /// <summary>
-    /// Default: username reversed character-by-character.
+    /// Default: username reversed character-by-character (retadpubd_nimda_tsiltiaw).
     /// </summary>
-    public string UpdaterPassword { get; set; } = "retupda_maditlairraw";
+    public string UpdaterPassword { get; set; } = "retadpubd_nimda_tsiltiaw";
     public int ConnectionTimeout { get; set; } = 10;
     public int CommandTimeout { get; set; } = 30;
-
     /// <summary>
     /// Computes the default password for a MySQL user (username reversed).
     /// </summary>

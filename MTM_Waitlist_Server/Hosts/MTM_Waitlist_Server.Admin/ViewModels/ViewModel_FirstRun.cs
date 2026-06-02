@@ -130,7 +130,6 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
         SelectedRole = "Admin";
         DbAdminUsername = "root";
         DbAdminPassword = string.Empty;
-        DbAppPassword = string.Empty;
 
         // Pre-fill host/port/name from any existing saved settings so the user
         // doesn't have to re-type them on repeat visits to the wizard.
@@ -270,21 +269,21 @@ public sealed partial class ViewModel_FirstRun : ObservableObject
             }
 
             if (string.IsNullOrWhiteSpace(DbAdminPassword))
-        {
-            StatusMessage = "Please enter the privileged MySQL account password.";
-            return;
-        }
+            {
+                StatusMessage = "Please enter the privileged MySQL account password.";
+                return;
+            }
 
-        // Auto-generate password from reversed username if creating new user
-        if (!AppUserExists && string.IsNullOrWhiteSpace(DbAppPassword))
-        {
-            DbAppPassword = DatabaseSettings.ComputeReversedPassword(DbAppUsername);
-        }
+            // Auto-generate password from reversed username if creating new user
+            if (!AppUserExists && string.IsNullOrWhiteSpace(DbAppPassword))
+            {
+                DbAppPassword = DatabaseSettings.ComputeReversedPassword(DbAppUsername);
+            }
 
-        var error = await _firstRun.SetupDatabaseAsync(
-                DbHost, port, DbName,
-                DbAdminUsername, DbAdminPassword,
-                DbAppUsername, DbAppPassword);
+            var error = await _firstRun.SetupDatabaseAsync(
+                    DbHost, port, DbName,
+                    DbAdminUsername, DbAdminPassword,
+                    DbAppUsername, DbAppPassword);
 
             if (error is not null)
             {

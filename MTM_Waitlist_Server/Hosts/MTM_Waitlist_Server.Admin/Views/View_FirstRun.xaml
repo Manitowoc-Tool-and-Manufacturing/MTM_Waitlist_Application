@@ -95,11 +95,6 @@
                         <TextBox   Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.DbAppUsername, Mode=TwoWay}"
                                                                      IsEnabled="{x:Bind ViewModel.CanEditAppUsername, Mode=OneWay}" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Password" VerticalAlignment="Center" />
-                        <PasswordBox Grid.Row="1" Grid.Column="1"
-                                     Password="{x:Bind ViewModel.DbAppPassword, Mode=TwoWay}"
-                                                                         PlaceholderText="Enter password to create or reset the app user"
-                                                                         IsEnabled="{x:Bind ViewModel.CanEditAppPassword, Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
 
