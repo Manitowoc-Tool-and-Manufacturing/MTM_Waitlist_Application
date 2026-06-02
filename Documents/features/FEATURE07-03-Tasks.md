@@ -393,29 +393,29 @@ Check off items as you complete them. All items start unchecked. Reference [FEAT
 
 | Done | Phase | Task | Subtask |
 |------|-------|------|---------|
-| [ ] | 16 | Create `Success/Service_InforVisualTests.cs` | Online path: workcenter list returns from cache on second call (no second network call) |
-| [ ] | 16 | Test — cache miss triggers online call | First call → network; second call → cache; `InvalidateWorkcenterCache()` → third call → network again |
-| [ ] | 16 | Test — online WO header returns success | Connectivity=Online, online repo succeeds → service returns data |
-| [ ] | 16 | Create `Failure/Service_InforVisualTests.cs` | Online call fails → workcenter falls back to local cache |
-| [ ] | 16 | Test — WO header fails offline | Connectivity=None → `IsSuccess=false`, error message = "not available while offline" |
-| [ ] | 16 | Create `Connectivity/Service_InforVisualTests.cs` | Connectivity transitions during workcenter load |
+| [x] | 16 | Create `Success/Service_InforVisualTests.cs` | Online path: workcenter list returns from cache on second call (no second network call) |
+| [x] | 16 | Test — cache miss triggers online call | First call → network; second call → cache; `InvalidateWorkcenterCache()` → third call → network again |
+| [x] | 16 | Test — online WO header returns success | Connectivity=Online, online repo succeeds → service returns data |
+| [x] | 16 | Create `Failure/Service_InforVisualTests.cs` | Online call fails → workcenter falls back to local cache |
+| [x] | 16 | Test — WO header fails offline | Connectivity=None → `IsSuccess=false`, error message = "not available while offline" |
+| [x] | 16 | Create `Connectivity/Service_InforVisualTests.cs` | Connectivity transitions during workcenter load |
 
 ### Service_SetupTech Tests (`Tests/Unit/Services.Tests/SetupTech/`)
 
 | Done | Phase | Task | Subtask |
 |------|-------|------|---------|
-| [ ] | 16 | Create `Success/Service_SetupTechTests.cs` | `GetActiveJobAsync` online succeeds → returns model |
-| [ ] | 16 | Test — dunnage type config syncs to local on online load | |
-| [ ] | 16 | Create `Failure/Service_SetupTechTests.cs` | `SetActiveJobAsync` offline → returns failure |
-| [ ] | 16 | Test — dunnage upsert offline → returns failure | |
-| [ ] | 16 | Create `Connectivity/Service_SetupTechTests.cs` | `GetActiveJobAsync` offline → returns local cached job |
+| [x] | 16 | Create `Success/Service_SetupTechTests.cs` | `GetActiveJobAsync` online succeeds → returns model |
+| [x] | 16 | Test — dunnage type config syncs to local on online load | |
+| [x] | 16 | Create `Failure/Service_SetupTechTests.cs` | `SetActiveJobAsync` offline → returns failure |
+| [x] | 16 | Test — dunnage upsert offline → returns failure | |
+| [x] | 16 | Create `Connectivity/Service_SetupTechTests.cs` | `GetActiveJobAsync` offline → returns local cached job |
 
 ### ViewModel_Waitlist_SetupTech Tests (`Tests/Unit/Feature.Waitlist.Tests/ViewModels/SetupTech/`)
 
 | Done | Phase | Task | Subtask |
 |------|-------|------|---------|
 | [x] | 16 | Create `Commands/ViewModel_Waitlist_SetupTechTests.cs` | Tests: role guard, `LookupWorkOrderAsync`, `ContinueToValidationAsync` |
-| [ ] | 16 | `ScanBarcodeAsync` — Not implemented (barcode parsing not in this ViewModel) | |
+| [x] | 16 | `ScanBarcodeAsync` — Not implemented (barcode parsing not in this ViewModel) - N/A, barcode not in scope | |
 | [x] | 16 | Test — `LookupWorkOrderAsync` success → filters sequences, sets state | Verified in `ViewModel_Waitlist_SetupTechTests.cs` line 66 |
 | [x] | 16 | Test — role guard sets `ShowUnauthorizedState` for non-SetupTech user | Verified in `ViewModel_Waitlist_SetupTechTests.cs` line 43 |
 | [x] | 16 | Create `Properties/ViewModel_Waitlist_SetupTechTests.cs` | Tests: `CurrentStep`/`IsWorkstationStep`/`IsWorkOrderStep` properties |

@@ -32,31 +32,42 @@ public sealed class Service_ApiAuth
     /// </summary>
     public async Task<Model_AuthResponse?> LoginAsync(string username, string password, CancellationToken cancellationToken = default)
     {
-        await using var connection = OpenAppConnection();
-        await connection.OpenAsync(cancellationToken);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "CALL usp_Auth_ValidateCredentials(@p_Username)";
-        command.Parameters.AddWithValue("@p_Username", username);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
+        try
         {
-            return null;
-        }
+            await using var connection = OpenAppConnection();
+            await connection.OpenAsync(cancellationToken);
 
-        var passwordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
-        if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CALL usp_Auth_ValidateCredentials(@p_Username)";
+            command.Parameters.AddWithValue("@p_Username", username);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+            {
+                return null;
+            }
+
+            var passwordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
+            if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+            {
+                return null;
+            }
+
+            var userId = Convert.ToInt32(reader["Id"], CultureInfo.InvariantCulture);
+            var displayName = reader["DisplayName"]?.ToString() ?? username;
+            var role = reader["Role"]?.ToString() ?? string.Empty;
+            await reader.DisposeAsync();
+
+            return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: true, cancellationToken);
+        }
+        catch (MySqlException ex)
         {
-            return null;
+            throw new InvalidOperationException("Database connection failed. Please verify MySQL server is running and credentials are correct.", ex);
         }
-
-        var userId = Convert.ToInt32(reader["Id"], CultureInfo.InvariantCulture);
-        var displayName = reader["DisplayName"]?.ToString() ?? username;
-        var role = reader["Role"]?.ToString() ?? string.Empty;
-        await reader.DisposeAsync();
-
-        return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: true, cancellationToken);
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Login failed due to an unexpected error.", ex);
+        }
     }
 
     /// <summary>
@@ -64,26 +75,37 @@ public sealed class Service_ApiAuth
     /// </summary>
     public async Task<Model_AuthResponse?> AutoLoginAsync(string windowsUsername, CancellationToken cancellationToken = default)
     {
-        await using var connection = OpenAppConnection();
-        await connection.OpenAsync(cancellationToken);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "CALL usp_Auth_GetUserByWindowsUsername(@p_WindowsUsername)";
-        command.Parameters.AddWithValue("@p_WindowsUsername", windowsUsername);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
+        try
         {
-            return null;
+            await using var connection = OpenAppConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CALL usp_Auth_GetUserByWindowsUsername(@p_WindowsUsername)";
+            command.Parameters.AddWithValue("@p_WindowsUsername", windowsUsername);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+            {
+                return null;
+            }
+
+            var userId = Convert.ToInt32(reader["Id"], CultureInfo.InvariantCulture);
+            var username = reader["Username"]?.ToString() ?? windowsUsername;
+            var displayName = reader["DisplayName"]?.ToString() ?? username;
+            var role = reader["Role"]?.ToString() ?? string.Empty;
+            await reader.DisposeAsync();
+
+            return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: true, cancellationToken);
         }
-
-        var userId = Convert.ToInt32(reader["Id"], CultureInfo.InvariantCulture);
-        var username = reader["Username"]?.ToString() ?? windowsUsername;
-        var displayName = reader["DisplayName"]?.ToString() ?? username;
-        var role = reader["Role"]?.ToString() ?? string.Empty;
-        await reader.DisposeAsync();
-
-        return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: true, cancellationToken);
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException("Database connection failed. Please verify MySQL server is running and credentials are correct.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Auto-login failed due to an unexpected error.", ex);
+        }
     }
 
     /// <summary>
@@ -91,23 +113,34 @@ public sealed class Service_ApiAuth
     /// </summary>
     public async Task<Model_AuthLoginMode> CheckWorkstationAsync(string windowsUsername, CancellationToken cancellationToken = default)
     {
-        await using var connection = OpenAppConnection();
-        await connection.OpenAsync(cancellationToken);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "CALL usp_Auth_CheckSharedWorkstation(@p_WindowsUsername)";
-        command.Parameters.AddWithValue("@p_WindowsUsername", windowsUsername);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
+        try
         {
-            return new Model_AuthLoginMode(false, windowsUsername, null);
-        }
+            await using var connection = OpenAppConnection();
+            await connection.OpenAsync(cancellationToken);
 
-        return new Model_AuthLoginMode(
-            true,
-            reader["WindowsUsername"]?.ToString() ?? windowsUsername,
-            reader["MachineName"]?.ToString());
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CALL usp_Auth_CheckSharedWorkstation(@p_WindowsUsername)";
+            command.Parameters.AddWithValue("@p_WindowsUsername", windowsUsername);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+            {
+                return new Model_AuthLoginMode(false, windowsUsername, null);
+            }
+
+            return new Model_AuthLoginMode(
+                true,
+                reader["WindowsUsername"]?.ToString() ?? windowsUsername,
+                reader["MachineName"]?.ToString());
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException("Database connection failed while checking workstation. Please verify MySQL server is running.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Workstation check failed due to an unexpected error.", ex);
+        }
     }
 
     /// <summary>
@@ -115,34 +148,45 @@ public sealed class Service_ApiAuth
     /// </summary>
     public async Task<Model_AuthResponse?> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
-        var tokenHash = HashRefreshToken(refreshToken);
-
-        await using var connection = OpenAppConnection();
-        await connection.OpenAsync(cancellationToken);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "CALL usp_Auth_GetRefreshToken(@p_TokenHash)";
-        command.Parameters.AddWithValue("@p_TokenHash", tokenHash);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
+        try
         {
-            return null;
-        }
+            var tokenHash = HashRefreshToken(refreshToken);
 
-        if (!(reader["IsActive"] is bool isActive) || !isActive)
+            await using var connection = OpenAppConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CALL usp_Auth_GetRefreshToken(@p_TokenHash)";
+            command.Parameters.AddWithValue("@p_TokenHash", tokenHash);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+            {
+                return null;
+            }
+
+            if (!(reader["IsActive"] is bool isActive) || !isActive)
+            {
+                return null;
+            }
+
+            var userId = Convert.ToInt32(reader["UserId"], CultureInfo.InvariantCulture);
+            var username = reader["Username"]?.ToString() ?? string.Empty;
+            var displayName = reader["DisplayName"]?.ToString() ?? username;
+            var role = reader["Role"]?.ToString() ?? string.Empty;
+            await reader.DisposeAsync();
+
+            await RevokeRefreshTokenAsync(connection, tokenHash, cancellationToken);
+            return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: false, cancellationToken);
+        }
+        catch (MySqlException ex)
         {
-            return null;
+            throw new InvalidOperationException("Database connection failed during token refresh. Please verify MySQL server is running.", ex);
         }
-
-        var userId = Convert.ToInt32(reader["UserId"], CultureInfo.InvariantCulture);
-        var username = reader["Username"]?.ToString() ?? string.Empty;
-        var displayName = reader["DisplayName"]?.ToString() ?? username;
-        var role = reader["Role"]?.ToString() ?? string.Empty;
-        await reader.DisposeAsync();
-
-        await RevokeRefreshTokenAsync(connection, tokenHash, cancellationToken);
-        return await CreateAuthResponseAsync(connection, userId, username, displayName, role, recordLogin: false, cancellationToken);
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Token refresh failed due to an unexpected error.", ex);
+        }
     }
 
     /// <summary>
@@ -150,11 +194,22 @@ public sealed class Service_ApiAuth
     /// </summary>
     public async Task RevokeAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
-        var tokenHash = HashRefreshToken(refreshToken);
+        try
+        {
+            var tokenHash = HashRefreshToken(refreshToken);
 
-        await using var connection = OpenAppConnection();
-        await connection.OpenAsync(cancellationToken);
-        await RevokeRefreshTokenAsync(connection, tokenHash, cancellationToken);
+            await using var connection = OpenAppConnection();
+            await connection.OpenAsync(cancellationToken);
+            await RevokeRefreshTokenAsync(connection, tokenHash, cancellationToken);
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException("Database connection failed during logout. Please verify MySQL server is running.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Logout failed due to an unexpected error.", ex);
+        }
     }
 
     private MySqlConnection OpenAppConnection()

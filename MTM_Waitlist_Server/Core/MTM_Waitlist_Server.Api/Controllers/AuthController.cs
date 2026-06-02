@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTM_Waitlist_Server.Api.Services;
 
@@ -30,10 +31,17 @@ public class AuthController : ControllerBase
             return BadRequest("Username and password are required.");
         }
 
-        var result = await _authService.LoginAsync(request.Username, request.Password, cancellationToken);
-        return result is null
-            ? Unauthorized("Invalid username or password.")
-            : Ok(result);
+        try
+        {
+            var result = await _authService.LoginAsync(request.Username, request.Password, cancellationToken);
+            return result is null
+                ? Unauthorized("Invalid username or password.")
+                : Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
+        }
     }
 
     /// <summary>Exchanges a refresh token for a new JWT.</summary>
@@ -45,10 +53,17 @@ public class AuthController : ControllerBase
             return BadRequest("Refresh token is required.");
         }
 
-        var result = await _authService.RefreshAsync(request.RefreshToken, cancellationToken);
-        return result is null
-            ? Unauthorized("Refresh token is invalid or expired.")
-            : Ok(result);
+        try
+        {
+            var result = await _authService.RefreshAsync(request.RefreshToken, cancellationToken);
+            return result is null
+                ? Unauthorized("Refresh token is invalid or expired.")
+                : Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
+        }
     }
 
     /// <summary>Revokes a refresh token on logout.</summary>
@@ -60,8 +75,15 @@ public class AuthController : ControllerBase
             return BadRequest("Refresh token is required.");
         }
 
-        await _authService.RevokeAsync(request.RefreshToken, cancellationToken);
-        return NoContent();
+        try
+        {
+            await _authService.RevokeAsync(request.RefreshToken, cancellationToken);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
+        }
     }
 
     /// <summary>Checks whether the supplied Windows username belongs to a shared workstation.</summary>
@@ -73,7 +95,14 @@ public class AuthController : ControllerBase
             return BadRequest("Windows username is required.");
         }
 
-        return Ok(await _authService.CheckWorkstationAsync(request.WindowsUsername, cancellationToken));
+        try
+        {
+            return Ok(await _authService.CheckWorkstationAsync(request.WindowsUsername, cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
+        }
     }
 
     /// <summary>Attempts silent Windows auto-login for a personal workstation.</summary>
@@ -85,10 +114,17 @@ public class AuthController : ControllerBase
             return BadRequest("Windows username is required.");
         }
 
-        var result = await _authService.AutoLoginAsync(request.WindowsUsername, cancellationToken);
-        return result is null
-            ? Unauthorized("No active user is mapped to that Windows identity.")
-            : Ok(result);
+        try
+        {
+            var result = await _authService.AutoLoginAsync(request.WindowsUsername, cancellationToken);
+            return result is null
+                ? Unauthorized("No active user is mapped to that Windows identity.")
+                : Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
+        }
     }
 }
 
