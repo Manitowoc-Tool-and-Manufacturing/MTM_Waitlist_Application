@@ -55,6 +55,15 @@
                     Visibility="{x:Bind ViewModel.CanRetryStartup, Mode=OneWay,
                                          Converter={StaticResource BoolToVisibilityConverter}}" />
 
+                <!-- Copy error button (always visible when error present) -->
+                <Button
+                    Content="Copy Error"
+                    Command="{x:Bind ViewModel.CopyErrorCommand}"
+                    HorizontalAlignment="Stretch"
+                    MinHeight="36"
+                    Visibility="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay,
+                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+
                 <!-- Auto-login progress (personal workstations) -->
                 <StackPanel
                     Spacing="12"
@@ -107,14 +116,7 @@
                     Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
                                          Converter={StaticResource StringToVisibilityConverter}}" />
 
-                <!-- Copy error button (always visible when error present) -->
-                <Button
-                    Content="Copy Error"
-                    Command="{x:Bind ViewModel.CopyErrorCommand}"
-                    HorizontalAlignment="Stretch"
-                    MinHeight="36"
-                    Visibility="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay,
-                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+
 
                 <!-- Action buttons (shared workstations only) -->
                 <Grid

@@ -19,7 +19,7 @@
                 HorizontalTextAlignment="Center"
                 Text="Sign in with your Windows username and password or floor PIN."
                 TextColor="{AppThemeBinding Light=#666666,
-                                            Dark=#B8B8B8}" />
+                                             Dark=#B8B8B8}" />
 
             <Border
                 Padding="12"
@@ -65,21 +65,22 @@
                     Text="{Binding Password, Mode=TwoWay}" />
             </VerticalStackLayout>
 
-<Label
+            <!-- Error message and Copy Error - always visible when error exists -->
+            <Label
                 FontSize="12"
                 HorizontalTextAlignment="Center"
+                IsVisible="{Binding HasErrorMessage, Mode=OneWay}"
                 Text="{Binding ErrorMessage, Mode=OneWay}"
-                TextColor="#B42318"
-                IsVisible="{Binding HasErrorMessage, Mode=OneWay}" />
+                TextColor="#B42318" />
 
-             <Button
+            <Button
                 Command="{Binding CopyErrorCommand}"
                 HeightRequest="52"
                 IsVisible="{Binding HasErrorMessage, Mode=OneWay}"
                 Text="Copy Error" />
 
-             <!-- Action buttons (shared workstations only) -->
-             <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}">
+            <!-- Action buttons (shared workstations only) -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}">
                 <Button
                     Grid.Column="0"
                     Command="{Binding LoginCommand}"

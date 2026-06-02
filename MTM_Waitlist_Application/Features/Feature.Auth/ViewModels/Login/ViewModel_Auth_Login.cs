@@ -326,5 +326,11 @@ public partial class ViewModel_Auth_Login : ObservableObject
     partial void OnStatusMessageChanged(string value)
     {
         OnPropertyChanged(nameof(HasStatusMessage));
+        OnPropertyChanged(nameof(HasErrorMessage));
+    }
+
+    partial void OnErrorMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasErrorMessage));
     }
 }
