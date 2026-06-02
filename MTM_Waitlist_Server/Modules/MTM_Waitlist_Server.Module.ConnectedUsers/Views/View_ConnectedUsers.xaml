@@ -88,10 +88,10 @@
 
                             <!-- Name + workstation -->
                             <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                <TextBlock Text="{x:Bind DisplayName}"
                                            Style="{ThemeResource BodyStrongTextBlockStyle}"
                                            TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{x:Bind Username, Mode=OneWay}"
+                                <TextBlock Text="{x:Bind Username}"
                                            Style="{ThemeResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            TextTrimming="CharacterEllipsis" />

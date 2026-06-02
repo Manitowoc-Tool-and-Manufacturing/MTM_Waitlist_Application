@@ -4,6 +4,7 @@ using MTM_Waitlist_Server.Core.Interfaces.Migration;
 using MTM_Waitlist_Server.Core.Interfaces.Settings;
 using MTM_Waitlist_Server.Core.Models.FirstRun;
 using MTM_Waitlist_Server.Core.Models.Migration;
+using MTM_Waitlist_Server.Core.Models.Settings;
 using MySqlConnector;
 using System;
 using System.Security.Principal;
