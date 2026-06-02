@@ -66,7 +66,9 @@ public static class ApiStartup
         // can be validated by the same key.
         var settingsStore = sharedProvider.GetRequiredService<IService_SettingsStore>();
         var jwtSecret = settingsStore.Get().Api.JwtSecret;
-        var keyBytes = Encoding.UTF8.GetBytes(jwtSecret);
+        var keyBytes = jwtSecret.Length > 0
+            ? Encoding.UTF8.GetBytes(jwtSecret)
+            : Encoding.UTF8.GetBytes("MTM-Waitlist-Development-Secret-Key-32-chars"); // Fallback for first-run without settings
 
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
