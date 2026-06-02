@@ -101,6 +101,7 @@ Check off items as you complete them. All items start unchecked. Reference [FEAT
 | Done | Task | Command |
 |------|------|---------|
 | [x] | Build server solution — zero errors | `dotnet build MTM_Waitlist_Server/MTM_Waitlist_Server.slnx` |
+| [x] | Fix JWT secret fallback for first-run without `server-settings.json` | `ApiStartup.cs:69-71` — returns fallback secret when JwtSecret is empty |
 
 ---
 

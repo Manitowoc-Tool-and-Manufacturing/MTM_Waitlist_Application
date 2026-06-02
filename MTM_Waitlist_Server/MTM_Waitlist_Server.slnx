@@ -38,7 +38,9 @@
     <File Path="Database/migrations/V003__SetupTech_Schema.sql" />
     <File Path="Database/migrations/V004__SetupTech_Default_DunnageTypeConfig.sql" />
   </Folder>
-  <Folder Name="/Database/procedures/" />
+  <Folder Name="/Database/procedures/">
+    <File Path="AllProcedures.sql" />
+  </Folder>
   <Folder Name="/Database/procedures/Auth/">
     <File Path="Database/procedures/Auth/usp_Auth_CheckSharedWorkstation.sql" />
     <File Path="Database/procedures/Auth/usp_Auth_GetRefreshToken.sql" />
@@ -108,6 +110,18 @@
     <File Path="Database/triggers/Auth/trg_SharedWorkstations_BeforeUpdate.sql" />
     <File Path="Database/triggers/Auth/trg_Users_BeforeInsert.sql" />
     <File Path="Database/triggers/Auth/trg_Users_BeforeUpdate.sql" />
+  </Folder>
+  <Folder Name="/Database/triggers/SetupTech/">
+    <File Path="Database/triggers/SetupTech/trg_SetupTechDunnageTypeConfig_BeforeInsert.sql" />
+    <File Path="Database/triggers/SetupTech/trg_SetupTechDunnageTypeConfig_BeforeUpdate.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkOrderDunnageAssignments_BeforeInsert.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkOrderDunnageAssignments_BeforeUpdate.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkOrderSubordinateParts_BeforeInsert.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkOrderSubordinateParts_BeforeUpdate.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkstationActiveJobs_BeforeInsert.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkstationActiveJobs_BeforeUpdate.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkstationJobHistory_BeforeInsert.sql" />
+    <File Path="Database/triggers/SetupTech/trg_WorkstationJobHistory_BeforeUpdate.sql" />
   </Folder>
   <Folder Name="/Database/triggers/Waitlist/">
     <File Path="Database/triggers/Waitlist/trg_WaitlistEntries_BeforeInsert.sql" />

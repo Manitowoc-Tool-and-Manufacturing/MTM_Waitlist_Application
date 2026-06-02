@@ -72,16 +72,27 @@
                 Text="{Binding ErrorMessage, Mode=OneWay}"
                 TextColor="#B42318" />
 
-            <Button
-                Command="{Binding LoginCommand}"
-                HeightRequest="52"
-                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
-                Text="Sign In" />
-            <Button
-                Command="{Binding ClearPasswordCommand}"
-                HeightRequest="52"
-                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
-                Text="Clear" />
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button
+                    Grid.Column="0"
+                    Command="{Binding LoginCommand}"
+                    HeightRequest="52"
+                    IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
+                    Text="Sign In" />
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding CopyErrorCommand}"
+                    HeightRequest="52"
+                    IsVisible="{Binding HasStatusMessage, Mode=OneWay}"
+                    Text="Copy Error" />
+                <Button
+                    Grid.Column="2"
+                    Command="{Binding ClearPasswordCommand}"
+                    HeightRequest="52"
+                    IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
+                    Text="Clear" />
+            </Grid>
 
             <ActivityIndicator
                 HorizontalOptions="Center"

@@ -246,6 +246,21 @@ public partial class ViewModel_Auth_Login : ObservableObject
         await InitializeAsync();
     }
 
+    /// <summary>
+    /// Copies the current error message to the clipboard for support purposes.
+    /// </summary>
+    [RelayCommand]
+    private async Task CopyErrorAsync()
+    {
+        var errorText = string.Join(Environment.NewLine,
+            ErrorMessage,
+            StatusMessage);
+        if (!string.IsNullOrWhiteSpace(errorText))
+        {
+            await Clipboard.SetTextAsync(errorText.Trim());
+        }
+    }
+
 #if WINDOWS
     private async Task AttemptAutoLoginAsync(string windowsUsername)
     {
