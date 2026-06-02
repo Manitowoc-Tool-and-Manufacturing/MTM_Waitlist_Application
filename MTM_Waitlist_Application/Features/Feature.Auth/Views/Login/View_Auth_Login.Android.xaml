@@ -65,32 +65,30 @@
                     Text="{Binding Password, Mode=TwoWay}" />
             </VerticalStackLayout>
 
-            <Label
+<Label
                 FontSize="12"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                 Text="{Binding ErrorMessage, Mode=OneWay}"
-                TextColor="#B42318" />
+                TextColor="#B42318"
+                IsVisible="{Binding HasErrorMessage, Mode=OneWay}" />
 
-            <!-- Action buttons -->
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+             <Button
+                Command="{Binding CopyErrorCommand}"
+                HeightRequest="52"
+                IsVisible="{Binding HasErrorMessage, Mode=OneWay}"
+                Text="Copy Error" />
+
+             <!-- Action buttons (shared workstations only) -->
+             <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}">
                 <Button
                     Grid.Column="0"
                     Command="{Binding LoginCommand}"
                     HeightRequest="52"
-                    IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                     Text="Sign In" />
                 <Button
                     Grid.Column="1"
-                    Command="{Binding CopyErrorCommand}"
-                    HeightRequest="52"
-                    IsVisible="{Binding HasErrorMessage, Mode=OneWay}"
-                    Text="Copy Error" />
-                <Button
-                    Grid.Column="2"
                     Command="{Binding ClearPasswordCommand}"
                     HeightRequest="52"
-                    IsVisible="{Binding IsSharedWorkstation, Mode=OneWay}"
                     Text="Clear" />
             </Grid>
 

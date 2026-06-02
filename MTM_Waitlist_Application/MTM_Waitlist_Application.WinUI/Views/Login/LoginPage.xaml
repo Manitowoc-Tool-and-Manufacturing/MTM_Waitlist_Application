@@ -89,40 +89,6 @@
                             Password="{x:Bind ViewModel.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
-                    <!-- Error message -->
-                    <TextBlock
-                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                        Foreground="#B42318"
-                        TextWrapping="Wrap"
-                        Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
-                                             Converter={StaticResource StringToVisibilityConverter}}" />
-
-                    <!-- Copy error button -->
-                    <Button
-                        Content="Copy Error"
-                        Command="{x:Bind ViewModel.CopyErrorCommand}"
-                        HorizontalAlignment="Stretch"
-                        MinHeight="36"
-                        Visibility="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay,
-                                             Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                    <!-- Action buttons -->
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                        <Button
-                            Grid.Column="0"
-                            Content="Sign In"
-                            Command="{x:Bind ViewModel.LoginCommand}"
-                            Style="{ThemeResource AccentButtonStyle}"
-                            HorizontalAlignment="Stretch"
-                            MinHeight="36" />
-                        <Button
-                            Grid.Column="1"
-                            Content="Clear"
-                            Command="{x:Bind ViewModel.ClearPasswordCommand}"
-                            HorizontalAlignment="Stretch"
-                            MinHeight="36" />
-                    </Grid>
-
                     <!-- Sign-in progress indicator -->
                     <ProgressRing
                         IsActive="{x:Bind ViewModel.IsAuthenticating, Mode=OneWay}"
@@ -132,6 +98,44 @@
                         Visibility="{x:Bind ViewModel.IsAuthenticating, Mode=OneWay,
                                              Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
+
+                <!-- Error message (always visible when present) -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                    Foreground="#B42318"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind ViewModel.ErrorMessage, Mode=OneWay,
+                                         Converter={StaticResource StringToVisibilityConverter}}" />
+
+                <!-- Copy error button (always visible when error present) -->
+                <Button
+                    Content="Copy Error"
+                    Command="{x:Bind ViewModel.CopyErrorCommand}"
+                    HorizontalAlignment="Stretch"
+                    MinHeight="36"
+                    Visibility="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay,
+                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <!-- Action buttons (shared workstations only) -->
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="12"
+                    Visibility="{x:Bind ViewModel.IsSharedWorkstation, Mode=OneWay,
+                                        Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Button
+                        Grid.Column="0"
+                        Content="Sign In"
+                        Command="{x:Bind ViewModel.LoginCommand}"
+                        Style="{ThemeResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="36" />
+                    <Button
+                        Grid.Column="1"
+                        Content="Clear"
+                        Command="{x:Bind ViewModel.ClearPasswordCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="36" />
+                </Grid>
 
             </StackPanel>
         </Border>
