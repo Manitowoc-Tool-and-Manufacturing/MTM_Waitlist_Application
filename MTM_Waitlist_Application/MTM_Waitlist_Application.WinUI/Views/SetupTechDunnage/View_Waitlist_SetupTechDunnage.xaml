@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Name="RootPage"
+    x:Class="MTM_Waitlist_Application.WinUI.Views.SetupTechDunnage.View_Waitlist_SetupTechDunnage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:MTM_Waitlist_Application.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Core.Models.SetupTech"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer>
+        <Grid Padding="24,16" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="20">
+            <TextBlock Grid.Row="0" Text="Setup Technician - Add Dunnage" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+                <TextBlock Text="✓" Foreground="#388E3C" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Workstation" Foreground="#388E3C" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2" Text="→" Foreground="#9E9E9E" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="3" Text="✓" Foreground="#388E3C" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="4" Text="Work Order" Foreground="#388E3C" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="5" Text="→" Foreground="#9E9E9E" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="6" Text="✓" Foreground="#388E3C" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="7" Text="Validate" Foreground="#388E3C" VerticalAlignment="Center" />
+                <Border Grid.Column="8" Background="#1565C0" Padding="8,4" CornerRadius="16">
+                    <TextBlock Text="4" Foreground="White" FontWeight="SemiBold" />
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,16,*">
+                <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+                    <TextBlock Text="Current Assignment" FontWeight="SemiBold" FontSize="14" />
+                    <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.WorkOrderId, Mode=OneWay}" Foreground="#555555" FontSize="11" />
+                    <Border Grid.Row="2" Padding="16" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+                        <ListView ItemsSource="{x:Bind ViewModel.CurrentAssignments, Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Model_SetupTech_DunnageAssignment">
+                                    <Grid Padding="0,8" ColumnDefinitions="*,40">
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind DunnagePartName, Mode=OneWay}" FontWeight="SemiBold" FontSize="13" />
+                                            <TextBlock Text="{x:Bind DunnageTypeName, Mode=OneWay}" Foreground="#555555" FontSize="11" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="X"
+                                                Width="32"
+                                                Height="32"
+                                                FontSize="11"
+                                                Background="#FFEBEE"
+                                                Foreground="#C62828"
+                                                Click="RemoveDunnage_Click" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="10">
+                    <TextBlock Text="Add Dunnage" FontWeight="SemiBold" FontSize="14" />
+                    <ListView Grid.Row="1"
+                              Height="56"
+                              ItemsSource="{x:Bind ViewModel.EnabledDunnageTypes, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedTypeFilter, Mode=TwoWay}"
+                              SelectionMode="Single"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Model_SetupTech_DunnageTypeConfig">
+                                <Border Margin="0,0,8,0" Padding="14,10" Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6">
+                                    <TextBlock Text="{x:Bind DunnageTypeName, Mode=OneWay}" Foreground="#555555" FontSize="12" />
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Border Grid.Row="2" Padding="12" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+                        <ListView ItemsSource="{x:Bind ViewModel.DunnageCatalog, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedDunnagePart, Mode=TwoWay}"
+                                  SelectionMode="Single">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Model_DunnagePart">
+                                    <Grid Padding="10,8">
+                                        <TextBlock Text="{x:Bind DunnagePartName, Mode=OneWay}" FontSize="13" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+
+                    <Button Grid.Row="3"
+                            Height="40"
+                            Background="#1565C0"
+                            Command="{x:Bind ViewModel.AddSelectedDunnageCommand}"
+                            Content="Add Item"
+                            Foreground="White" />
+
+                    <StackPanel Grid.Row="4" Spacing="6">
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" FontSize="12" Foreground="#1565C0" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" FontSize="12" Foreground="#B42318" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Button Content="Back to Validate"
+                        Width="160"
+                        Height="44"
+                        Background="#EEEEEE"
+                        Command="{x:Bind ViewModel.BackToValidationCommand}"
+                        Foreground="#333333" />
+                <Button Grid.Column="1"
+                        Content="Save and Complete Setup"
+                        Height="44"
+                        Background="#388E3C"
+                        Command="{x:Bind ViewModel.SaveAndContinueCommand}"
+                        Foreground="White" />
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

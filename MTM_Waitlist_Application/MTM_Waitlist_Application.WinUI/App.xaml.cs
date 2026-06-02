@@ -2,24 +2,39 @@
 using Core.Constants.Api;
 using Core.Interfaces.Api;
 using Core.Interfaces.Auth;
+using Core.Interfaces.InforVisual;
 using Core.Interfaces.KillSwitch;
 using Core.Interfaces.Lifecycle;
+using Core.Interfaces.SetupTech;
 using Core.Interfaces.Sync;
 using Core.Interfaces.Waitlist;
 using Data.Http;
 using Data.Local;
+using Data.Repositories.InforVisual;
+using Data.Repositories.SetupTech;
 using Data.Repositories.Waitlist;
 using Feature.Auth.ViewModels.Login;
 using Feature.Dashboard.ViewModels.Main;
+using Feature.Waitlist.ViewModels.SetupTech;
+using Feature.Waitlist.ViewModels.SetupTechConfirmation;
+using Feature.Waitlist.ViewModels.SetupTechDunnage;
+using Feature.Waitlist.ViewModels.SetupTechValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Networking;
 using MTM_Waitlist_Application.WinUI.Services.Auth;
 using MTM_Waitlist_Application.WinUI.Services.Lifecycle;
 using MTM_Waitlist_Application.WinUI.Views.Dashboard;
 using MTM_Waitlist_Application.WinUI.Views.Login;
+using MTM_Waitlist_Application.WinUI.Views.SetupTech;
+using MTM_Waitlist_Application.WinUI.Views.SetupTechConfirmation;
+using MTM_Waitlist_Application.WinUI.Views.SetupTechDunnage;
+using MTM_Waitlist_Application.WinUI.Views.SetupTechValidation;
+using Services.InforVisual;
 using Services.Auth;
 using Services.KillSwitch;
+using Services.SetupTech;
 using Services.Sync;
 using Services.Waitlist;
 
@@ -125,16 +140,29 @@ public partial class App : Application
         services.AddHttpClient();
 
         // ── Infrastructure ──────────────────────────────────────────────
+        services.AddSingleton<IConnectivity>(Connectivity.Current);
         services.AddSingleton<IService_AuthTokenStore, Service_AuthTokenStore_WinUI>();
         services.AddSingleton<LocalDbContext>();
         services.AddSingleton<IApiClient, HttpApiClient>();
 
         // ── Repositories (Singleton — stateless) ────────────────────────
+        services.AddSingleton<IRepository_InforVisual, Repository_InforVisual>();
+        services.AddSingleton<IRepository_InforVisualLocal, Repository_InforVisualLocal>();
+        services.AddSingleton<IRepository_DunnageCatalog, Repository_DunnageCatalog>();
+        services.AddSingleton<IRepository_SetupTechActiveJob, Repository_SetupTechActiveJob>();
+        services.AddSingleton<IRepository_SetupTechActiveJobLocal, Repository_SetupTechActiveJobLocal>();
+        services.AddSingleton<IRepository_WorkOrderDunnage, Repository_WorkOrderDunnage>();
+        services.AddSingleton<IRepository_WorkOrderDunnageLocal, Repository_WorkOrderDunnageLocal>();
+        services.AddSingleton<IRepository_SetupTechDunnageTypeConfig, Repository_SetupTechDunnageTypeConfig>();
+        services.AddSingleton<IRepository_SetupTechDunnageTypeConfigLocal, Repository_SetupTechDunnageTypeConfigLocal>();
         services.AddSingleton<IRepository_WaitlistEntry, Repository_WaitlistEntry>();
         services.AddSingleton<IRepository_WaitlistEntryLocal, Repository_WaitlistEntryLocal>();
 
         // ── Services (Singleton — stateless business logic) ─────────────
         services.AddSingleton<IService_Auth, Service_Auth>();
+        services.AddSingleton<IService_InforVisual, Service_InforVisual>();
+        services.AddSingleton<IService_SetupTech, Service_SetupTech>();
+        services.AddSingleton<IService_SetupTechWorkflowState, Service_SetupTechWorkflowState>();
         services.AddSingleton<IService_WaitlistEntry, Service_WaitlistEntry>();
         services.AddSingleton<ISyncService, SyncService>();
         services.AddSingleton<IService_KillSwitch, Service_KillSwitch>();
@@ -143,10 +171,19 @@ public partial class App : Application
         // ── ViewModels (Transient — new instance per navigation) ─────────
         services.AddTransient<ViewModel_Auth_Login>();
         services.AddTransient<ViewModel_Dashboard_Main>();
+        services.AddTransient<ViewModel_Waitlist_SetupTech>();
+        services.AddTransient<ViewModel_Waitlist_SetupTechValidation>();
+        services.AddTransient<ViewModel_Waitlist_SetupTechDunnage>();
+        services.AddTransient<ViewModel_Waitlist_SetupTechConfirmation>();
 
         // ── Pages (Transient — new instance per navigation) ──────────────
         services.AddTransient<LoginPage>();
         services.AddTransient<DashboardPage>();
+        services.AddTransient<SetupTechPage>();
+        services.AddTransient<View_Waitlist_SetupTech>();
+        services.AddTransient<View_Waitlist_SetupTechValidation>();
+        services.AddTransient<View_Waitlist_SetupTechDunnage>();
+        services.AddTransient<View_Waitlist_SetupTechConfirmation>();
     }
 
 #if DEBUG

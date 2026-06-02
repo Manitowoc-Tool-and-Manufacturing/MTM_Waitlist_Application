@@ -1,102 +1,146 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<OutputType>WinExe</OutputType>
-	<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-	<RootNamespace>MTM_Waitlist_Application.WinUI</RootNamespace>
-	<ApplicationManifest>app.manifest</ApplicationManifest>
-	<Platforms>x86;x64;ARM64</Platforms>
-	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-	<PublishProfile>win-$(Platform).pubxml</PublishProfile>
-	<!-- Standalone WinUI 3 — no MAUI dependency -->
-	<UseWinUI>true</UseWinUI>
-	<!-- Block MAUI XAML code generator from processing WinUI XAML; MAUI types
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>MTM_Waitlist_Application.WinUI</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <!-- Standalone WinUI 3 — no MAUI dependency -->
+    <UseWinUI>true</UseWinUI>
+    <!-- Block MAUI XAML code generator from processing WinUI XAML; MAUI types
 		 still bleed in transitively via Data/Services but this prevents the
 		 MAUI XAML processor from claiming our .xaml files. -->
-	<EnableDefaultMauiItems>false</EnableDefaultMauiItems>
-	<!-- Prevent the WinUI SDK from auto-globbing .xaml as Page items;
+    <EnableDefaultMauiItems>false</EnableDefaultMauiItems>
+    <!-- Prevent the WinUI SDK from auto-globbing .xaml as Page items;
 		 we declare them explicitly below so we can set DependentUpon metadata. -->
-	<EnableDefaultPageItems>false</EnableDefaultPageItems>
-	<EnableMsixTooling>true</EnableMsixTooling>
-	<Nullable>enable</Nullable>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<WindowsPackageType>None</WindowsPackageType>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <!-- WinUI XAML files: App.xaml is auto-registered as ApplicationDefinition by UseWinUI=true.
 	   We only need to register the Page items (MainWindow + views). Remove any MAUI item-type
 	   globs that VS may auto-add, then declare the WinUI pages explicitly. -->
   <ItemGroup>
-	<!-- Ensure MAUI's item type does not claim these files -->
-	<MauiXaml Remove="App.xaml" />
-	<MauiXaml Remove="MainWindow.xaml" />
-	<MauiXaml Remove="Views\Dashboard\DashboardPage.xaml" />
-	<MauiXaml Remove="Views\Login\LoginPage.xaml" />
-	<!-- Shell window -->
-	<Page Include="MainWindow.xaml">
-	  <SubType>Designer</SubType>
-	  <Generator>MSBuild:Compile</Generator>
-	</Page>
-	<Compile Update="MainWindow.xaml.cs">
-	  <DependentUpon>MainWindow.xaml</DependentUpon>
-	</Compile>
-	<!-- Views -->
-	<Page Include="Views\Login\LoginPage.xaml">
-	  <SubType>Designer</SubType>
-	  <Generator>MSBuild:Compile</Generator>
-	</Page>
-	<Compile Update="Views\Login\LoginPage.xaml.cs">
-	  <DependentUpon>LoginPage.xaml</DependentUpon>
-	</Compile>
-	<Page Include="Views\Dashboard\DashboardPage.xaml">
-	  <SubType>Designer</SubType>
-	  <Generator>MSBuild:Compile</Generator>
-	</Page>
-	<Compile Update="Views\Dashboard\DashboardPage.xaml.cs">
-	  <DependentUpon>DashboardPage.xaml</DependentUpon>
-	</Compile>
+    <!-- Ensure MAUI's item type does not claim these files -->
+    <MauiXaml Remove="App.xaml" />
+    <MauiXaml Remove="MainWindow.xaml" />
+    <MauiXaml Remove="Views\Dashboard\DashboardPage.xaml" />
+    <MauiXaml Remove="Views\SetupTech\SetupTechPage.xaml" />
+    <MauiXaml Remove="Views\SetupTech\View_Waitlist_SetupTech.xaml" />
+    <MauiXaml Remove="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.xaml" />
+    <MauiXaml Remove="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.xaml" />
+    <MauiXaml Remove="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.xaml" />
+    <MauiXaml Remove="Views\Login\LoginPage.xaml" />
+    <!-- Shell window -->
+    <Page Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <!-- Views -->
+    <Page Include="Views\Login\LoginPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\Login\LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\Dashboard\DashboardPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\Dashboard\DashboardPage.xaml.cs">
+      <DependentUpon>DashboardPage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\SetupTech\SetupTechPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\SetupTech\SetupTechPage.xaml.cs">
+      <DependentUpon>SetupTechPage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\SetupTech\View_Waitlist_SetupTech.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\SetupTech\View_Waitlist_SetupTech.xaml.cs">
+      <DependentUpon>View_Waitlist_SetupTech.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\SetupTechValidation\View_Waitlist_SetupTechValidation.xaml.cs">
+      <DependentUpon>View_Waitlist_SetupTechValidation.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\SetupTechDunnage\View_Waitlist_SetupTechDunnage.xaml.cs">
+      <DependentUpon>View_Waitlist_SetupTechDunnage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="Views\SetupTechConfirmation\View_Waitlist_SetupTechConfirmation.xaml.cs">
+      <DependentUpon>View_Waitlist_SetupTechConfirmation.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
-	<!-- Windows App SDK — WinUI 3 runtime (must match what Microsoft.Maui.Core pulls transitively) -->
-	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
-	<!-- DI + logging — pin to 10.0.7 to match Data/Services transitive floor -->
-	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-	<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
-	<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
-	<!-- CommunityToolkit.Mvvm for ViewModel binding support -->
-	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!-- Windows App SDK — WinUI 3 runtime (must match what Microsoft.Maui.Core pulls transitively) -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
+    <!-- DI + logging — pin to 10.0.7 to match Data/Services transitive floor -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
+    <!-- CommunityToolkit.Mvvm for ViewModel binding support -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <!-- appsettings embedded so IConfiguration can load it from the manifest -->
   <ItemGroup>
-	<EmbeddedResource Include="appsettings.json" />
-	<EmbeddedResource Include="appsettings.Development.json" Condition="'$(Configuration)'=='Debug'" />
+    <EmbeddedResource Include="appsettings.json" />
+    <EmbeddedResource
+      Include="appsettings.Development.json"
+      Condition="'$(Configuration)'=='Debug'"
+    />
   </ItemGroup>
 
   <ItemGroup>
-	<!-- Core layer -->
-	<ProjectReference Include="..\Core\Core\Core.csproj" />
-	<ProjectReference Include="..\Core\Data\Data.csproj" />
-	<ProjectReference Include="..\Core\Services\Services.csproj" />
-	<!-- Feature ViewModels (Windows views are owned by this host) -->
-	<ProjectReference Include="..\Features\Feature.Auth\Feature.Auth.csproj" />
-	<ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
+    <!-- Core layer -->
+    <ProjectReference Include="..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\Core\Data\Data.csproj" />
+    <ProjectReference Include="..\Core\Services\Services.csproj" />
+    <!-- Feature ViewModels (Windows views are owned by this host) -->
+    <ProjectReference Include="..\Features\Feature.Auth\Feature.Auth.csproj" />
+    <ProjectReference Include="..\Features\Feature.Dashboard\Feature.Dashboard.csproj" />
+    <ProjectReference Include="..\Features\Feature.Waitlist\Feature.Waitlist.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	<Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
+    <Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-	<Manifest Include="$(ApplicationManifest)" />
+    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-	<ProjectCapability Include="Msix" />
+    <ProjectCapability Include="Msix" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-	<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 </Project>

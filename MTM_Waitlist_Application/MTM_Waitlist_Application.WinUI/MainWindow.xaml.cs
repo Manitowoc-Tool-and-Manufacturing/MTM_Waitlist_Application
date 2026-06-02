@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Core.Interfaces.Lifecycle;
 using MTM_Waitlist_Application.WinUI.Views.Dashboard;
 using MTM_Waitlist_Application.WinUI.Views.Login;
+using MTM_Waitlist_Application.WinUI.Views.SetupTech;
 
 namespace MTM_Waitlist_Application.WinUI;
 
@@ -132,6 +133,7 @@ public sealed partial class MainWindow : Window
         var pageType = tag switch
         {
             "Dashboard" => typeof(DashboardPage),
+            "SetupTech" => typeof(SetupTechPage),
             _ => null
         };
 
@@ -139,5 +141,26 @@ public sealed partial class MainWindow : Window
         {
             ShellFrame.Navigate(pageType);
         }
+    }
+
+    /// <summary>
+    /// Returns the shell to the Dashboard page.
+    /// Used by the Setup Tech workflow when the user completes setup.
+    /// </summary>
+    public static void NavigateToDashboard()
+    {
+        _current?.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_current is null)
+            {
+                return;
+            }
+
+            _current.ShellNav.SelectedItem = _current.NavDashboard;
+            if (_current.ShellFrame.CurrentSourcePageType != typeof(DashboardPage))
+            {
+                _current.ShellFrame.Navigate(typeof(DashboardPage));
+            }
+        });
     }
 }
