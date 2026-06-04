@@ -39,19 +39,11 @@
   </ItemGroup>
   <ItemGroup>
     <!-- V001 bootstrap SQL — embedded so it ships inside the exe and needs no file path at runtime -->
-    <EmbeddedResource
-      Include="..\..\Database\migrations\V001__Initial_Schema.sql"
-      LogicalName="V001__Initial_Schema.sql"
-    />
+    <EmbeddedResource Include="..\..\Database\migrations\V001__Initial_Schema.sql" LogicalName="V001__Initial_Schema.sql" />
   </ItemGroup>
   <ItemGroup>
     <!-- Runtime SQL folders for the migration runner and idempotent object re-runner -->
-    <Content
-      Include="..\..\Database\**\*.sql"
-      Exclude="..\..\Database\migrations\V001__Initial_Schema.sql"
-      Link="database\%(RecursiveDir)%(Filename)%(Extension)"
-      CopyToOutputDirectory="PreserveNewest"
-    />
+    <Content Include="..\..\Database\**\*.sql" Exclude="..\..\Database\migrations\V001__Initial_Schema.sql" Link="database\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
@@ -81,9 +73,16 @@
 
   <!-- Publish Properties -->
   <PropertyGroup>
-    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <PublishReadyToRun>False</PublishReadyToRun>
+    <PublishTrimmed>False</PublishTrimmed>
+    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>False</GenerateTestArtifacts>
+    <AppxBundle>Never</AppxBundle>
+    <AppInstallerUri>C:\Users\johnk\OneDrive\Desktop\Installers</AppInstallerUri>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <PackageCertificateThumbprint>BC39C12669D99346C9F1FECBAC24D994E0580D77</PackageCertificateThumbprint>
   </PropertyGroup>
 </Project>
