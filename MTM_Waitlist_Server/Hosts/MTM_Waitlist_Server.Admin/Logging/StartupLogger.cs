@@ -22,18 +22,38 @@ internal static class StartupLogger
 
     static StartupLogger()
     {
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MTM_Waitlist_Server", "Logs");
+        string dir;
+        try
+        {
+            dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MTM_Waitlist_Server", "Logs");
 
-        Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(dir);
+        }
+        catch (Exception ex)
+        {
+            // Fallback to app directory if %LOCALAPPDATA% fails (e.g. OneDrive interference or permissions)
+            dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            try
+            {
+                Directory.CreateDirectory(dir);
+            }
+            catch
+            {
+                // Absolute fallback to current directory
+                dir = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
+            Debug.WriteLine($"[MTM-Startup] Failed to use LOCALAPPDATA, falling back to {dir}. Error: {ex.Message}");
+        }
 
         var fileName = $"startup_{DateTime.Now:yyyy-MM-dd}.log";
         _logPath = Path.Combine(dir, fileName);
 
         // Write a session separator so multiple runs in a day are distinguishable.
         WriteRaw($"{'=',60}");
-        WriteRaw($"  SESSION START  {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+        WriteRaw($"  SESSION START  {DateTime.Now:yyyy-HH:mm:ss.fff}");
         WriteRaw($"{'=',60}");
     }
 
